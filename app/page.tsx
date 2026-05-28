@@ -1,58 +1,51 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { createClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/utils";
 
-export default function Home() {
+export default async function Home() {
+  if (hasSupabaseEnv()) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getClaims();
+    if (data?.claims) {
+      redirect("/dashboard");
+    }
+  }
+
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? (
-              <EnvVarWarning />
-            ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            )}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
-
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
+    <main className="min-h-svh flex flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full flex flex-col gap-6 text-center">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Prode entre amigos
+          </h1>
+          <p className="text-lg font-medium text-muted-foreground">
+            Mundial 2026
           </p>
-          <ThemeSwitcher />
-        </footer>
+          <p className="text-sm text-muted-foreground">
+            Predicciones partido a partido, globales del torneo, ranking en
+            vivo y pozo entre los amigos. Solo por invitación.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Arranca el 11 de junio.
+          </p>
+          <Button asChild size="lg" className="mt-2">
+            <Link href="/auth/login">Entrar con Google</Link>
+          </Button>
+          {!hasSupabaseEnv() && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Configurá <code>.env.local</code> con las keys de Supabase para
+              habilitar el login.
+            </p>
+          )}
+        </div>
       </div>
+      <footer className="w-full border-t text-xs flex items-center justify-center gap-4 py-4 text-muted-foreground">
+        <span>Prode entre amigos · 2026</span>
+        <ThemeSwitcher />
+      </footer>
     </main>
   );
 }
