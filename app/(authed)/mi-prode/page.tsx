@@ -46,6 +46,13 @@ export default async function MiProdePage() {
   }
   const userId = claims.claims.sub as string;
 
+  const { data: myProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+  const isAdmin = myProfile?.role === "admin" || myProfile?.role === "owner";
+
   const { data: picks } = await supabase
     .from("match_predictions")
     .select(
@@ -89,6 +96,14 @@ export default async function MiProdePage() {
             {totalPoints} pts
           </span>
         </div>
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="inline-flex w-fit items-center gap-1.5 rounded-full bg-pitch px-3 py-1.5 text-sm font-bold text-cream shadow-sm transition-transform active:scale-95"
+          >
+            ⚙️ Panel admin
+          </Link>
+        )}
       </header>
 
       {allPicks.length === 0 ? (
