@@ -78,6 +78,11 @@ export default async function DashboardPage() {
     ? `${nextMatch.home_team?.name} vs ${nextMatch.away_team?.name}`
     : "Por definirse";
 
+  const { count: globalsCount } = await supabase
+    .from("global_predictions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
   return (
     <div className="flex flex-col gap-7">
       <HeroHeader />
@@ -104,6 +109,22 @@ export default async function DashboardPage() {
           picks
         </StatCard>
       </div>
+
+      {/* Acceso a globales */}
+      <Link
+        href="/globales"
+        className="flex items-center justify-between gap-3 rounded-2xl bg-cream p-4 text-ink shadow-card ring-1 ring-black/5 transition-transform active:scale-[0.99]"
+      >
+        <div className="flex flex-col">
+          <span className="font-extrabold">🏆 Globales del Mundial</span>
+          <span className="text-xs text-ink/60">
+            Campeón, goleador, MVP y más
+          </span>
+        </div>
+        <span className="shrink-0 rounded-full bg-pitch/10 px-2.5 py-1 text-xs font-bold text-pitch">
+          {globalsCount ?? 0}/5
+        </span>
+      </Link>
 
       {/* Próximos partidos (data real) */}
       <section className="flex animate-fade-up flex-col gap-3">

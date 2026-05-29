@@ -8,8 +8,7 @@ import { cn } from "@/lib/utils";
 const ITEMS = [
   { href: "/dashboard", label: "Inicio", icon: Home, soon: false },
   { href: "/matches", label: "Prode", icon: ClipboardList, soon: false },
-  // Ranking real = Fase 3. Por ahora queda como "pronto" (sin datos inventados).
-  { href: "/leaderboard", label: "Ranking", icon: Trophy, soon: true },
+  { href: "/leaderboard", label: "Ranking", icon: Trophy, soon: false },
   { href: "/mi-prode", label: "Perfil", icon: User, soon: false },
 ];
 
