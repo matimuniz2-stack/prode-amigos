@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Leaderboards · PRODE LOS PIBES</title>
+<style>
+:root {
+  color-scheme: dark;
+  --frame-bg: #16191f;
+  --frame-border: rgba(255,255,255,.08);
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:#0a0c10; color:#e6e8ec; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+header.page {
+  position: sticky; top:0; z-index:50;
+  background: linear-gradient(180deg, #0a0c10 0%, rgba(10,12,16,.96) 100%);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 18px 24px;
+}
+header.page h1 { margin:0 0 4px; font-size:22px; font-weight:800; letter-spacing:-.02em; }
+header.page p { margin:0; font-size:13px; color:#94a3b8; max-width: 760px; }
+header.page p strong { color: #e2e8f0; }
+main { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px; padding: 24px; }
+.frame {
+  border: 1px solid var(--frame-border);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--frame-bg);
+  position: relative;
+}
+.frame > .meta {
+  padding: 10px 14px;
+  font-size: 11px;
+  color: #94a3b8;
+  background: rgba(255,255,255,.02);
+  border-bottom: 1px solid var(--frame-border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.frame > .meta b { color: #e6e8ec; font-weight: 700; font-size: 12px; }
+.mock {
+  min-height: 540px;
+  font-family: var(--font, inherit);
+  font-size: 13px;
+}
+
+/* ============== L1: Podio cinematográfico ============== */
+.L1 {
+  background: radial-gradient(circle at top, #1e293b, #0a0c10);
+  color: #f1f5f9;
+  padding: 20px;
+}
+.L1 .title { text-align: center; margin-bottom: 6px; }
+.L1 .title h2 { margin: 0; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: #94a3b8; }
+.L1 .title p { margin: 0; font-size: 11px; color: #64748b; }
+.L1 .podium { display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 8px; align-items: end; margin: 16px 0 18px; }
+.L1 .pod {
+  text-align: center; padding-top: 14px; padding-bottom: 10px;
+  border-radius: 14px 14px 4px 4px;
+  position: relative;
+  background: linear-gradient(180deg, var(--pod-c), color-mix(in oklab, var(--pod-c), #000 40%));
+  color: #0b1020;
+}
+.L1 .pod.first  { --pod-c: #fde047; height: 130px; }
+.L1 .pod.second { --pod-c: #cbd5e1; height: 110px; }
+.L1 .pod.third  { --pod-c: #d4a373; height: 95px; }
+.L1 .pod .av { width:42px; height:42px; border-radius:50%; background:#0b1020; color: #fff; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size: 13px; border: 2px solid #fff; }
+.L1 .pod .num { font-size: 11px; font-weight: 800; margin-top: 4px; opacity: .8; }
+.L1 .pod .name { font-size: 12px; font-weight: 700; margin-top: 2px; }
+.L1 .pod .pts { font-size: 18px; font-weight: 900; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.L1 .pod .prize { font-size: 10px; color: #0b1020; opacity:.7; font-weight:700; }
+.L1 .pod .crown { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 22px; }
+.L1 .rest { display: flex; flex-direction: column; gap: 6px; }
+.L1 .row { display: grid; grid-template-columns: 28px 24px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; background: rgba(255,255,255,.04); border-radius: 10px; }
+.L1 .row .rk { font-weight: 800; color: #64748b; }
+.L1 .row .av { width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size: 10px; font-weight: 800; color: #fff; }
+.L1 .row .name { font-weight: 600; font-size: 12px; }
+.L1 .row .pts { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13px; }
+
+/* ============== L2: Duolingo Leagues (zonas) ============== */
+.L2 { background: #faf9f6; color: #0f172a; padding: 16px 0 0; }
+.L2 .hdr { text-align: center; padding: 8px 0 14px; border-bottom: 1px solid #e5e7eb; margin: 0 16px; }
+.L2 .hdr .icon { font-size: 32px; }
+.L2 .hdr h3 { margin: 4px 0 2px; font-size: 16px; font-weight: 800; }
+.L2 .hdr small { font-size: 11px; color: #64748b; }
+.L2 .zone-label { font-size: 10px; font-weight: 800; letter-spacing: .12em; padding: 6px 16px; }
+.L2 .zone-label.promo { color: #16a34a; background: #dcfce7; }
+.L2 .zone-label.neutral { color: #6b7280; background: #f3f4f6; }
+.L2 .zone-label.demo { color: #dc2626; background: #fee2e2; }
+.L2 .item { display: grid; grid-template-columns: 32px 36px 1fr auto; gap: 10px; align-items: center; padding: 10px 16px; }
+.L2 .item.you { background: #dbeafe; }
+.L2 .rk { width:24px; height:24px; border-radius:50%; background:#e5e7eb; color:#374151; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; }
+.L2 .rk.gold   { background: #fde047; color: #713f12; }
+.L2 .rk.silver { background: #e2e8f0; color: #1e293b; }
+.L2 .rk.bronze { background: #d4a373; color: #5b3919; }
+.L2 .av { width: 28px; height: 28px; border-radius: 50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight: 800; font-size: 11px; }
+.L2 .name { font-weight: 600; font-size: 13px; }
+.L2 .name small { display: block; color: #6b7280; font-size: 10px; font-weight: 500; margin-top: 1px; }
+.L2 .xp { background: #fbbf24; color: #78350f; font-weight: 800; padding: 3px 10px; border-radius: 999px; font-size: 11px; }
+
+/* ============== L3: FPL classic dense ============== */
+.L3 { background: #37003c; color: #fff; padding: 16px; font-family: "Inter", system-ui, sans-serif; }
+.L3 h3 { margin: 0 0 4px; font-size: 14px; font-weight: 800; }
+.L3 .sub { color: #c4b5fd; font-size: 11px; margin-bottom: 12px; }
+.L3 table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.L3 thead th { text-align: left; padding: 8px 6px; font-weight: 700; color: #c4b5fd; border-bottom: 1px solid rgba(255,255,255,.18); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+.L3 tbody td { padding: 9px 6px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.L3 .rk { font-weight: 800; }
+.L3 .name { font-weight: 600; }
+.L3 .name small { color: #c4b5fd; font-size: 10px; font-weight: 500; margin-left: 4px; }
+.L3 .delta { font-size: 11px; font-weight: 700; }
+.L3 .delta.up   { color: #22d3ee; }
+.L3 .delta.down { color: #fb7185; }
+.L3 .delta.flat { color: #94a3b8; }
+.L3 .pts { font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.L3 tr.you { background: rgba(255,255,255,.08); }
+
+/* ============== L4: Cocos vibe ============== */
+.L4 { background: #0a0a0a; color: #e5e5e5; padding: 22px 18px; }
+.L4 .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.L4 .top h3 { margin: 0; font-size: 13px; color: #a3a3a3; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; }
+.L4 .top .live { background: #ef4444; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.L4 .total { font-family: "JetBrains Mono", monospace; font-size: 30px; font-weight: 900; color: #C8FF00; margin-bottom: 4px; }
+.L4 .label-big { font-size: 10px; color: #a3a3a3; letter-spacing: .14em; text-transform: uppercase; }
+.L4 .divider { height: 1px; background: #262626; margin: 16px 0; }
+.L4 .row { display: grid; grid-template-columns: 24px 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; }
+.L4 .rk { font-family: "JetBrains Mono", monospace; color: #525252; font-weight: 700; }
+.L4 .row.t1 .rk { color: #C8FF00; }
+.L4 .name { font-weight: 600; font-size: 13px; }
+.L4 .delta { font-size: 11px; font-family: "JetBrains Mono", monospace; }
+.L4 .delta.up { color: #C8FF00; }
+.L4 .delta.down { color: #ef4444; }
+.L4 .delta.flat { color: #525252; }
+.L4 .pts { font-family: "JetBrains Mono", monospace; font-weight: 800; font-variant-numeric: tabular-nums; color: #fafafa; }
+
+/* ============== L5: Sparkline rows ============== */
+.L5 { padding: 18px; background: #0f172a; color: #f1f5f9; }
+.L5 h3 { margin: 0 0 12px; font-size: 14px; font-weight: 700; }
+.L5 .row { display: grid; grid-template-columns: 22px 30px 1fr 90px auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.L5 .rk { font-weight: 800; color: #64748b; }
+.L5 .av { width:26px; height:26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 11px; }
+.L5 .name { font-size: 13px; font-weight: 600; }
+.L5 .name small { display:block; color:#94a3b8; font-size: 10px; }
+.L5 .spark { height: 28px; }
+.L5 .pts { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; color: #34d399; text-align: right; }
+
+/* ============== L6: Stadium scoreboard ============== */
+.L6 { background: #0a3d0a; color: #e7ffe7; padding: 16px; font-family: "JetBrains Mono", monospace; }
+.L6 .led { background: #0e1f0e; border: 2px solid #4ade80; border-radius: 12px; padding: 14px; }
+.L6 h3 { margin: 0; font-size: 11px; color: #4ade80; text-align: center; letter-spacing: .2em; }
+.L6 .row { display: grid; grid-template-columns: 32px 1fr 60px; gap: 10px; align-items: center; padding: 7px 4px; border-bottom: 1px dashed rgba(74,222,128,.2); }
+.L6 .row:last-child { border-bottom: none; }
+.L6 .rk { color: #fde047; font-weight: 800; }
+.L6 .row.t1 .rk { color: #fde047; }
+.L6 .row.t1 .name { color: #fde047; }
+.L6 .name { font-size: 13px; font-weight: 700; color: #e7ffe7; }
+.L6 .pts { text-align: right; font-weight: 800; color: #fde047; font-size: 15px; font-variant-numeric: tabular-nums; }
+.L6 .footer { padding: 8px 14px; font-size: 10px; color: #4ade80; display: flex; justify-content: space-between; letter-spacing: .1em; }
+
+/* ============== L7: Glass cards ============== */
+.L7 {
+  padding: 18px;
+  background:
+    radial-gradient(circle at 0% 0%, #312e81 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, #be185d 0%, transparent 50%),
+    #0a0a0a;
+  color: #fafafa;
+}
+.L7 .row {
+  display: grid; grid-template-columns: 28px 36px 1fr auto; gap: 12px; align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
+.L7 .row.you { background: rgba(168,85,247,.18); border-color: rgba(168,85,247,.45); }
+.L7 .rk { font-weight: 800; color: rgba(255,255,255,.5); }
+.L7 .av { width:30px; height:30px; border-radius: 50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:11px; }
+.L7 .name { font-weight: 600; }
+.L7 .pts { font-weight: 800; font-variant-numeric: tabular-nums; font-size: 14px; }
+.L7 .pill { display: inline-block; margin-left: 6px; font-size: 10px; padding: 2px 6px; border-radius: 8px; background: rgba(255,255,255,.1); color: rgba(255,255,255,.8); font-weight: 600; }
+
+/* ============== L8: Neón arcade ============== */
+.L8 {
+  background: #0a0014;
+  color: #f0abfc;
+  padding: 18px;
+  font-family: "JetBrains Mono", monospace;
+}
+.L8 h3 { margin: 0 0 6px; color: #06b6d4; text-shadow: 0 0 12px #06b6d4; font-size: 15px; letter-spacing: .14em; }
+.L8 small { color: #a855f7; font-size: 11px; }
+.L8 .row { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 8px 4px; border-bottom: 1px solid rgba(168,85,247,.2); }
+.L8 .row.t1 { color: #fde047; text-shadow: 0 0 8px #fde047; }
+.L8 .rk { font-weight: 800; }
+.L8 .name { font-weight: 700; }
+.L8 .pts { font-weight: 900; color: #22d3ee; text-shadow: 0 0 8px #22d3ee; font-variant-numeric: tabular-nums; }
+.L8 .row.t1 .pts { color: #fde047; text-shadow: 0 0 12px #fde047; }
+
+/* ============== L9: Newspaper standings ============== */
+.L9 { background: #fffbeb; color: #292524; padding: 18px; font-family: "Times New Roman", Georgia, serif; }
+.L9 h2 { margin: 0; text-transform: uppercase; letter-spacing: .14em; border-top: 3px double #292524; border-bottom: 1px solid #292524; padding: 6px 0; text-align: center; font-size: 12px; }
+.L9 .lede { font-style: italic; font-size: 11px; color: #6b7280; text-align: center; padding: 10px 0; }
+.L9 table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.L9 thead th { text-align: left; padding: 4px; border-bottom: 1px solid #292524; font-variant: small-caps; font-size: 11px; }
+.L9 tbody td { padding: 6px 4px; border-bottom: 1px dotted rgba(0,0,0,.2); }
+.L9 .name { font-weight: 700; }
+.L9 .name small { font-style: italic; color: #6b7280; font-weight: 400; margin-left: 4px; }
+.L9 .pts { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ============== L10: Race bar ============== */
+.L10 { background: #fff; color: #0f172a; padding: 18px; }
+.L10 h3 { margin: 0 0 12px; font-size: 14px; font-weight: 800; }
+.L10 .row { padding: 10px 0; }
+.L10 .row .top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+.L10 .row .name { font-weight: 700; }
+.L10 .row .name .rk { color: #64748b; margin-right: 6px; }
+.L10 .row .pts { font-weight: 800; font-variant-numeric: tabular-nums; }
+.L10 .bar { height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+.L10 .bar div {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--c), color-mix(in oklab, var(--c), #fff 25%));
+}
+
+/* ============== L11: Premio destacado ============== */
+.L11 { background: linear-gradient(180deg, #0c1424, #1e293b); color: #f1f5f9; padding: 18px; }
+.L11 h3 { margin: 0 0 4px; font-size: 12px; color: #94a3b8; letter-spacing: .14em; text-transform: uppercase; }
+.L11 .pool { font-size: 28px; font-weight: 900; color: #fde047; font-variant-numeric: tabular-nums; }
+.L11 .pool small { font-size: 11px; color: #94a3b8; font-weight: 500; }
+.L11 .top3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 14px 0; }
+.L11 .card { padding: 10px; border-radius: 12px; text-align: center; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+.L11 .card.first { background: linear-gradient(180deg, rgba(253,224,71,.2), rgba(253,224,71,.04)); border-color: rgba(253,224,71,.4); }
+.L11 .card .rk { font-size: 18px; }
+.L11 .card .name { font-size: 11px; font-weight: 700; margin: 4px 0 2px; }
+.L11 .card .pts { font-size: 13px; font-weight: 800; color: #cbd5e1; }
+.L11 .card .prize { font-size: 12px; font-weight: 800; color: #fde047; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.L11 .rest { display: flex; flex-direction: column; }
+.L11 .row { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.05); align-items: center; font-size: 12px; }
+.L11 .row .rk { color: #64748b; font-weight: 800; }
+.L11 .row .pts { font-weight: 700; color: #cbd5e1; font-variant-numeric: tabular-nums; }
+
+/* ============== L12: Watch face ============== */
+.L12 { background: #000; color: #fff; padding: 18px; }
+.L12 h3 { margin: 0 0 12px; font-size: 13px; color: #fb923c; text-transform: uppercase; letter-spacing: .12em; }
+.L12 .ring-row { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.L12 .ring {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: conic-gradient(var(--c) calc(var(--p) * 1%), rgba(255,255,255,.08) 0);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.L12 .ring::after {
+  content: ""; position: absolute; inset: 4px; background: #000; border-radius: 50%;
+}
+.L12 .ring span { position: relative; z-index: 1; font-weight: 800; font-size: 11px; color: #fff; }
+.L12 .name { font-weight: 700; }
+.L12 .name small { display: block; color: #94a3b8; font-size: 10px; font-weight: 500; }
+.L12 .pts { font-weight: 900; font-size: 16px; font-variant-numeric: tabular-nums; color: var(--c, #fb923c); }
+
+/* ============== L13: Brutalist mono ============== */
+.L13 { background: #fafafa; color: #0a0a0a; padding: 0; font-family: "JetBrains Mono", monospace; }
+.L13 .strip { background: #0a0a0a; color: #fff; padding: 8px 16px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; display: flex; justify-content: space-between; }
+.L13 .row { display: grid; grid-template-columns: 32px 36px 1fr auto; gap: 10px; align-items: center; padding: 10px 16px; border-bottom: 2px solid #0a0a0a; }
+.L13 .row.t1 { background: #0a0a0a; color: #fafafa; }
+.L13 .rk { font-weight: 900; }
+.L13 .av { width: 28px; height: 28px; background: #0a0a0a; color: #fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size: 11px; }
+.L13 .row.t1 .av { background: #fafafa; color: #0a0a0a; }
+.L13 .name { font-weight: 800; text-transform: uppercase; font-size: 12px; }
+.L13 .pts { font-weight: 900; font-size: 16px; font-variant-numeric: tabular-nums; }
+
+/* ============== L14: Trophy showcase ============== */
+.L14 { background: linear-gradient(135deg, #1e1b4b, #312e81 60%, #4c1d95); color: #fafafa; padding: 20px; }
+.L14 .hero { text-align: center; }
+.L14 .hero .trophy { font-size: 64px; filter: drop-shadow(0 0 24px rgba(253,224,71,.6)); }
+.L14 .hero h2 { margin: 4px 0 0; font-size: 18px; font-weight: 900; color: #fde047; text-shadow: 0 0 20px rgba(253,224,71,.4); }
+.L14 .hero .name { font-size: 14px; font-weight: 700; color: #fff; margin-top: 2px; }
+.L14 .hero .pts { font-size: 32px; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; }
+.L14 .hero .label { font-size: 10px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .14em; }
+.L14 .divider { margin: 16px 0; border-top: 1px solid rgba(255,255,255,.1); }
+.L14 .row { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; padding: 7px 0; align-items: center; font-size: 13px; }
+.L14 .row .rk { color: rgba(255,255,255,.5); font-weight: 800; }
+.L14 .row .name { font-weight: 600; }
+.L14 .row .pts { font-weight: 800; color: #cbd5e1; font-variant-numeric: tabular-nums; }
+
+/* ============== L15: Heatmap ============== */
+.L15 { background: #ffffff; color: #0f172a; padding: 16px; }
+.L15 h3 { margin: 0 0 10px; font-size: 14px; font-weight: 800; }
+.L15 table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.L15 td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; }
+.L15 .rk { width: 28px; font-weight: 800; color: #64748b; }
+.L15 .name { font-weight: 700; }
+.L15 .pts { font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; border-radius: 8px; }
+.L15 .legend { margin-top: 10px; font-size: 10px; color: #64748b; display: flex; gap: 8px; align-items: center; }
+.L15 .legend .swatch { display: inline-block; width: 14px; height: 12px; border-radius: 3px; }
+
+/* ============== L16: Stats mosaic ============== */
+.L16 { background: #0f172a; color: #f1f5f9; padding: 16px; }
+.L16 h3 { margin: 0 0 12px; font-size: 14px; font-weight: 800; }
+.L16 .row { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.L16 .head { display: flex; gap: 10px; align-items: center; }
+.L16 .av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 11px; }
+.L16 .name { font-weight: 700; }
+.L16 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+.L16 .stat { background: rgba(255,255,255,.04); border-radius: 8px; padding: 6px; text-align: center; }
+.L16 .stat b { display: block; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.L16 .stat span { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; }
+.L16 .stat.exact b { color: #34d399; }
+.L16 .stat.win b { color: #60a5fa; }
+.L16 .stat.streak b { color: #fbbf24; }
+.L16 .stat.total b { color: #f5f5f5; }
+
+/* ============== L17: Live event banner ============== */
+.L17 { background: #0a0a0a; color: #fafafa; padding: 0; }
+.L17 .live-banner { background: linear-gradient(90deg, #dc2626, #f97316); padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 11px; letter-spacing: .12em; }
+.L17 .live-banner .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+.L17 .match {
+  padding: 14px;
+  background: linear-gradient(180deg, #1f2937, #111827);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px;
+}
+.L17 .match .team { text-align: center; }
+.L17 .match .flag { font-size: 24px; }
+.L17 .match .name { font-size: 11px; font-weight: 700; }
+.L17 .match .score { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.L17 .match .min { font-size: 10px; color: #fb7185; font-weight: 700; letter-spacing: .08em; }
+.L17 .ranking { padding: 12px 14px; }
+.L17 .ranking h4 { margin: 0 0 8px; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+.L17 .row { display: grid; grid-template-columns: 22px 1fr auto auto; gap: 10px; align-items: center; padding: 6px 0; font-size: 12px; }
+.L17 .rk { color: #64748b; font-weight: 800; }
+.L17 .delta { font-size: 10px; font-weight: 800; }
+.L17 .delta.up { color: #34d399; }
+.L17 .delta.down { color: #f87171; }
+.L17 .pts { font-weight: 800; font-variant-numeric: tabular-nums; color: #fde047; }
+
+/* ============== L18: Telegram-style chat ============== */
+.L18 { background: #0e1621; color: #f5f5f5; padding: 12px; }
+.L18 h3 { margin: 0 0 10px; font-size: 12px; color: #94a3b8; padding: 0 8px; }
+.L18 .row { display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; padding: 8px; border-radius: 12px; }
+.L18 .row:hover { background: rgba(255,255,255,.04); }
+.L18 .av { width: 34px; height: 34px; border-radius: 50%; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.L18 .body .name { font-weight: 600; font-size: 14px; }
+.L18 .body .last { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+.L18 .right { text-align: right; }
+.L18 .pts { background: #38b6ff; color: #fff; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.L18 .right .delta { font-size: 10px; color: #94a3b8; margin-top: 3px; display: block; }
+
+/* ============== L19: Retro 80s synthwave ============== */
+.L19 {
+  background: linear-gradient(180deg, #1e003a 0%, #4a004a 50%, #7a0066 100%);
+  color: #ffffff; padding: 18px;
+  font-family: "Courier New", monospace;
+  position: relative; overflow: hidden;
+}
+.L19::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 50%;
+  background: linear-gradient(transparent 90%, rgba(255,0,255,.3) 100%),
+              repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,0,255,.2) 8px, rgba(255,0,255,.2) 9px);
+  transform: perspective(200px) rotateX(45deg); transform-origin: bottom;
+}
+.L19 .content { position: relative; z-index: 1; }
+.L19 h3 { margin: 0 0 14px; text-align: center; font-size: 18px; color: #ff00ff; text-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff; letter-spacing: .14em; }
+.L19 .row { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,0,255,.2); align-items: center; }
+.L19 .rk { color: #00ffff; font-weight: 800; }
+.L19 .row.t1 { color: #fde047; }
+.L19 .name { font-weight: 700; text-transform: uppercase; font-size: 12px; }
+.L19 .pts { font-weight: 900; font-size: 14px; color: #00ffff; text-shadow: 0 0 6px #00ffff; }
+.L19 .row.t1 .pts { color: #fde047; text-shadow: 0 0 6px #fde047; }
+
+/* ============== L20: Argentina blanco celeste ============== */
+.L20 { background: linear-gradient(180deg, #74acdf 0%, #ffffff 50%, #74acdf 100%); color: #0b3a73; padding: 18px; }
+.L20 .crest { text-align: center; margin-bottom: 8px; font-size: 36px; }
+.L20 h3 { margin: 0 0 14px; text-align: center; font-size: 14px; font-weight: 800; }
+.L20 .row { background: rgba(255,255,255,.85); display: grid; grid-template-columns: 26px 32px 1fr auto; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; margin-bottom: 4px; border: 1px solid rgba(11,58,115,.15); }
+.L20 .row.t1 { background: #fdb913; color: #5b3919; border-color: #b48000; }
+.L20 .rk { font-weight: 900; color: #0b3a73; }
+.L20 .row.t1 .rk { color: #5b3919; }
+.L20 .av { width: 26px; height: 26px; border-radius: 50%; background: #0b3a73; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; }
+.L20 .name { font-weight: 700; }
+.L20 .pts { font-weight: 900; color: #0b3a73; font-variant-numeric: tabular-nums; }
+.L20 .row.t1 .pts { color: #5b3919; }
+
+/* hide helper */
+.frame.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>Leaderboards · 20 variantes</h1>
+  <p>Tabla de ranking en vivo entre amigos para el Mundial 2026, con los mismos datos (12 amigos · pool de <strong>ARS $850.000</strong> · partido Argentina-Francia <strong>1-0</strong> en el minuto 67) renderizado de 20 formas distintas. Las referencias incluyen <strong>Cocos prode</strong>, <strong>Fantasy Premier League</strong>, <strong>Duolingo Leagues</strong>, <strong>ESPN Bracket</strong>, Strava clubes, Apple Fitness, y shots curados de Dribbble. Decime el número que más te cierre o pedí cambios concretos sobre uno.</p>
+</header>
+
+<main id="grid"></main>
+
+<script>
+const LIVE = { home:{name:'Argentina',flag:'🇦🇷',score:1}, away:{name:'Francia',flag:'🇫🇷',score:0}, minute:67 };
+
+const U = [
+  { rank:1,  prev:3,  name:'Mati Muñiz',   ini:'MM', c:'#22c55e', pts:87, exact:12, win:19, streak:4, prize:510000, you:true  },
+  { rank:2,  prev:1,  name:'Juan Pablo',   ini:'JP', c:'#3b82f6', pts:84, exact:11, win:18, streak:0, prize:212500, you:false },
+  { rank:3,  prev:2,  name:'Tomás A.',     ini:'TA', c:'#f59e0b', pts:78, exact:10, win:18, streak:2, prize:127500, you:false },
+  { rank:4,  prev:5,  name:'Fede Caro',    ini:'FC', c:'#ef4444', pts:72, exact:9,  win:18, streak:1, prize:0,      you:false },
+  { rank:5,  prev:8,  name:'Lucas Castro', ini:'LC', c:'#a855f7', pts:68, exact:8,  win:18, streak:5, prize:0,      you:false },
+  { rank:6,  prev:6,  name:'Nico Aragón',  ini:'NA', c:'#06b6d4', pts:65, exact:7,  win:18, streak:0, prize:0,      you:false },
+  { rank:7,  prev:4,  name:'Martín Pérez', ini:'MP', c:'#ec4899', pts:61, exact:7,  win:16, streak:0, prize:0,      you:false },
+  { rank:8,  prev:7,  name:'Diego R.',     ini:'DR', c:'#84cc16', pts:58, exact:6,  win:16, streak:1, prize:0,      you:false },
+  { rank:9,  prev:11, name:'Pablo M.',     ini:'PM', c:'#f97316', pts:54, exact:6,  win:14, streak:2, prize:0,      you:false },
+  { rank:10, prev:9,  name:'Santi B.',     ini:'SB', c:'#14b8a6', pts:49, exact:5,  win:14, streak:0, prize:0,      you:false },
+  { rank:11, prev:10, name:'Joaco D.',     ini:'JD', c:'#8b5cf6', pts:46, exact:5,  win:12, streak:0, prize:0,      you:false },
+  { rank:12, prev:12, name:'Bauti L.',     ini:'BL', c:'#10b981', pts:42, exact:4,  win:12, streak:0, prize:0,      you:false },
+];
+
+const delta = (u) => u.prev - u.rank;
+const deltaArrow = (u) => {
+  const d = delta(u);
+  if (d > 0) return { txt: '▲' + d, cls: 'up' };
+  if (d < 0) return { txt: '▼' + (-d), cls: 'down' };
+  return { txt: '=', cls: 'flat' };
+};
+const $ = (n) => new Intl.NumberFormat('es-AR').format(n);
+const trophy = (rank) => rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : '';
+
+// Sparkline SVG simple
+function spark(data, c='#34d399') {
+  const max = Math.max(...data); const min = Math.min(...data);
+  const w = 80, h = 24, r = max - min || 1;
+  const pts = data.map((v,i) => `${(i/(data.length-1))*w},${h - ((v-min)/r)*h}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><polyline fill="none" stroke="${c}" stroke-width="2" points="${pts}"/></svg>`;
+}
+
+// Sparkline data: 6 últimas fechas
+const SPARK = [
+  [10, 7, 5, 4, 2, 1], // Mati
+  [1, 2, 1, 2, 1, 2],  // JP
+  [4, 4, 3, 3, 3, 3],  // Tomás
+  [6, 6, 5, 5, 5, 4],  // Fede
+  [8, 8, 9, 8, 8, 5],  // Lucas
+];
+
+// ============== RENDERERS ==============
+
+function L1_podio() {
+  const [a,b,c] = [U[1], U[0], U[2]]; // segundo, primero, tercero
+  return `
+  <div class="title">
+    <h2>Los Pibes 2026</h2>
+    <p>Después de la fecha 6 · pool ARS $${$(850000)}</p>
+  </div>
+  <div class="podium">
+    <div class="pod second">
+      <div class="av" style="background:${a.c}">${a.ini}</div>
+      <div class="num">2°</div>
+      <div class="name">${a.name}</div>
+      <div class="pts">${a.pts}</div>
+      <div class="prize">$${$(a.prize)}</div>
+    </div>
+    <div class="pod first">
+      <span class="crown">👑</span>
+      <div class="av" style="background:${b.c}">${b.ini}</div>
+      <div class="num">1°</div>
+      <div class="name">${b.name}</div>
+      <div class="pts">${b.pts}</div>
+      <div class="prize">$${$(b.prize)}</div>
+    </div>
+    <div class="pod third">
+      <div class="av" style="background:${c.c}">${c.ini}</div>
+      <div class="num">3°</div>
+      <div class="name">${c.name}</div>
+      <div class="pts">${c.pts}</div>
+      <div class="prize">$${$(c.prize)}</div>
+    </div>
+  </div>
+  <div class="rest">
+    ${U.slice(3,9).map(u => `
+      <div class="row">
+        <div class="rk">${u.rank}</div>
+        <div class="av" style="background:${u.c}">${u.ini}</div>
+        <div class="name">${u.name}</div>
+        <div class="pts">${u.pts}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function L2_duolingo() {
+  return `
+  <div class="hdr">
+    <div class="icon">🏆</div>
+    <h3>Liga Oro · Fecha 6</h3>
+    <small>Top 3 cobra premio · faltan 14 fechas</small>
+  </div>
+  <div class="zone-label promo">⬆ PROMOCIÓN (top 3 cobra)</div>
+  ${U.slice(0,3).map(u => `
+    <div class="item ${u.you?'you':''}">
+      <div class="rk ${u.rank===1?'gold':u.rank===2?'silver':'bronze'}">${u.rank}</div>
+      <div class="av" style="background:${u.c}">${u.ini}</div>
+      <div class="name">${u.name}<small>${u.exact} exactos · racha ${u.streak}</small></div>
+      <div class="xp">${u.pts} XP</div>
+    </div>`).join('')}
+  <div class="zone-label neutral">Zona neutra</div>
+  ${U.slice(3,9).map(u => `
+    <div class="item ${u.you?'you':''}">
+      <div class="rk">${u.rank}</div>
+      <div class="av" style="background:${u.c}">${u.ini}</div>
+      <div class="name">${u.name}<small>${u.exact} exactos · racha ${u.streak}</small></div>
+      <div class="xp">${u.pts} XP</div>
+    </div>`).join('')}
+  <div class="zone-label demo">⬇ NECESITAN ACELERAR</div>
+  ${U.slice(9).map(u => `
+    <div class="item ${u.you?'you':''}">
+      <div class="rk">${u.rank}</div>
+      <div class="av" style="background:${u.c}">${u.ini}</div>
+      <div class="name">${u.name}<small>${u.exact} exactos</small></div>
+      <div class="xp">${u.pts} XP</div>
+    </div>`).join('')}`;
+}
+
+function L3_fpl() {
+  return `
+  <h3>Los Pibes 2026 · Mini Liga</h3>
+  <div class="sub">Gameweek 6 · 12 managers</div>
+  <table>
+    <thead><tr><th>#</th><th>Δ</th><th>Manager</th><th>Exact</th><th style="text-align:right">Total</th></tr></thead>
+    <tbody>
+      ${U.map(u => {
+        const d = deltaArrow(u);
+        return `<tr class="${u.you?'you':''}">
+          <td class="rk">${u.rank}</td>
+          <td><span class="delta ${d.cls}">${d.txt}</span></td>
+          <td class="name">${u.name}<small>${u.ini}</small></td>
+          <td>${u.exact}</td>
+          <td class="pts">${u.pts}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function L4_cocos() {
+  return `
+  <div class="top">
+    <h3>LOS PIBES 2026</h3>
+    <span class="live">🔴 EN VIVO</span>
+  </div>
+  <div class="total">${U[0].pts} pts</div>
+  <div class="label-big">${U[0].name} · líder fecha 6</div>
+  <div class="divider"></div>
+  ${U.slice(0,10).map(u => {
+    const d = deltaArrow(u);
+    return `<div class="row ${u.rank===1?'t1':''}">
+      <div class="rk">${String(u.rank).padStart(2,'0')}</div>
+      <div class="name">${u.name}</div>
+      <div class="delta ${d.cls}">${d.txt}</div>
+      <div class="pts">${u.pts}</div>
+    </div>`;
+  }).join('')}`;
+}
+
+function L5_sparkline() {
+  return `
+  <h3>Tendencia última 6 fechas</h3>
+  ${U.slice(0,8).map((u,i) => `
+    <div class="row">
+      <div class="rk">${u.rank}</div>
+      <div class="av" style="background:${u.c}">${u.ini}</div>
+      <div class="name">${u.name}<small>${u.exact} exactos · ${u.win} winners</small></div>
+      <div class="spark">${spark(SPARK[i] || [u.rank,u.rank,u.rank,u.rank,u.rank,u.rank], u.c)}</div>
+      <div class="pts">${u.pts}</div>
+    </div>`).join('')}`;
+}
+
+function L6_stadium() {
+  return `
+  <div class="led">
+    <h3>★ TABLA DE POSICIONES ★</h3>
+    <div style="margin-top:10px">
+    ${U.slice(0,10).map(u => `
+      <div class="row ${u.rank===1?'t1':''}">
+        <div class="rk">${String(u.rank).padStart(2,'0')}</div>
+        <div class="name">${u.name.toUpperCase()}</div>
+        <div class="pts">${u.pts}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="footer">
+    <span>FECHA 06</span>
+    <span>POOL $${$(850000)}</span>
+  </div>`;
+}
+
+function L7_glass() {
+  return U.slice(0,10).map(u => {
+    const d = deltaArrow(u);
+    return `<div class="row ${u.you?'you':''}">
+      <div class="rk">${u.rank}</div>
+      <div class="av" style="background:${u.c}">${u.ini}</div>
+      <div>${u.name}<span class="pill">${d.txt}</span></div>
+      <div class="pts">${u.pts}</div>
+    </div>`;
+  }).join('');
+}
+
+function L8_neon() {
+  return `
+  <h3>:: LOS_PIBES_2026 ::</h3>
+  <small>// score sync · ${new Date().toLocaleTimeString('es-AR')}</small>
+  <div style="margin-top:14px">
+  ${U.slice(0,10).map(u => `
+    <div class="row ${u.rank===1?'t1':''}">
+      <div class="rk">[${String(u.rank).padStart(2,'0')}]</div>
+      <div class="name">${u.name}</div>
+      <div class="pts">${u.pts}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function L9_newspaper() {
+  return `
+  <h2>El Posiciones · Edición Fecha 6</h2>
+  <div class="lede">"Mati Muñiz tomó la punta tras la victoria de Argentina"</div>
+  <table>
+    <thead><tr><th>#</th><th>Apellido y Nombre</th><th>Ex</th><th>W</th><th style="text-align:right">Pts</th></tr></thead>
+    <tbody>
+      ${U.map(u => `
+        <tr>
+          <td>${u.rank}</td>
+          <td class="name">${u.name}<small>${u.ini}</small></td>
+          <td>${u.exact}</td>
+          <td>${u.win}</td>
+          <td class="pts">${u.pts}</td>
+        </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function L10_race() {
+  const max = Math.max(...U.map(u=>u.pts));
+  return `
+  <h3>Carrera al pozo</h3>
+  ${U.slice(0,8).map(u => `
+    <div class="row">
+      <div class="top">
+        <span class="name"><span class="rk">${u.rank}.</span>${u.name}</span>
+        <span class="pts">${u.pts} pts</span>
+      </div>
+      <div class="bar"><div style="width:${(u.pts/max)*100}%;--c:${u.c}"></div></div>
+    </div>`).join('')}`;
+}
+
+function L11_prize() {
+  return `
+  <h3>Pozo actual</h3>
+  <div class="pool">$${$(850000)} <small>ARS</small></div>
+  <div class="top3">
+    <div class="card">
+      <div class="rk">🥈 2°</div>
+      <div class="name">${U[1].name}</div>
+      <div class="pts">${U[1].pts} pts</div>
+      <div class="prize">$${$(U[1].prize)}</div>
+    </div>
+    <div class="card first">
+      <div class="rk">🥇 1°</div>
+      <div class="name">${U[0].name}</div>
+      <div class="pts">${U[0].pts} pts</div>
+      <div class="prize">$${$(U[0].prize)}</div>
+    </div>
+    <div class="card">
+      <div class="rk">🥉 3°</div>
+      <div class="name">${U[2].name}</div>
+      <div class="pts">${U[2].pts} pts</div>
+      <div class="prize">$${$(U[2].prize)}</div>
+    </div>
+  </div>
+  <div class="rest">
+    ${U.slice(3,11).map(u => `
+      <div class="row">
+        <div class="rk">${u.rank}</div>
+        <div>${u.name}</div>
+        <div class="pts">${u.pts}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function L12_watch() {
+  const max = U[0].pts;
+  return `
+  <h3>Anillos de progreso</h3>
+  ${U.slice(0,10).map(u => `
+    <div class="ring-row">
+      <div class="ring" style="--c:${u.c};--p:${(u.pts/max)*100}">
+        <span>${u.rank}</span>
+      </div>
+      <div class="name">${u.name}<small>${u.exact} exactos · racha ${u.streak}</small></div>
+      <div class="pts" style="--c:${u.c}">${u.pts}</div>
+    </div>`).join('')}`;
+}
+
+function L13_brutalist() {
+  return `
+  <div class="strip"><span>LOS PIBES 2026</span><span>GW 06 / 20</span></div>
+  ${U.slice(0,10).map(u => `
+    <div class="row ${u.rank===1?'t1':''}">
+      <div class="rk">${String(u.rank).padStart(2,'0')}</div>
+      <div class="av">${u.ini}</div>
+      <div class="name">${u.name}</div>
+      <div class="pts">${u.pts}</div>
+    </div>`).join('')}
+  <div class="strip" style="border-top:0">FECHA 6 / POOL $${$(850000)}</div>`;
+}
+
+function L14_trophy() {
+  return `
+  <div class="hero">
+    <div class="trophy">🏆</div>
+    <div class="label">Líder actual</div>
+    <div class="name">${U[0].name}</div>
+    <div class="pts">${U[0].pts}</div>
+    <h2>$${$(U[0].prize)}</h2>
+    <div class="label">PROYECCIÓN DE PREMIO</div>
+  </div>
+  <div class="divider"></div>
+  ${U.slice(1,10).map(u => `
+    <div class="row">
+      <div class="rk">${u.rank}.</div>
+      <div class="name">${u.name}</div>
+      <div class="pts">${u.pts}</div>
+    </div>`).join('')}`;
+}
+
+function L15_heatmap() {
+  const max = U[0].pts, min = U[U.length-1].pts;
+  const heatColor = (pts) => {
+    const t = (pts - min) / (max - min);
+    const h = 142, s = 70, l = 95 - t*35; // verde, más oscuro cuanto más puntos
+    return `hsl(${h} ${s}% ${l}%)`;
+  };
+  return `
+  <h3>Heatmap por puntaje</h3>
+  <table>
+    <tbody>
+      ${U.map(u => `
+        <tr>
+          <td class="rk">${u.rank}</td>
+          <td class="name">${u.name}</td>
+          <td class="pts" style="background:${heatColor(u.pts)}">${u.pts}</td>
+        </tr>`).join('')}
+    </tbody>
+  </table>
+  <div class="legend">
+    <span class="swatch" style="background:${heatColor(min)}"></span>
+    <span>menos</span>
+    <span class="swatch" style="background:${heatColor((min+max)/2)}"></span>
+    <span>medio</span>
+    <span class="swatch" style="background:${heatColor(max)}"></span>
+    <span>más</span>
+  </div>`;
+}
+
+function L16_mosaic() {
+  return `
+  <h3>Detalle de stats</h3>
+  ${U.slice(0,5).map(u => `
+    <div class="row">
+      <div class="rk" style="color:#94a3b8;font-weight:800">${u.rank}</div>
+      <div>
+        <div class="head">
+          <div class="av" style="background:${u.c}">${u.ini}</div>
+          <div class="name">${u.name}</div>
+        </div>
+        <div class="stats">
+          <div class="stat exact"><b>${u.exact}</b><span>exactos</span></div>
+          <div class="stat win"><b>${u.win}</b><span>winners</span></div>
+          <div class="stat streak"><b>${u.streak}</b><span>racha</span></div>
+          <div class="stat total"><b>${u.pts}</b><span>total</span></div>
+        </div>
+      </div>
+    </div>`).join('')}`;
+}
+
+function L17_live() {
+  return `
+  <div class="live-banner"><span class="dot"></span>EN VIVO · MIN ${LIVE.minute}</div>
+  <div class="match">
+    <div class="team">
+      <div class="flag">${LIVE.home.flag}</div>
+      <div class="name">${LIVE.home.name}</div>
+    </div>
+    <div>
+      <div class="score">${LIVE.home.score} - ${LIVE.away.score}</div>
+      <div class="min">⚽ Argentina</div>
+    </div>
+    <div class="team">
+      <div class="flag">${LIVE.away.flag}</div>
+      <div class="name">${LIVE.away.name}</div>
+    </div>
+  </div>
+  <div class="ranking">
+    <h4>Ranking · actualizado al gol</h4>
+    ${U.slice(0,8).map(u => {
+      const d = deltaArrow(u);
+      return `<div class="row">
+        <div class="rk">${u.rank}</div>
+        <div>${u.name}</div>
+        <div class="delta ${d.cls}">${d.txt}</div>
+        <div class="pts">${u.pts}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function L18_telegram() {
+  return `
+  <h3>Top 10 · Liga Los Pibes 2026</h3>
+  ${U.slice(0,10).map(u => {
+    const d = deltaArrow(u);
+    return `<div class="row">
+      <div class="av" style="background:${u.c}">${u.ini}</div>
+      <div class="body">
+        <div class="name">${trophy(u.rank)} ${u.name}</div>
+        <div class="last">${u.exact} exactos · ${u.win} winners · racha ${u.streak}</div>
+      </div>
+      <div class="right">
+        <div class="pts">${u.pts}</div>
+        <span class="delta">${d.txt}</span>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+function L19_synthwave() {
+  return `
+  <div class="content">
+    <h3>★ LOS PIBES 2026 ★</h3>
+    ${U.slice(0,10).map(u => `
+      <div class="row ${u.rank===1?'t1':''}">
+        <div class="rk">${String(u.rank).padStart(2,'0')}</div>
+        <div class="name">${u.name}</div>
+        <div class="pts">${u.pts}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function L20_argentina() {
+  return `
+  <div class="crest">⭐⭐⭐</div>
+  <h3>LOS PIBES 2026</h3>
+  ${U.slice(0,10).map(u => `
+    <div class="row ${u.rank===1?'t1':''}">
+      <div class="rk">${u.rank}</div>
+      <div class="av" style="background:${u.c}">${u.ini}</div>
+      <div class="name">${u.name}</div>
+      <div class="pts">${u.pts} pts</div>
+    </div>`).join('')}`;
+}
+
+const LAYOUTS = [
+  { id:'L1',  label:'Podio cinematográfico', subtitle:'inspirado en Olympics + Dribbble — top 3 con podio + tabla' },
+  { id:'L2',  label:'Duolingo Leagues',      subtitle:'zonas promoción/descenso, ligas con icono' },
+  { id:'L3',  label:'FPL Classic',           subtitle:'Premier League, tabla densa con delta ▲▼' },
+  { id:'L4',  label:'Cocos vibe',            subtitle:'negro + verde lima, líder gigante, mono' },
+  { id:'L5',  label:'Sparkline',             subtitle:'evolución últimas 6 fechas al costado' },
+  { id:'L6',  label:'Stadium scoreboard',    subtitle:'LED de cancha, mayúsculas, verde + amarillo' },
+  { id:'L7',  label:'Glass cards',           subtitle:'glassmorphism con gradiente colorido detrás' },
+  { id:'L8',  label:'Neon arcade',           subtitle:'oscuro + cyan/magenta neón, retro gaming' },
+  { id:'L9',  label:'Newspaper standings',   subtitle:'serif tipo crónica deportiva' },
+  { id:'L10', label:'Race bar',              subtitle:'barra de progreso de cada user al líder' },
+  { id:'L11', label:'Premio destacado',      subtitle:'pozo enorme + top 3 con plata proyectada' },
+  { id:'L12', label:'Watch face',            subtitle:'anillos circulares estilo Apple Fitness' },
+  { id:'L13', label:'Brutalist mono',        subtitle:'JetBrains Mono, sin radios, alto contraste' },
+  { id:'L14', label:'Trophy showcase',       subtitle:'líder en hero con trofeo, resto compacto' },
+  { id:'L15', label:'Heatmap',               subtitle:'fondo del puntaje colorea por valor' },
+  { id:'L16', label:'Stats mosaic',          subtitle:'cada user con 4 stats — exactos/winners/racha/total' },
+  { id:'L17', label:'Live event',            subtitle:'banner EN VIVO + ranking que sube cuando hay gol' },
+  { id:'L18', label:'Telegram style',        subtitle:'lista tipo chat con avatar circular y badges' },
+  { id:'L19', label:'Synthwave 80s',         subtitle:'morado/magenta + horizonte retro' },
+  { id:'L20', label:'Argentina ⭐⭐⭐',         subtitle:'celeste y blanco + dorado para el líder' },
+];
+
+const RENDERERS = {
+  L1:L1_podio, L2:L2_duolingo, L3:L3_fpl, L4:L4_cocos, L5:L5_sparkline,
+  L6:L6_stadium, L7:L7_glass, L8:L8_neon, L9:L9_newspaper, L10:L10_race,
+  L11:L11_prize, L12:L12_watch, L13:L13_brutalist, L14:L14_trophy, L15:L15_heatmap,
+  L16:L16_mosaic, L17:L17_live, L18:L18_telegram, L19:L19_synthwave, L20:L20_argentina,
+};
+
+const grid = document.getElementById('grid');
+LAYOUTS.forEach((l, i) => {
+  const f = document.createElement('div');
+  f.className = 'frame';
+  f.innerHTML = `
+    <div class="meta">
+      <b>#${String(i+1).padStart(2,'0')} · ${l.label}</b>
+      <span>${l.subtitle}</span>
+    </div>
+    <div class="mock ${l.id}">${RENDERERS[l.id]()}</div>`;
+  grid.appendChild(f);
+});
+</script>
+</body>
+</html>
