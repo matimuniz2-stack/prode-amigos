@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>100 plantillas · PRODE LOS PIBES</title>
+<style>
+  :root {
+    --gap: 14px;
+    --radius: 14px;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: #0f1115;
+    color: #e6e8ec;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  header.page {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(180deg, #0f1115 0%, rgba(15,17,21,.95) 100%);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 18px 24px;
+  }
+  header.page h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+  }
+  header.page p {
+    margin: 0;
+    font-size: 13px;
+    color: #98a2b3;
+  }
+  header.page .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #98a2b3;
+    align-items: center;
+  }
+  header.page input[type="search"] {
+    flex: 1;
+    min-width: 180px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    color: inherit;
+    font: inherit;
+  }
+  header.page select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    color: inherit;
+    font: inherit;
+  }
+  main.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--gap);
+    padding: 24px;
+  }
+  .frame {
+    position: relative;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #16191f;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .frame:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,.16);
+    box-shadow: 0 18px 40px rgba(0,0,0,.4);
+  }
+  .frame .label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+    font-size: 10px;
+    background: rgba(0,0,0,.6);
+    color: #fff;
+    padding: 3px 7px;
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+    letter-spacing: .02em;
+  }
+  .frame .palette {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    font-size: 10px;
+    background: rgba(0,0,0,.6);
+    color: #fff;
+    padding: 3px 7px;
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+  .frame .mock {
+    --bg: #ffffff;
+    --fg: #111;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-fg: #ffffff;
+    --border: #e5e7eb;
+    --card-bg: #ffffff;
+    --shadow: 0 1px 2px rgba(0,0,0,.06);
+    --radius-card: 12px;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 360px;
+    padding: 20px;
+    font-family: var(--font, inherit);
+  }
+
+  /* ====== 10 PALETAS ====== */
+  .pal-1  { --bg:#fafafa; --fg:#0f172a; --muted:#64748b; --accent:#16a34a; --accent-fg:#fff; --border:#e2e8f0; --card-bg:#fff; }
+  .pal-2  { --bg:#0b0f14; --fg:#e2e8f0; --muted:#94a3b8; --accent:#22d3ee; --accent-fg:#0b0f14; --border:#1f2937; --card-bg:#111827; }
+  .pal-3  { --bg:#eaf3ff; --fg:#0b3a73; --muted:#4b6e9c; --accent:#fdb913; --accent-fg:#0b3a73; --border:#c8dcf5; --card-bg:#ffffff; }
+  .pal-4  { --bg:#fff6e9; --fg:#8a3b00; --muted:#a45a23; --accent:#dc2626; --accent-fg:#fff; --border:#f3d7a3; --card-bg:#fffaf0; }
+  .pal-5  { --bg:#0a3d0a; --fg:#e7ffe7; --muted:#a3d9a3; --accent:#fde047; --accent-fg:#0a3d0a; --border:#1f5d1f; --card-bg:#0e4d0e; }
+  .pal-6  { --bg:#fdf2f8; --fg:#831843; --muted:#be185d; --accent:#a855f7; --accent-fg:#fff; --border:#f9a8d4; --card-bg:#fff; }
+  .pal-7  { --bg:#0a0a0a; --fg:#f5f5f4; --muted:#a8a29e; --accent:#f43f5e; --accent-fg:#fff; --border:#262626; --card-bg:#171717; }
+  .pal-8  { --bg:#f5f5dc; --fg:#3b2f1a; --muted:#7a6a52; --accent:#7c2d12; --accent-fg:#fef3c7; --border:#d6c79a; --card-bg:#fffceb; }
+  .pal-9  { --bg:#ecfdf5; --fg:#064e3b; --muted:#10b981; --accent:#0891b2; --accent-fg:#fff; --border:#a7f3d0; --card-bg:#fff; }
+  .pal-10 { --bg:#0f0024; --fg:#f0abfc; --muted:#c084fc; --accent:#06b6d4; --accent-fg:#0f0024; --border:#581c87; --card-bg:#1a0136; }
+
+  /* ====== ESTILOS DE LAYOUT (vía clases por familia) ====== */
+
+  /* L1 — Row clásico */
+  .L1 { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .L1 .row { border:1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; background: var(--card-bg); }
+  .L1 .row h3 { margin: 0 0 4px; font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+  .L1 .teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; font-weight: 600; }
+  .L1 .teams .vs { font-size: 11px; color: var(--muted); }
+  .L1 .meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .L1 .badge { background: var(--accent); color: var(--accent-fg); padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+
+  /* L2 — Cards grandes con flag emoji XL */
+  .L2 { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .L2 .card { border:1px solid var(--border); border-radius: 18px; padding: 14px; background: var(--card-bg); }
+  .L2 .card h4 { margin: 0 0 8px; font-size: 11px; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .1em; }
+  .L2 .row { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; text-align: center; gap: 4px; }
+  .L2 .emoji { font-size: 36px; line-height: 1; }
+  .L2 .name { font-size: 11px; font-weight: 600; margin-top: 4px; }
+  .L2 .score { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .L2 .badge { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-size: 10px; font-weight: 700; text-align:center; }
+
+  /* L3 — Minimalista compacto */
+  .L3 { padding: 12px; font-size: 13px; }
+  .L3 .item { display: grid; grid-template-columns: 38px 1fr 44px; gap: 8px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--border); }
+  .L3 .item:last-child { border-bottom: none; }
+  .L3 .time { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .L3 .vs { font-weight: 600; }
+  .L3 .pick { font-size: 11px; font-weight: 700; color: var(--accent); text-align: right; }
+
+  /* L4 — Score en gradiente */
+  .L4 { padding: 16px; }
+  .L4 .hero { border-radius: 16px; padding: 20px; background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent), #000 30%)); color: var(--accent-fg); position: relative; overflow: hidden; }
+  .L4 .hero::after { content:""; position:absolute; top:-30%; right:-20%; width:60%; height:160%; background: radial-gradient(circle, rgba(255,255,255,.18), transparent 70%); }
+  .L4 .hero h3 { margin: 0 0 12px; font-size: 11px; opacity: .8; text-transform: uppercase; letter-spacing: .1em; position: relative; z-index: 1; }
+  .L4 .vs-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; position: relative; z-index: 1; }
+  .L4 .team { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .L4 .emoji { font-size: 32px; }
+  .L4 .team-name { font-size: 12px; font-weight: 700; }
+  .L4 .vs-row .score { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .L4 .footer { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
+
+  /* L5 — Estadio (líneas de cancha) */
+  .L5 { padding: 0; min-height: 380px; position: relative; background:
+    linear-gradient(180deg, color-mix(in oklab, var(--accent), #fff 80%) 0%, var(--bg) 60%);
+  }
+  .L5 .pitch {
+    margin: 16px;
+    border-radius: 14px;
+    border: 2px solid var(--accent);
+    padding: 20px 16px;
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+  }
+  .L5 .pitch::before {
+    content:""; position: absolute; left: 50%; top:0; bottom:0; width: 1px; background: var(--accent); opacity: .35;
+  }
+  .L5 .pitch::after {
+    content:""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 2px solid var(--accent); opacity: .35; border-radius: 50%;
+  }
+  .L5 .row { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .L5 .team { text-align: center; }
+  .L5 .emoji { font-size: 32px; }
+  .L5 .name { font-size: 11px; font-weight: 700; margin-top: 4px; }
+  .L5 .score { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent); }
+  .L5 .meta { padding: 10px 16px 16px; display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+  /* L6 — Newspaper (estilo periódico) */
+  .L6 { padding: 18px; font-family: Georgia, "Times New Roman", serif; }
+  .L6 h2 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .14em; border-bottom: 2px solid var(--fg); padding-bottom: 6px; }
+  .L6 .lede { font-size: 11px; color: var(--muted); font-style: italic; margin-bottom: 12px; }
+  .L6 .match { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px 0; }
+  .L6 .team { font-size: 14px; font-weight: 700; }
+  .L6 .team small { display: block; font-weight: 400; font-size: 10px; color: var(--muted); margin-top: 2px; font-style: italic; }
+  .L6 .footer { margin-top: 10px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+  .L6 .footer .pick { color: var(--accent); font-weight: 700; }
+
+  /* L7 — Comic (border grueso, sombra dura) */
+  .L7 { padding: 14px; }
+  .L7 .card { border: 3px solid var(--fg); border-radius: 14px; background: var(--card-bg); box-shadow: 6px 6px 0 var(--fg); padding: 14px; }
+  .L7 .top { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+  .L7 .top .badge { background: var(--accent); color: var(--accent-fg); padding: 3px 8px; border: 2px solid var(--fg); border-radius: 999px; }
+  .L7 .row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin: 10px 0; }
+  .L7 .emoji { font-size: 36px; }
+  .L7 .name { font-size: 12px; font-weight: 800; }
+  .L7 .score { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .L7 .bottom { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; }
+
+  /* L8 — Glass (glassmorphism) */
+  .L8 { padding: 16px; background: radial-gradient(circle at top right, color-mix(in oklab, var(--accent), var(--bg) 40%), var(--bg)); }
+  .L8 .card { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: color-mix(in oklab, var(--card-bg), transparent 30%); border: 1px solid color-mix(in oklab, var(--fg), transparent 80%); border-radius: 18px; padding: 16px; }
+  .L8 .top { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; }
+  .L8 .row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .L8 .team { text-align: center; }
+  .L8 .emoji { font-size: 32px; }
+  .L8 .name { font-size: 11px; font-weight: 600; margin-top: 4px; }
+  .L8 .score { font-size: 28px; font-weight: 800; }
+  .L8 .footer { display: flex; justify-content: space-between; margin-top: 14px; font-size: 11px; color: var(--muted); }
+  .L8 .pill { padding: 3px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: 10px; }
+
+  /* L9 — Neumórfico */
+  .L9 { padding: 18px; }
+  .L9 .card { background: var(--bg); border-radius: 18px; padding: 18px; box-shadow:
+    inset -4px -4px 10px color-mix(in oklab, var(--fg), transparent 88%),
+    inset 6px 6px 14px color-mix(in oklab, var(--bg), #000 18%); }
+  .L9 .top { font-size: 11px; color: var(--muted); margin-bottom: 14px; text-transform: uppercase; letter-spacing: .1em; }
+  .L9 .row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .L9 .team { text-align: center; }
+  .L9 .emoji { font-size: 30px; }
+  .L9 .name { font-size: 11px; font-weight: 600; margin-top: 4px; color: var(--muted); }
+  .L9 .score { font-size: 26px; font-weight: 800; color: var(--accent); }
+  .L9 .btn { display: block; margin: 14px auto 0; padding: 8px 14px; font-size: 12px; font-weight: 700; color: var(--fg); background: var(--bg);
+    border-radius: 999px; border: none; box-shadow:
+      -3px -3px 8px color-mix(in oklab, var(--fg), transparent 92%),
+       3px 3px 8px color-mix(in oklab, var(--bg), #000 18%);
+  }
+
+  /* L10 — Brutalist (mono, sin radios, alto contraste) */
+  .L10 { padding: 0; font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; }
+  .L10 .strip { background: var(--accent); color: var(--accent-fg); padding: 6px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .18em; display: flex; justify-content: space-between; }
+  .L10 .body { padding: 16px; }
+  .L10 .row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 10px; padding: 10px 0; border-top: 2px solid var(--fg); border-bottom: 2px solid var(--fg); }
+  .L10 .name { font-size: 12px; font-weight: 800; text-transform: uppercase; }
+  .L10 .score { font-size: 30px; font-weight: 900; }
+  .L10 .meta { display: flex; justify-content: space-between; font-size: 11px; margin-top: 10px; }
+  .L10 .meta b { background: var(--fg); color: var(--bg); padding: 2px 6px; }
+
+  /* helpers comunes */
+  .frame.hidden { display: none; }
+  .stat-bar {
+    display: flex;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .stat-bar span { padding: 2px 7px; border: 1px solid var(--border); border-radius: 8px; }
+</style>
+</head>
+<body>
+<header class="page">
+  <h1>100 plantillas · PRODE LOS PIBES</h1>
+  <p>10 paletas × 10 layouts. Cada card es el partido inaugural México vs Sudáfrica con un look distinto. Tocá una para verla más grande.</p>
+  <div class="controls">
+    <input id="q" type="search" placeholder="Filtrar por nombre (ej: glass, neón, mexico, brutal...)" />
+    <select id="filter-pal">
+      <option value="">Todas las paletas</option>
+    </select>
+    <select id="filter-layout">
+      <option value="">Todos los layouts</option>
+    </select>
+    <span id="count" style="margin-left:auto"></span>
+  </div>
+</header>
+
+<main class="grid" id="grid"></main>
+
+<script>
+const palettes = [
+  { id:'pal-1',  name:'Limpio claro',     hint:'blanco · verde · gris' },
+  { id:'pal-2',  name:'Noche cian',       hint:'oscuro · cian eléctrico' },
+  { id:'pal-3',  name:'Argentina',        hint:'celeste · blanco · dorado' },
+  { id:'pal-4',  name:'México',           hint:'crema · rojo · marrón' },
+  { id:'pal-5',  name:'Estadio verde',    hint:'césped · amarillo cancha' },
+  { id:'pal-6',  name:'Pastel rosa',      hint:'rosado · violeta · soft' },
+  { id:'pal-7',  name:'Carbón',           hint:'negro · rosa coral' },
+  { id:'pal-8',  name:'Periódico',        hint:'sepia · marrón · clásico' },
+  { id:'pal-9',  name:'Menta',            hint:'verde menta · agua · suave' },
+  { id:'pal-10', name:'Cyberpunk',        hint:'violeta · fucsia · cian neón' },
+];
+
+const layouts = [
+  { id:'L1',  name:'Row clásico',       hint:'fila simple, lo cercano a la app actual' },
+  { id:'L2',  name:'Card grande',       hint:'flags XL centradas, score destacado' },
+  { id:'L3',  name:'Minimal compacto',  hint:'lista densa estilo Apple Sport' },
+  { id:'L4',  name:'Hero gradiente',    hint:'gradiente vibrante, sport bold' },
+  { id:'L5',  name:'Estadio',           hint:'líneas de cancha, círculo central' },
+  { id:'L6',  name:'Periódico',         hint:'tipografía serif, estilo crónica' },
+  { id:'L7',  name:'Comic',             hint:'borde grueso, sombra dura, pop' },
+  { id:'L8',  name:'Glass',             hint:'glassmorphism, blur translúcido' },
+  { id:'L9',  name:'Neumórfico',        hint:'soft UI, sombras internas' },
+  { id:'L10', name:'Brutalist',         hint:'mono · alto contraste · sin radios' },
+];
+
+// Datos del partido inaugural
+const M = {
+  stage: 'Grupo A',
+  number: 1,
+  date: 'Jue 11/06',
+  time: '15:00',
+  home: { name: 'México',      flag: '🇲🇽', score: 2 },
+  away: { name: 'Sudáfrica',   flag: '🇿🇦', score: 1 },
+  status: 'Programado',
+  closesIn: '12d 3h',
+  pick: '2-1',
+};
+
+// Mock para hilera de partidos (L1, L3 muestran varios)
+const MORE = [
+  { home:{name:'México',flag:'🇲🇽'}, away:{name:'Sudáfrica',flag:'🇿🇦'}, time:'15:00', pick:'2-1' },
+  { home:{name:'Corea',flag:'🇰🇷'}, away:{name:'Chequia',flag:'🇨🇿'}, time:'19:00', pick:'' },
+  { home:{name:'Canadá',flag:'🇨🇦'}, away:{name:'Catar',flag:'🇶🇦'}, time:'21:00', pick:'1-1' },
+];
+
+function L1() {
+  return `
+    <div class="row">
+      <h3>${M.stage} · #${M.number}</h3>
+      ${MORE.map(m => `
+        <div class="row" style="margin-top:8px">
+          <div class="teams">
+            <div style="text-align:right">${m.home.flag} ${m.home.name}</div>
+            <div class="vs">vs</div>
+            <div>${m.away.flag} ${m.away.name}</div>
+          </div>
+          <div class="meta">
+            <span>${m.time}</span>
+            ${m.pick ? `<span class="badge">✓ ${m.pick}</span>` : `<span>sin pick</span>`}
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function L2() {
+  return `
+    <div class="card">
+      <h4>${M.stage} · ${M.date} ${M.time}</h4>
+      <div class="row">
+        <div>
+          <div class="emoji">${M.home.flag}</div>
+          <div class="name">${M.home.name}</div>
+        </div>
+        <div>
+          <div class="score">${M.home.score}-${M.away.score}</div>
+          <div class="badge">${M.status.toUpperCase()}</div>
+        </div>
+        <div>
+          <div class="emoji">${M.away.flag}</div>
+          <div class="name">${M.away.name}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function L3() {
+  return `
+    ${MORE.map(m => `
+      <div class="item">
+        <div class="time">${m.time}</div>
+        <div class="vs">${m.home.flag} ${m.home.name.slice(0,3).toUpperCase()} · ${m.away.name.slice(0,3).toUpperCase()} ${m.away.flag}</div>
+        <div class="pick">${m.pick || '—'}</div>
+      </div>
+    `).join('')}
+    <div class="item">
+      <div class="time">${M.time}</div>
+      <div class="vs">⏳ cierra en ${M.closesIn}</div>
+      <div class="pick">${M.pick}</div>
+    </div>`;
+}
+
+function L4() {
+  return `
+    <div class="hero">
+      <h3>${M.stage} · #${M.number} · ${M.date}</h3>
+      <div class="vs-row">
+        <div class="team">
+          <div class="emoji">${M.home.flag}</div>
+          <div class="team-name">${M.home.name}</div>
+        </div>
+        <div class="score">${M.home.score}-${M.away.score}</div>
+        <div class="team">
+          <div class="emoji">${M.away.flag}</div>
+          <div class="team-name">${M.away.name}</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <span>cierra en ${M.closesIn}</span>
+      <span>tu pick: ${M.pick}</span>
+    </div>`;
+}
+
+function L5() {
+  return `
+    <div class="pitch">
+      <div class="row">
+        <div class="team">
+          <div class="emoji">${M.home.flag}</div>
+          <div class="name">${M.home.name}</div>
+        </div>
+        <div class="score">${M.home.score}-${M.away.score}</div>
+        <div class="team">
+          <div class="emoji">${M.away.flag}</div>
+          <div class="name">${M.away.name}</div>
+        </div>
+      </div>
+    </div>
+    <div class="meta">
+      <span>${M.stage} · ${M.date} ${M.time}</span>
+      <span>pick: ${M.pick}</span>
+    </div>`;
+}
+
+function L6() {
+  return `
+    <h2>Edición Mundial · ${M.date}</h2>
+    <div class="lede">El balón rueda en el Azteca para la apertura del torneo.</div>
+    <div class="match">
+      <div class="team">${M.home.flag} ${M.home.name}<small>local · grupo a</small></div>
+      <div class="team" style="text-align:right">${M.away.name} ${M.away.flag}<small>visitante · grupo a</small></div>
+    </div>
+    <div class="footer">
+      <span>kickoff ${M.time}</span>
+      <span class="pick">tu pronóstico · ${M.pick}</span>
+    </div>`;
+}
+
+function L7() {
+  return `
+    <div class="card">
+      <div class="top">
+        <span>${M.stage} · #${M.number}</span>
+        <span class="badge">${M.status}</span>
+      </div>
+      <div class="row">
+        <div>
+          <div class="emoji">${M.home.flag}</div>
+          <div class="name">${M.home.name}</div>
+        </div>
+        <div class="score">${M.home.score}-${M.away.score}</div>
+        <div>
+          <div class="emoji">${M.away.flag}</div>
+          <div class="name">${M.away.name}</div>
+        </div>
+      </div>
+      <div class="bottom">
+        <span>📅 ${M.date} ${M.time}</span>
+        <span>🎯 pick ${M.pick}</span>
+      </div>
+    </div>`;
+}
+
+function L8() {
+  return `
+    <div class="card">
+      <div class="top">${M.stage} · ${M.date} ${M.time}</div>
+      <div class="row">
+        <div class="team">
+          <div class="emoji">${M.home.flag}</div>
+          <div class="name">${M.home.name}</div>
+        </div>
+        <div class="score">${M.home.score}-${M.away.score}</div>
+        <div class="team">
+          <div class="emoji">${M.away.flag}</div>
+          <div class="name">${M.away.name}</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span>cierra en ${M.closesIn}</span>
+        <span class="pill">pick ${M.pick}</span>
+      </div>
+    </div>`;
+}
+
+function L9() {
+  return `
+    <div class="card">
+      <div class="top">${M.stage} · #${M.number}</div>
+      <div class="row">
+        <div class="team">
+          <div class="emoji">${M.home.flag}</div>
+          <div class="name">${M.home.name}</div>
+        </div>
+        <div class="score">${M.home.score}-${M.away.score}</div>
+        <div class="team">
+          <div class="emoji">${M.away.flag}</div>
+          <div class="name">${M.away.name}</div>
+        </div>
+      </div>
+      <button class="btn">Editar pick · ${M.pick}</button>
+    </div>`;
+}
+
+function L10() {
+  return `
+    <div class="strip">
+      <span>${M.stage} / #${M.number}</span>
+      <span>${M.date} ${M.time}</span>
+    </div>
+    <div class="body">
+      <div class="row">
+        <div>
+          <div style="font-size:22px">${M.home.flag}</div>
+          <div class="name">${M.home.name}</div>
+        </div>
+        <div class="score">${M.home.score}–${M.away.score}</div>
+        <div style="text-align:right">
+          <div style="font-size:22px">${M.away.flag}</div>
+          <div class="name">${M.away.name}</div>
+        </div>
+      </div>
+      <div class="meta">
+        <span>STATUS · ${M.status.toUpperCase()}</span>
+        <b>PICK ${M.pick}</b>
+      </div>
+    </div>`;
+}
+
+const renderers = { L1, L2, L3, L4, L5, L6, L7, L8, L9, L10 };
+
+const grid = document.getElementById('grid');
+const filterPal = document.getElementById('filter-pal');
+const filterLayout = document.getElementById('filter-layout');
+const q = document.getElementById('q');
+const countEl = document.getElementById('count');
+
+palettes.forEach(p => {
+  const opt = document.createElement('option');
+  opt.value = p.id;
+  opt.textContent = p.name;
+  filterPal.appendChild(opt);
+});
+layouts.forEach(l => {
+  const opt = document.createElement('option');
+  opt.value = l.id;
+  opt.textContent = l.name;
+  filterLayout.appendChild(opt);
+});
+
+const frames = [];
+let n = 0;
+for (const palette of palettes) {
+  for (const layout of layouts) {
+    n += 1;
+    const frame = document.createElement('div');
+    frame.className = 'frame';
+    frame.dataset.palette = palette.id;
+    frame.dataset.layout = layout.id;
+    frame.dataset.search = (palette.name + ' ' + palette.hint + ' ' + layout.name + ' ' + layout.hint).toLowerCase();
+
+    frame.innerHTML = `
+      <div class="label">#${n.toString().padStart(3,'0')} · ${layout.name}</div>
+      <div class="palette">${palette.name}</div>
+      <div class="mock ${palette.id} ${layout.id}">${renderers[layout.id]()}</div>
+    `;
+    grid.appendChild(frame);
+    frames.push(frame);
+  }
+}
+
+function applyFilters() {
+  const palFilter = filterPal.value;
+  const layoutFilter = filterLayout.value;
+  const term = q.value.trim().toLowerCase();
+  let visible = 0;
+  for (const f of frames) {
+    const matchPal = !palFilter || f.dataset.palette === palFilter;
+    const matchLayout = !layoutFilter || f.dataset.layout === layoutFilter;
+    const matchTerm = !term || f.dataset.search.includes(term);
+    const show = matchPal && matchLayout && matchTerm;
+    f.classList.toggle('hidden', !show);
+    if (show) visible += 1;
+  }
+  countEl.textContent = visible + ' / ' + frames.length + ' visibles';
+}
+
+filterPal.addEventListener('change', applyFilters);
+filterLayout.addEventListener('change', applyFilters);
+q.addEventListener('input', applyFilters);
+applyFilters();
+</script>
+</body>
+</html>
