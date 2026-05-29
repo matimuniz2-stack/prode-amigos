@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv } from "@/lib/utils";
+import { cn, hasSupabaseEnv } from "@/lib/utils";
 import {
   displayStatus,
   matchSelect,
@@ -13,15 +14,6 @@ import { PrimaryButton } from "@/components/home/primary-button";
 import { StatCard } from "@/components/home/stat-card";
 import { SectionHeading } from "@/components/home/section-heading";
 import { MatchCard } from "@/components/home/match-card";
-import { BadgeChip } from "@/components/home/badge-chip";
-import { RankingPodium, RankingList } from "@/components/home/ranking";
-import { NewsFeed } from "@/components/home/news-feed";
-import {
-  DEMO_BADGES,
-  DEMO_NEWS,
-  DEMO_RANKING,
-  DEMO_STANDING,
-} from "@/lib/demo-data";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +36,7 @@ export default async function DashboardPage() {
   }
   const userId = claims.claims.sub as string;
 
-  // Próximos partidos reales (editables): para la sección "Próximos partidos".
+  // Próximos partidos reales (abiertos para pronosticar).
   const { data: matchesData } = await supabase
     .from("matches")
     .select(matchSelect)
@@ -59,27 +51,28 @@ export default async function DashboardPage() {
       (s === "upcoming" || s === "locking_soon") && m.home_team && m.away_team
     );
   });
-  const nextMatches = upcoming.slice(0, 3);
 
-  // Picks del usuario para esos partidos.
+  // Picks del usuario para esos partidos (para pre-cargar y contar pendientes).
   const picksByMatch = new Map<
     string,
     { predicted_home: number; predicted_away: number; is_auto_random: boolean }
   >();
-  if (nextMatches.length > 0) {
+  if (upcoming.length > 0) {
     const { data: picks } = await supabase
       .from("match_predictions")
       .select("match_id, predicted_home, predicted_away, is_auto_random")
       .eq("user_id", userId)
       .in(
         "match_id",
-        nextMatches.map((m) => m.id),
+        upcoming.map((m) => m.id),
       );
     for (const p of picks ?? []) {
       picksByMatch.set(p.match_id, p);
     }
   }
 
+  const sinCargar = upcoming.filter((m) => !picksByMatch.has(m.id)).length;
+  const nextMatches = upcoming.slice(0, 3);
   const nextMatch = upcoming[0] ?? null;
   const nextMatchLabel = nextMatch
     ? `${nextMatch.home_team?.name} vs ${nextMatch.away_team?.name}`
@@ -91,18 +84,24 @@ export default async function DashboardPage() {
 
       <PrimaryButton href="/matches">⚽ Hacer mis pronósticos</PrimaryButton>
 
-      {/* Resumen */}
+      {/* Resumen (todo data real) */}
       <div className="grid grid-cols-3 gap-2">
-        <StatCard emoji="🏆" label="Puesto actual">
-          Vas <span className="text-lg text-pitch">{DEMO_STANDING.position}°</span>{" "}
-          de {DEMO_STANDING.total}
-        </StatCard>
         <StatCard emoji="⚽" label="Próximo partido">
           <span className="line-clamp-2">{nextMatchLabel}</span>
         </StatCard>
-        <StatCard emoji="🔥" label="Racha">
-          <span className="text-lg text-pitch">{DEMO_STANDING.streak}</span>{" "}
-          pegados
+        <StatCard emoji="📋" label="Por jugar">
+          <span className="text-lg text-pitch">{upcoming.length}</span> partidos
+        </StatCard>
+        <StatCard emoji="🕒" label="Sin cargar">
+          <span
+            className={cn(
+              "text-lg",
+              sinCargar > 0 ? "text-cardred" : "text-grass",
+            )}
+          >
+            {sinCargar}
+          </span>{" "}
+          picks
         </StatCard>
       </div>
 
@@ -136,33 +135,14 @@ export default async function DashboardPage() {
             })}
           </div>
         )}
-      </section>
-
-      {/* Logros (mock) */}
-      <section className="flex animate-fade-up flex-col gap-3">
-        <SectionHeading tag="datos de ejemplo">Logros</SectionHeading>
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
-          {DEMO_BADGES.map((b) => (
-            <BadgeChip key={b.label} emoji={b.emoji} label={b.label} tone={b.tone} />
-          ))}
-        </div>
-      </section>
-
-      {/* Ranking (mock) */}
-      <section className="flex animate-fade-up flex-col gap-4">
-        <SectionHeading id="ranking" tag="datos de ejemplo">
-          Ranking
-        </SectionHeading>
-        <RankingPodium players={DEMO_RANKING} />
-        <RankingList players={DEMO_RANKING.filter((p) => p.rank > 3)} />
-      </section>
-
-      {/* Novedades (mock) */}
-      <section className="flex animate-fade-up flex-col gap-3">
-        <SectionHeading tag="datos de ejemplo">
-          💬 Últimas novedades
-        </SectionHeading>
-        <NewsFeed items={DEMO_NEWS} />
+        {upcoming.length > nextMatches.length && (
+          <Link
+            href="/matches"
+            className="text-center text-sm font-semibold text-gold hover:underline"
+          >
+            Ver los {upcoming.length} partidos →
+          </Link>
+        )}
       </section>
     </div>
   );
