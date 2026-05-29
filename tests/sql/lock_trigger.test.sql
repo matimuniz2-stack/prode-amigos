@@ -16,7 +16,9 @@
 --   * Seed 01_tournament + 02_teams + 03_matches_groups aplicado
 --     (necesitamos al menos 1 match real para anclar los kickoffs).
 
-\set ON_ERROR_STOP off
+-- Nota: \set ON_ERROR_STOP off (psql-only) eliminado para que el bloque
+-- corra desde el SQL Editor de Supabase. El DO block ya maneja sus
+-- propias excepciones con begin/exception/end.
 
 -- ============================================================================
 -- Setup: un usuario fake y un match con kickoff controlado por nosotros.
