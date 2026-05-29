@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 
 const SECTIONS = [
   { href: "/admin/results", emoji: "⚽", title: "Resultados", desc: "Cargar y finalizar partidos" },
+  { href: "/admin/globales", emoji: "🏆", title: "Globales", desc: "Resolver campeón, goleador, etc." },
   { href: "/admin/pool", emoji: "💰", title: "Pozo", desc: "Monto y reparto de premios" },
   { href: "/admin/audit", emoji: "📋", title: "Auditoría", desc: "Registro de cambios" },
 ];
