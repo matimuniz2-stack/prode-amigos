@@ -45,8 +45,9 @@ function PitchDoodles() {
 }
 
 /**
- * Contenedor mobile-first: centra el contenido en un ancho tipo app (480px)
- * y reserva espacio abajo para la BottomNav.
+ * Contenedor: en mobile, ancho tipo app (480px) con espacio para la
+ * BottomNav. En desktop (md+), columna central más ancha y sin la nav
+ * inferior (la navegación pasa a la TopNav).
  */
 export function AppShell({
   children,
@@ -60,7 +61,7 @@ export function AppShell({
       <PitchDoodles />
       <div
         className={cn(
-          "mx-auto flex min-h-svh w-full max-w-[480px] flex-col gap-6 px-4 pb-28 pt-6",
+          "mx-auto flex min-h-svh w-full max-w-[480px] flex-col gap-6 px-4 pb-28 pt-6 md:max-w-2xl md:px-6 md:pb-12",
           className,
         )}
       >

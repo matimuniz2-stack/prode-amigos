@@ -120,7 +120,7 @@ export default async function MatchesPage() {
               <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-cream/70">
                 {day.dayLabel}
               </h2>
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2.5 md:grid md:grid-cols-2 md:items-start">
                 {day.matches.map((m) => (
                   <MatchRow key={m.id} match={m} />
                 ))}

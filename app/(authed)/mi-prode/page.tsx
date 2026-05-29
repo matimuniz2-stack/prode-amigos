@@ -122,7 +122,7 @@ export default async function MiProdePage() {
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2.5 md:grid md:grid-cols-2 md:items-start">
           {allPicks.map((pick) => {
             const m = pick.match;
             if (!m) {
