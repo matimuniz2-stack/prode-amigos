@@ -88,6 +88,12 @@ export default async function DashboardPage() {
       <HeroHeader />
 
       <PrimaryButton href="/matches">⚽ Hacer mis pronósticos</PrimaryButton>
+      <Link
+        href="/reglas"
+        className="-mt-3 text-center text-sm font-semibold text-cream/70 hover:text-cream"
+      >
+        📖 Cómo se juega y los puntajes
+      </Link>
 
       {/* Resumen (todo data real) */}
       <div className="grid grid-cols-3 gap-2">

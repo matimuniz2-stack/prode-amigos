@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   title: "PRODE DE LOS PIBES · Mundial 2026",
   description:
     "Predicciones, cargadas y gloria eterna. Prode del Mundial 2026 entre amigos: picks por partido, ranking en vivo y pozo.",
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  appleWebApp: {
+    capable: true,
+    title: "Prode Pibes",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {

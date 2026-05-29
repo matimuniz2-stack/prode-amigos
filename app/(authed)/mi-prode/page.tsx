@@ -9,6 +9,7 @@ import {
   stageLabels,
 } from "@/lib/matches";
 import type { Database } from "@/lib/types/database";
+import { NicknameEditor } from "@/components/nickname-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,7 @@ export default async function MiProdePage() {
 
   const { data: myProfile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, nickname")
     .eq("id", userId)
     .maybeSingle();
   const isAdmin = myProfile?.role === "admin" || myProfile?.role === "owner";
@@ -105,6 +106,8 @@ export default async function MiProdePage() {
           </Link>
         )}
       </header>
+
+      <NicknameEditor initial={myProfile?.nickname ?? ""} />
 
       {allPicks.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-cream/20 p-8 text-center">
