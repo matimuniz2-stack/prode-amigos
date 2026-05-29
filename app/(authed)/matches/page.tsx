@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/utils";
-import { MatchCard } from "@/components/match-card";
+import { MatchRow } from "@/components/match-row";
 import {
+  displayStatus,
   groupMatchesByDay,
   matchSelect,
   type MatchWithPick,
@@ -58,26 +59,59 @@ export default async function MatchesPage() {
     user_pick: picksByMatch.get(m.id) ?? null,
   }));
 
-  const days = groupMatchesByDay(matchesWithPicks);
+  const now = Date.now();
+  const counters = { done: 0, pending: 0, closed: 0, pendingBracket: 0 };
+  for (const m of matchesWithPicks) {
+    const s = displayStatus(m, now);
+    if (s === "pending_bracket") {
+      counters.pendingBracket += 1;
+      continue;
+    }
+    if (s === "void") continue;
+    if (m.user_pick) counters.done += 1;
+    else if (s === "upcoming" || s === "locking_soon") counters.pending += 1;
+    else counters.closed += 1;
+  }
 
-  const totalPicks = picksByMatch.size;
-  const lockableMatches = matchesWithPicks.filter(
-    (m) =>
-      m.status === "scheduled" &&
-      new Date(m.lock_at).getTime() > Date.now() &&
-      m.home_team_id !== null,
-  );
+  const days = groupMatchesByDay(matchesWithPicks);
 
   return (
     <div className="flex flex-col gap-6 py-6">
-      <header className="flex flex-col gap-2">
+      <header className="flex flex-col gap-3">
         <h1 className="text-2xl font-bold tracking-tight">Partidos</h1>
-        <p className="text-sm text-muted-foreground">
-          {totalPicks} pick{totalPicks === 1 ? "" : "s"} cargado
-          {totalPicks === 1 ? "" : "s"} · {lockableMatches.length} partido
-          {lockableMatches.length === 1 ? "" : "s"} aún abierto
-          {lockableMatches.length === 1 ? "" : "s"}.
-        </p>
+        <div className="grid grid-cols-3 gap-2 sm:max-w-md">
+          <div className="border rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold tabular-nums text-green-600 dark:text-green-400">
+              {counters.done}
+            </div>
+            <div className="text-xs text-muted-foreground">hechos</div>
+          </div>
+          <div className="border rounded-lg p-3 text-center">
+            <div
+              className={`text-2xl font-bold tabular-nums ${
+                counters.pending > 0
+                  ? "text-amber-600 dark:text-amber-400"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {counters.pending}
+            </div>
+            <div className="text-xs text-muted-foreground">pendientes</div>
+          </div>
+          <div className="border rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold tabular-nums text-muted-foreground">
+              {counters.closed}
+            </div>
+            <div className="text-xs text-muted-foreground">cerrados</div>
+          </div>
+        </div>
+        {counters.pendingBracket > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {counters.pendingBracket} partido
+            {counters.pendingBracket === 1 ? "" : "s"} de eliminación con cruce
+            pendiente — se habilitan cuando se resuelva la ronda anterior.
+          </p>
+        )}
       </header>
 
       {days.length === 0 ? (
@@ -85,15 +119,15 @@ export default async function MatchesPage() {
           Todavía no hay partidos cargados.
         </p>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
           {days.map((day) => (
-            <section key={day.dayKey} className="flex flex-col gap-3">
+            <section key={day.dayKey} className="flex flex-col gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 {day.dayLabel}
               </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
                 {day.matches.map((m) => (
-                  <MatchCard key={m.id} match={m} />
+                  <MatchRow key={m.id} match={m} />
                 ))}
               </div>
             </section>
