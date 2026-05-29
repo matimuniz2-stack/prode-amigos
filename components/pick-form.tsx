@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
 import { Countdown } from "@/components/countdown";
 import { submitPick } from "@/app/(authed)/matches/[matchId]/actions";
-import { cn } from "@/lib/utils";
 
 interface PickFormProps {
   matchId: string;
@@ -31,32 +29,32 @@ function Stepper({
   disabled: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-2">
-        <Button
+    <div className="flex flex-1 flex-col items-center gap-2">
+      <span className="text-center text-sm font-semibold text-ink/70">
+        {label}
+      </span>
+      <div className="flex items-center gap-2.5">
+        <button
           type="button"
-          variant="outline"
-          size="icon"
           onClick={() => setValue(Math.max(0, value - 1))}
           disabled={disabled || value <= 0}
           aria-label={`Restar gol a ${label}`}
+          className="grid size-9 place-items-center rounded-full bg-pitch text-xl font-bold text-cream transition-transform active:scale-90 disabled:opacity-30"
         >
           −
-        </Button>
-        <span className="w-12 text-center text-3xl font-bold tabular-nums">
+        </button>
+        <span className="w-10 text-center text-3xl font-black tabular-nums text-ink">
           {value}
         </span>
-        <Button
+        <button
           type="button"
-          variant="outline"
-          size="icon"
           onClick={() => setValue(Math.min(20, value + 1))}
           disabled={disabled || value >= 20}
           aria-label={`Sumar gol a ${label}`}
+          className="grid size-9 place-items-center rounded-full bg-pitch text-xl font-bold text-cream transition-transform active:scale-90 disabled:opacity-30"
         >
           +
-        </Button>
+        </button>
       </div>
     </div>
   );
@@ -82,7 +80,11 @@ export function PickForm({
   const [lockedClient, setLockedClient] = useState(false);
 
   const winnerLabel =
-    home > away ? `Gana ${homeTeamName}` : home < away ? `Gana ${awayTeamName}` : "Empate";
+    home > away
+      ? `Gana ${homeTeamName}`
+      : home < away
+        ? `Gana ${awayTeamName}`
+        : "Empate";
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -107,15 +109,15 @@ export function PickForm({
   const disabled = isPending || lockedClient;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div className="flex items-center justify-around gap-2">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="flex items-start justify-around gap-2">
         <Stepper
           label={`${homeFlag ?? "🏳️"} ${homeTeamName}`}
           value={home}
           setValue={setHome}
           disabled={disabled}
         />
-        <span className="text-2xl text-muted-foreground">-</span>
+        <span className="mt-9 text-2xl font-black text-ink/30">-</span>
         <Stepper
           label={`${awayFlag ?? "🏳️"} ${awayTeamName}`}
           value={away}
@@ -124,27 +126,29 @@ export function PickForm({
         />
       </div>
 
-      <p className={cn("text-center text-sm font-medium")}>{winnerLabel}</p>
+      <p className="text-center text-sm font-semibold text-ink">{winnerLabel}</p>
 
-      <div className="text-center text-xs text-muted-foreground">
+      <div className="text-center text-xs text-ink/55">
         Cierra en <Countdown target={lockAt} />
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400 text-center">
-          {error}
-        </p>
+        <p className="text-center text-sm font-semibold text-cardred">{error}</p>
       )}
       {success && (
-        <p className="text-sm text-green-600 dark:text-green-400 text-center">
+        <p className="text-center text-sm font-semibold text-grass">
           {success}
           {isAutoRandom && hasPick && " (sobrescribí el pick auto-random)"}
         </p>
       )}
 
-      <Button type="submit" size="lg" disabled={disabled} className="w-full">
+      <button
+        type="submit"
+        disabled={disabled}
+        className="w-full rounded-full bg-pitch px-4 py-3 text-sm font-bold text-cream shadow-sm transition-all hover:bg-pitch-deep active:scale-[0.98] disabled:opacity-50"
+      >
         {isPending ? "Guardando..." : hasPick ? "Actualizar pick" : "Guardar pick"}
-      </Button>
+      </button>
     </form>
   );
 }

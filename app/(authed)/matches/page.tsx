@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv } from "@/lib/utils";
+import { cn, hasSupabaseEnv } from "@/lib/utils";
 import { MatchRow } from "@/components/match-row";
+import { StatCard } from "@/components/home/stat-card";
 import {
   displayStatus,
   groupMatchesByDay,
@@ -34,8 +35,10 @@ export default async function MatchesPage() {
   if (matchesError) {
     return (
       <div className="py-12">
-        <h1 className="text-2xl font-bold mb-2">No pude leer los partidos</h1>
-        <pre className="text-xs text-red-500">{matchesError.message}</pre>
+        <h1 className="mb-2 text-2xl font-bold text-cream">
+          No pude leer los partidos
+        </h1>
+        <pre className="text-xs text-cardred">{matchesError.message}</pre>
       </div>
     );
   }
@@ -76,37 +79,29 @@ export default async function MatchesPage() {
   const days = groupMatchesByDay(matchesWithPicks);
 
   return (
-    <div className="flex flex-col gap-6 py-6">
-      <header className="flex flex-col gap-3">
-        <h1 className="text-2xl font-bold tracking-tight">Partidos</h1>
-        <div className="grid grid-cols-3 gap-2 sm:max-w-md">
-          <div className="border rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold tabular-nums text-green-600 dark:text-green-400">
-              {counters.done}
-            </div>
-            <div className="text-xs text-muted-foreground">hechos</div>
-          </div>
-          <div className="border rounded-lg p-3 text-center">
-            <div
-              className={`text-2xl font-bold tabular-nums ${
-                counters.pending > 0
-                  ? "text-amber-600 dark:text-amber-400"
-                  : "text-muted-foreground"
-              }`}
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-4 pt-1">
+        <h1 className="text-display text-3xl text-cream">Partidos</h1>
+        <div className="grid grid-cols-3 gap-2">
+          <StatCard emoji="✅" label="Hechos">
+            <span className="text-2xl text-grass">{counters.done}</span>
+          </StatCard>
+          <StatCard emoji="🕒" label="Pendientes">
+            <span
+              className={cn(
+                "text-2xl",
+                counters.pending > 0 ? "text-cardred" : "text-ink/40",
+              )}
             >
               {counters.pending}
-            </div>
-            <div className="text-xs text-muted-foreground">pendientes</div>
-          </div>
-          <div className="border rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold tabular-nums text-muted-foreground">
-              {counters.closed}
-            </div>
-            <div className="text-xs text-muted-foreground">cerrados</div>
-          </div>
+            </span>
+          </StatCard>
+          <StatCard emoji="🔒" label="Cerrados">
+            <span className="text-2xl text-ink/40">{counters.closed}</span>
+          </StatCard>
         </div>
         {counters.pendingBracket > 0 && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-cream/60">
             {counters.pendingBracket} partido
             {counters.pendingBracket === 1 ? "" : "s"} de eliminación con cruce
             pendiente — se habilitan cuando se resuelva la ronda anterior.
@@ -115,17 +110,17 @@ export default async function MatchesPage() {
       </header>
 
       {days.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-cream/70">
           Todavía no hay partidos cargados.
         </p>
       ) : (
         <div className="flex flex-col gap-6">
           {days.map((day) => (
-            <section key={day.dayKey} className="flex flex-col gap-2">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <section key={day.dayKey} className="flex flex-col gap-2.5">
+              <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-cream/70">
                 {day.dayLabel}
               </h2>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2.5">
                 {day.matches.map((m) => (
                   <MatchRow key={m.id} match={m} />
                 ))}

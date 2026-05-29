@@ -4,13 +4,6 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export function LoginForm({
   className,
@@ -42,34 +35,42 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Entrar al prode</CardTitle>
-          <CardDescription>
+      {/* Branding */}
+      <div className="flex flex-col items-center text-center">
+        <span aria-hidden className="text-4xl leading-none">
+          ⚽
+        </span>
+        <div className="mt-1 text-display leading-[0.85]">
+          <span className="block text-3xl text-cream text-shadow-pop">
+            PRODE
+          </span>
+          <span className="block text-3xl text-gold">DE LOS PIBES</span>
+        </div>
+      </div>
+
+      {/* Card */}
+      <div className="flex flex-col gap-4 rounded-2xl bg-cream p-6 text-ink shadow-card ring-1 ring-black/5">
+        <div>
+          <h1 className="text-xl font-extrabold">Entrar al prode</h1>
+          <p className="mt-1 text-sm text-ink/60">
             Iniciá sesión con tu cuenta de Google para cargar tus picks del
             Mundial 2026.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <Button
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              className="w-full"
-              size="lg"
-            >
-              {isLoading ? "Conectando..." : "Continuar con Google"}
-            </Button>
-            {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
-            )}
-            <p className="text-xs text-muted-foreground text-center">
-              Solo por invitación. Si tu email no fue agregado al grupo, no vas
-              a poder entrar.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </p>
+        </div>
+        <Button
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+          className="w-full"
+          size="lg"
+        >
+          {isLoading ? "Conectando..." : "Continuar con Google"}
+        </Button>
+        {error && <p className="text-center text-sm text-cardred">{error}</p>}
+        <p className="text-center text-xs text-ink/50">
+          Solo por invitación. Si tu email no fue agregado al grupo, no vas a
+          poder entrar.
+        </p>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Countdown } from "@/components/countdown";
 import { PickForm } from "@/components/pick-form";
 import {
@@ -14,22 +13,22 @@ import {
 import { cn } from "@/lib/utils";
 
 function StatusBadge({ status }: { status: ReturnType<typeof displayStatus> }) {
+  const base =
+    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold";
   switch (status) {
     case "pending_bracket":
-      return <Badge variant="outline">Pendiente</Badge>;
+      return <span className={cn(base, "bg-ink/10 text-ink/60")}>Pendiente</span>;
     case "live":
-      return (
-        <Badge className="bg-red-600 hover:bg-red-600 text-white">EN VIVO</Badge>
-      );
+      return <span className={cn(base, "bg-cardred text-white")}>EN VIVO</span>;
     case "finished":
-      return <Badge variant="secondary">Final</Badge>;
+      return <span className={cn(base, "bg-ink/10 text-ink/70")}>Final</span>;
     case "void":
-      return <Badge variant="outline">Anulado</Badge>;
+      return <span className={cn(base, "bg-ink/10 text-ink/50")}>Anulado</span>;
     case "locking_soon":
       return (
-        <Badge className="bg-amber-500 hover:bg-amber-500 text-white">
+        <span className={cn(base, "bg-amber-400/25 text-amber-700")}>
           Cierra pronto
-        </Badge>
+        </span>
       );
     default:
       return null;
@@ -48,21 +47,21 @@ function TeamSide({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 min-w-0",
+        "flex min-w-0 items-center gap-2",
         align === "right" && "justify-end",
       )}
     >
       {align === "left" ? (
         <>
-          <span className="text-xl" aria-hidden>
+          <span className="text-2xl leading-none" aria-hidden>
             {flag ?? "🏳️"}
           </span>
-          <span className="font-medium truncate">{name}</span>
+          <span className="truncate font-bold text-ink">{name}</span>
         </>
       ) : (
         <>
-          <span className="font-medium truncate">{name}</span>
-          <span className="text-xl" aria-hidden>
+          <span className="truncate text-right font-bold text-ink">{name}</span>
+          <span className="text-2xl leading-none" aria-hidden>
             {flag ?? "🏳️"}
           </span>
         </>
@@ -86,8 +85,8 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
   return (
     <div
       className={cn(
-        "border rounded-lg overflow-hidden transition-colors",
-        open && "ring-1 ring-foreground/10",
+        "overflow-hidden rounded-2xl bg-cream text-ink shadow-card ring-1 ring-black/5 transition-all",
+        open && "ring-2 ring-gold/60",
         isPending && "opacity-70",
       )}
     >
@@ -96,14 +95,14 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
         onClick={() => canExpand && setOpen((o) => !o)}
         disabled={!canExpand}
         className={cn(
-          "w-full text-left p-3 flex flex-col gap-1",
-          canExpand && "hover:bg-accent/40 cursor-pointer",
+          "flex w-full flex-col gap-1.5 p-3.5 text-left",
+          canExpand && "cursor-pointer",
         )}
         aria-expanded={open}
       >
-        {/* Top row: stage label + status + chevron */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
+        {/* Top: etapa + hora + estado + chevron */}
+        <div className="flex items-center justify-between text-xs text-ink/50">
+          <span className="font-semibold uppercase tracking-wide">
             {match.stage?.code === "group" && match.group?.code
               ? `Grupo ${match.group.code}`
               : (match.stage && stageLabels[match.stage.code]) ?? "Partido"}
@@ -115,7 +114,7 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
             {canExpand && (
               <span
                 className={cn(
-                  "transition-transform text-muted-foreground",
+                  "text-ink/40 transition-transform",
                   open && "rotate-180",
                 )}
                 aria-hidden
@@ -126,25 +125,26 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
           </div>
         </div>
 
-        {/* Main row: teams + score/pick */}
+        {/* Main: equipos + marcador/pick */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <TeamSide
             flag={match.home_team?.flag_emoji ?? null}
             name={homeName}
             align="left"
           />
-          <div className="flex flex-col items-center min-w-[3.5rem]">
+          <div className="flex min-w-[3.5rem] flex-col items-center">
             {match.score_home !== null && match.score_away !== null ? (
-              <span className="text-lg font-bold tabular-nums">
+              <span className="text-lg font-black tabular-nums">
                 {match.score_home} - {match.score_away}
               </span>
             ) : hasPick && !isPending ? (
-              <span className="text-sm tabular-nums text-green-600 dark:text-green-400">
-                {match.user_pick!.predicted_home}-{match.user_pick!.predicted_away}
+              <span className="text-sm font-bold tabular-nums text-grass">
+                {match.user_pick!.predicted_home}-
+                {match.user_pick!.predicted_away}
                 {match.user_pick!.is_auto_random && " 🎲"}
               </span>
             ) : (
-              <span className="text-xs text-muted-foreground">vs</span>
+              <span className="text-xs text-ink/40">vs</span>
             )}
           </div>
           <TeamSide
@@ -154,9 +154,9 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
           />
         </div>
 
-        {/* Bottom row: countdown or pick state */}
+        {/* Bottom: estado del pick + countdown */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">
+          <span className="text-ink/55">
             {isPending
               ? "Definiendo cruce..."
               : hasPick
@@ -168,52 +168,51 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
                   : "sin pick todavía"}
           </span>
           {!isLocked && !isPending && !isVoid && (
-            <span className="text-muted-foreground">
+            <span className="text-ink/55">
               cierra en <Countdown target={match.lock_at} />
             </span>
           )}
         </div>
       </button>
 
-      {/* Expanded body */}
+      {/* Cuerpo expandido */}
       {open && canExpand && (
-        <div className="border-t p-4 bg-muted/20">
+        <div className="border-t border-ink/10 bg-ink/[0.03] p-4">
           {isPending ? (
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-center text-sm text-ink/60">
               Cuando termine la fase previa y se defina el cruce vas a poder
               cargar tu pick.
             </p>
           ) : isLocked ? (
-            <div className="flex flex-col gap-2 text-sm">
+            <div className="flex flex-col gap-2 text-sm text-ink">
               {hasPick ? (
                 <p>
                   Tu pick fue{" "}
-                  <span className="font-bold tabular-nums">
-                    {match.user_pick!.predicted_home}-{match.user_pick!.predicted_away}
+                  <span className="font-black tabular-nums">
+                    {match.user_pick!.predicted_home}-
+                    {match.user_pick!.predicted_away}
                   </span>
                   {match.user_pick!.is_auto_random && (
-                    <span className="text-muted-foreground"> (auto-random)</span>
+                    <span className="text-ink/55"> (auto-random)</span>
                   )}
                   .
                 </p>
               ) : (
-                <p className="text-muted-foreground">
-                  No cargaste pick antes del cierre.
-                </p>
+                <p className="text-ink/60">No cargaste pick antes del cierre.</p>
               )}
               {status === "finished" &&
                 match.score_home !== null &&
                 match.score_away !== null && (
                   <p>
                     Final:{" "}
-                    <span className="font-bold tabular-nums">
+                    <span className="font-black tabular-nums">
                       {match.score_home}-{match.score_away}
                     </span>
                   </p>
                 )}
               <Link
                 href={`/matches/${match.id}`}
-                className="text-xs underline text-muted-foreground hover:text-foreground"
+                className="text-xs font-semibold text-ink/55 underline hover:text-ink"
               >
                 ver detalle del partido
               </Link>
