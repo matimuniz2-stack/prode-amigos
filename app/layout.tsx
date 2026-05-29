@@ -9,7 +9,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Prode entre amigos · Mundial 2026",
+  title: "PRODE LOS PIBES · Mundial 2026",
   description:
     "Predicciones del Mundial 2026 entre amigos. Picks por partido, globales, ranking en vivo y pozo.",
 };

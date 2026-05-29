@@ -13,7 +13,7 @@ export default function DashboardLayout({
       <nav className="w-full border-b border-foreground/10">
         <div className="max-w-5xl mx-auto flex justify-between items-center p-3 px-5">
           <Link href="/dashboard" className="font-semibold text-sm">
-            Prode · Mundial 2026
+            PRODE LOS PIBES
           </Link>
           <Suspense fallback={null}>
             <AuthButton />
@@ -22,7 +22,7 @@ export default function DashboardLayout({
       </nav>
       <div className="flex-1 max-w-5xl w-full mx-auto p-5">{children}</div>
       <footer className="w-full border-t text-xs flex items-center justify-center gap-4 py-4 text-muted-foreground">
-        <span>Prode entre amigos · 2026</span>
+        <span>PRODE LOS PIBES · 2026</span>
         <ThemeSwitcher />
       </footer>
     </main>

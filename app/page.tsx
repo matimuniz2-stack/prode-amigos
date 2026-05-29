@@ -19,7 +19,7 @@ export default async function Home() {
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="max-w-md w-full flex flex-col gap-6 text-center">
           <h1 className="text-3xl font-bold tracking-tight">
-            Prode entre amigos
+            PRODE LOS PIBES
           </h1>
           <p className="text-lg font-medium text-muted-foreground">
             Mundial 2026
@@ -43,7 +43,7 @@ export default async function Home() {
         </div>
       </div>
       <footer className="w-full border-t text-xs flex items-center justify-center gap-4 py-4 text-muted-foreground">
-        <span>Prode entre amigos · 2026</span>
+        <span>PRODE LOS PIBES · 2026</span>
         <ThemeSwitcher />
       </footer>
     </main>
