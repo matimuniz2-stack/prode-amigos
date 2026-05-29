@@ -61,7 +61,7 @@ export function AppShell({
       <PitchDoodles />
       <div
         className={cn(
-          "mx-auto flex min-h-svh w-full max-w-[480px] flex-col gap-6 px-4 pb-28 pt-6 md:max-w-2xl md:px-6 md:pb-12",
+          "mx-auto flex min-h-svh w-full max-w-[480px] flex-col gap-6 px-4 pb-28 pt-6 md:max-w-2xl md:px-6 md:pb-12 lg:max-w-[1180px]",
           className,
         )}
       >

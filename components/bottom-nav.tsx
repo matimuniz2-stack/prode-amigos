@@ -16,7 +16,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 lg:hidden">
       <div className="mx-auto max-w-[480px]">
         <div className="flex items-stretch justify-around rounded-t-[1.75rem] bg-cream px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-ink shadow-[0_-10px_30px_-12px_rgba(0,0,0,0.5)]">
           {ITEMS.map(({ href, label, icon: Icon, soon }) => {
