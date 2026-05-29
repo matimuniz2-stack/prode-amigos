@@ -41,23 +41,54 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
+        // Paleta cancha (acceso directo, además del mapeo de tokens)
+        pitch: {
+          DEFAULT: "#0B3D2E",
+          deep: "#06281F",
         },
+        cream: "#F8F5EA",
+        gold: "#FFD23F",
+        ink: "#111827",
+        cardred: "#E63946",
+        grass: "#16A34A",
+      },
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+      },
+      boxShadow: {
+        soft: "0 8px 24px -8px rgba(0, 0, 0, 0.35)",
+        card: "0 10px 30px -12px rgba(0, 0, 0, 0.45)",
+      },
+      keyframes: {
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        pop: {
+          "0%": { transform: "scale(0.96)" },
+          "60%": { transform: "scale(1.03)" },
+          "100%": { transform: "scale(1)" },
+        },
+      },
+      animation: {
+        "fade-up": "fade-up 0.4s ease-out both",
+        pop: "pop 0.3s ease-out",
       },
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- plugin sin export ESM; require es lo idiomático en configs de Tailwind
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

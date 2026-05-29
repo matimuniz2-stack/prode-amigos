@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/utils";
 
@@ -43,8 +42,7 @@ export default async function Home() {
         </div>
       </div>
       <footer className="w-full border-t text-xs flex items-center justify-center gap-4 py-4 text-muted-foreground">
-        <span>PRODE LOS PIBES · 2026</span>
-        <ThemeSwitcher />
+        <span>PRODE DE LOS PIBES · 2026</span>
       </footer>
     </main>
   );
