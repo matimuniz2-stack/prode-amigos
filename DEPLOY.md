@@ -4,19 +4,18 @@ Todo el código está en producción (rama `main`). Lo que falta solo se puede
 hacer desde tus cuentas de **Supabase** y **Google** (Claude no tiene acceso).
 Orden recomendado:
 
-## 1. Aplicar migraciones en Supabase
-En la terminal del proyecto:
+## 1. Migraciones en Supabase — ✅ HECHO (2026-05-30)
+Las 9 migraciones (`0017`→`0025`) se **aplicaron y verificaron en producción**
+(vía SQL Editor del dashboard). `schema_migrations` quedó sincronizada. Nada que hacer acá.
+
+**Único pendiente OPCIONAL** — regenerar los tipos TS (no bloquea: el código anda con casts):
 
 ```bash
 npx supabase login                                   # token de supabase.com/dashboard/account/tokens
 npx supabase link --project-ref bhfsibyipezufgzxqaxm
-npx supabase db push                                 # aplica TODAS las pendientes: 0017 tags · 0018 bracket · 0019 resolve_brackets · 0020 fix scoring KO · 0021 auto-random solo participantes · 0022 visibilidad · 0023 borrar globales · 0024 cerrar picks 5 min antes · 0025 terceros con validación
 npx supabase gen types typescript --linked > lib/types/database.ts
 git add lib/types/database.ts && git commit -m "chore: regen tipos" && git push
 ```
-
-> El último paso destraba el cableado de las **etiquetas** de jugadores.
-> Avisá para terminarlas (editor en `/admin/participants` + chips en el ranking).
 
 ## 2. Verificar el cron de cierre (crítico para el 11-jun)
 SQL Editor del dashboard de Supabase:
@@ -43,13 +42,13 @@ Supabase → **Authentication → Settings**:
 - **Antes de invitar**: sacar los logros/novedades de ejemplo del dashboard (`lib/demo-data.ts`).
 - Mandar el link `https://www.prodelospibes.com` por WhatsApp.
 
-## Fixes de auditoría (entran con el `db push` de arriba)
-Las migraciones 0020-0023 corrigen bugs reales encontrados en la auditoría:
-scoring de eliminación (acertar quién pasa por penales) + recalcular bien,
-auto-random solo a participantes reales (no a todo el que se logueó),
-visibilidad de picks por status del partido, y poder des-apostar globales.
-Probar después del push (sobre todo cargar un pick de KO empatado → elegir
-quién pasa, y finalizar/recalcular).
+## Fixes de auditoría — ✅ APLICADOS en prod (2026-05-30)
+Las migraciones 0017-0025 corrigieron los bugs de la auditoría: scoring de
+eliminación (acertar quién pasa por penales) + recalcular bien, auto-random
+solo a participantes reales, visibilidad de picks por status, des-apostar
+globales, lock −5min y terceros validados. **FALTA TESTEAR** (sobre todo:
+cargar un pick de KO empatado → elegir quién pasa, finalizar un grupo y ver
+los puntos, recalcular, y que el ranking no liste a un colado).
 
 ## Decisiones tomadas
 - **Los picks cierran 5 min antes del kickoff** (migración 0024) — más anti-trampa.
