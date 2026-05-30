@@ -43,7 +43,7 @@ export default async function ReglasPage() {
     .filter((r) => r.points != null);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <SectionHeading className="pt-1">Cómo se juega</SectionHeading>
 
       <div className="rounded-2xl bg-cream p-4 text-sm leading-relaxed text-ink shadow-card ring-1 ring-black/5">

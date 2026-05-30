@@ -35,7 +35,7 @@ export default async function AdminPoolPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
       <div className="flex items-center justify-between gap-2 pt-1">
         <SectionHeading>Pozo</SectionHeading>
         <Link

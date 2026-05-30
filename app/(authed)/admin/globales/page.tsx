@@ -40,7 +40,7 @@ export default async function AdminGlobalesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
       <div className="flex items-center justify-between gap-2 pt-1">
         <SectionHeading>Globales</SectionHeading>
         <Link

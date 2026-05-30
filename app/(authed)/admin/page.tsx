@@ -42,7 +42,7 @@ export default async function AdminPage() {
     .eq("status", "live");
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
       <SectionHeading className="pt-1">Panel admin</SectionHeading>
 
       <div className="rounded-2xl bg-cream p-4 text-ink shadow-card ring-1 ring-black/5">

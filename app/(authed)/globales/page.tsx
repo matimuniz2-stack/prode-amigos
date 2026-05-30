@@ -65,7 +65,7 @@ export default async function GlobalesPage() {
   const locked = new Date(tournament.globals_lock_at).getTime() <= Date.now();
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
       <header className="flex flex-col gap-2 pt-1">
         <SectionHeading>Globales</SectionHeading>
         <p className="text-sm text-cream/70">

@@ -62,7 +62,7 @@ export default async function MatchDetailPage({
     : "";
 
   return (
-    <div className="flex flex-col gap-6 pt-1">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 pt-1">
       <Link
         href="/matches"
         className="text-xs font-semibold text-cream/70 hover:text-cream"

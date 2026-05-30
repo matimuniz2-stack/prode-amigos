@@ -92,7 +92,7 @@ export default async function LeaderboardPage() {
   const rest = hasScores ? standings.slice(3) : standings;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <AutoRefresh seconds={30} />
 
       <SectionHeading className="pt-1">Ranking</SectionHeading>
