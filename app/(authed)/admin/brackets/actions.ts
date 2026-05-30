@@ -48,23 +48,17 @@ export async function assignThirds(
   }
 
   const supabase = await createClient();
-  for (const a of filled) {
-    const { error } = await supabase
-      .from("matches")
-      .update({ away_team_id: a.teamId })
-      .eq("tournament_id", TOURNAMENT_ID)
-      .eq("match_number", a.matchNumber);
-    if (error) return { ok: false, error: friendly(error.message) };
-  }
-
-  const { error: rbErr } = await supabase.rpc(
-    "resolve_brackets" as never,
+  const { error } = await supabase.rpc(
+    "resolve_thirds" as never,
     {
-      p_tournament_id: TOURNAMENT_ID,
+      p_assignments: filled.map((a) => ({
+        match: a.matchNumber,
+        team: a.teamId,
+      })),
       p_reason: reason.trim() || "Asignación de terceros",
     } as never,
   );
-  if (rbErr) return { ok: false, error: friendly(rbErr.message) };
+  if (error) return { ok: false, error: friendly(error.message) };
 
   revalidatePath("/admin/brackets");
   revalidatePath("/matches");

@@ -10,7 +10,7 @@ En la terminal del proyecto:
 ```bash
 npx supabase login                                   # token de supabase.com/dashboard/account/tokens
 npx supabase link --project-ref bhfsibyipezufgzxqaxm
-npx supabase db push                                 # aplica TODAS las pendientes: 0017 tags · 0018 bracket · 0019 resolve_brackets · 0020 fix scoring KO · 0021 auto-random solo participantes · 0022 visibilidad · 0023 borrar globales · 0024 cerrar picks 5 min antes
+npx supabase db push                                 # aplica TODAS las pendientes: 0017 tags · 0018 bracket · 0019 resolve_brackets · 0020 fix scoring KO · 0021 auto-random solo participantes · 0022 visibilidad · 0023 borrar globales · 0024 cerrar picks 5 min antes · 0025 terceros con validación
 npx supabase gen types typescript --linked > lib/types/database.ts
 git add lib/types/database.ts && git commit -m "chore: regen tipos" && git push
 ```
