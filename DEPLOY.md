@@ -17,15 +17,10 @@ npx supabase gen types typescript --linked > lib/types/database.ts
 git add lib/types/database.ts && git commit -m "chore: regen tipos" && git push
 ```
 
-## 2. Verificar el cron de cierre (crítico para el 11-jun)
-SQL Editor del dashboard de Supabase:
-
-```sql
-select jobname, schedule, active from cron.job;
-```
-
-Debe aparecer `lock_due_predictions` con schedule `* * * * *` y `active = true`.
-Ese cron cierra los picks al kickoff y arma el pick al azar de los que no cargaron.
+## 2. Cron de cierre — ✅ VERIFICADO (2026-05-30)
+`lock_due_predictions` está **activo** con schedule `* * * * *` (cada minuto).
+Cierra los picks al kickoff y arma el pick al azar de los participantes que no
+cargaron. Verificado con `select jobname, schedule, active from cron.job;`.
 
 ## 3. Que no pida login seguido
 Supabase → **Authentication → Settings**:
