@@ -86,30 +86,43 @@ export async function submitGlobals(input: GlobalsInput): Promise<Result> {
     }
   }
 
-  if (rows.length === 0) {
-    return {
-      ok: false,
-      error: "Completá al menos una categoría antes de guardar.",
-    };
+  // Categorías que el usuario dejó vacías → se borran (des-apostar), así no
+  // queda la apuesta vieja fantasma.
+  const ALL_CATS = ["champion", "runner_up", "top_scorer", "mvp", "revelation"];
+  const filledCats = rows.map((r) => r.category);
+  const emptyCats = ALL_CATS.filter((c) => !filledCats.includes(c));
+
+  if (emptyCats.length > 0) {
+    const { error: delErr } = await supabase
+      .from("global_predictions")
+      .delete()
+      .eq("user_id", userId)
+      .eq("tournament_id", tournament.id)
+      .in("category", emptyCats);
+    if (delErr) {
+      return { ok: false, error: delErr.message };
+    }
   }
 
-  const { error } = await supabase
-    .from("global_predictions")
-    .upsert(rows, { onConflict: "user_id,tournament_id,category" });
+  if (rows.length > 0) {
+    const { error } = await supabase
+      .from("global_predictions")
+      .upsert(rows, { onConflict: "user_id,tournament_id,category" });
 
-  if (error) {
-    const msg = error.message.toLowerCase();
-    if (
-      msg.includes("row-level") ||
-      msg.includes("policy") ||
-      msg.includes("violates")
-    ) {
-      return {
-        ok: false,
-        error: "El cierre de globales ya pasó o falta completar algún campo.",
-      };
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (
+        msg.includes("row-level") ||
+        msg.includes("policy") ||
+        msg.includes("violates")
+      ) {
+        return {
+          ok: false,
+          error: "El cierre de globales ya pasó o falta completar algún campo.",
+        };
+      }
+      return { ok: false, error: error.message };
     }
-    return { ok: false, error: error.message };
   }
 
   revalidatePath("/globales");
