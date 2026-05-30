@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Countdown } from "@/components/countdown";
 import { submitPick } from "@/app/(authed)/matches/[matchId]/actions";
+import { cn } from "@/lib/utils";
 
 interface PickFormProps {
   matchId: string;
@@ -15,6 +16,10 @@ interface PickFormProps {
   initialAway: number;
   hasPick: boolean;
   isAutoRandom: boolean;
+  isKO?: boolean;
+  homeTeamId?: string;
+  awayTeamId?: string;
+  initialKoWinner?: string | null;
 }
 
 function Stepper({
@@ -71,28 +76,41 @@ export function PickForm({
   initialAway,
   hasPick,
   isAutoRandom,
+  isKO = false,
+  homeTeamId,
+  awayTeamId,
+  initialKoWinner,
 }: PickFormProps) {
   const [home, setHome] = useState(initialHome);
   const [away, setAway] = useState(initialAway);
+  const [koWinner, setKoWinner] = useState(initialKoWinner ?? "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [lockedClient, setLockedClient] = useState(false);
 
+  const isDraw = home === away;
   const winnerLabel =
     home > away
       ? `Gana ${homeTeamName}`
       : home < away
         ? `Gana ${awayTeamName}`
-        : "Empate";
+        : isKO
+          ? "Empate en los 90'"
+          : "Empate";
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    if (isKO && isDraw && !koWinner) {
+      setError("Empataron en los 90': elegí quién pasa.");
+      return;
+    }
     const form = new FormData();
     form.set("home", String(home));
     form.set("away", String(away));
+    if (isKO && isDraw && koWinner) form.set("koWinner", koWinner);
     startTransition(async () => {
       const res = await submitPick(matchId, form);
       if (res.ok) {
@@ -127,6 +145,48 @@ export function PickForm({
       </div>
 
       <p className="text-center text-sm font-semibold text-ink">{winnerLabel}</p>
+
+      {/* Eliminación: quién pasa */}
+      {isKO &&
+        (isDraw ? (
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-xs font-semibold text-ink/60">
+              Empataron — ¿quién pasa? (penales/alargue)
+            </span>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => setKoWinner(homeTeamId ?? "")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-sm font-bold ring-1 transition-colors disabled:opacity-50",
+                  koWinner && koWinner === homeTeamId
+                    ? "bg-pitch text-cream ring-pitch"
+                    : "bg-white text-ink ring-ink/15 hover:ring-gold",
+                )}
+              >
+                {homeFlag ?? ""} {homeTeamName}
+              </button>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => setKoWinner(awayTeamId ?? "")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-sm font-bold ring-1 transition-colors disabled:opacity-50",
+                  koWinner && koWinner === awayTeamId
+                    ? "bg-pitch text-cream ring-pitch"
+                    : "bg-white text-ink ring-ink/15 hover:ring-gold",
+                )}
+              >
+                {awayFlag ?? ""} {awayTeamName}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-xs font-semibold text-ink/60">
+            Pasa {home > away ? homeTeamName : awayTeamName}
+          </p>
+        ))}
 
       <div className="text-center text-xs text-ink/55">
         Cierra en <Countdown target={lockAt} />

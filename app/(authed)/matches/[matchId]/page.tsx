@@ -44,7 +44,7 @@ export default async function MatchDetailPage({
   const { data: pick } = await supabase
     .from("match_predictions")
     .select(
-      "id, predicted_winner, predicted_home, predicted_away, is_auto_random, state, updated_at",
+      "id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random, state, updated_at",
     )
     .eq("user_id", userId)
     .eq("match_id", match.id)
@@ -156,6 +156,10 @@ export default async function MatchDetailPage({
                   initialAway={pick?.predicted_away ?? 0}
                   hasPick={pick !== null}
                   isAutoRandom={pick?.is_auto_random ?? false}
+                  isKO={match.stage?.code !== "group"}
+                  homeTeamId={match.home_team.id}
+                  awayTeamId={match.away_team.id}
+                  initialKoWinner={pick?.predicted_ko_winner_team_id ?? null}
                 />
               )}
             </div>
