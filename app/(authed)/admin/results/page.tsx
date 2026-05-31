@@ -65,6 +65,8 @@ export default async function AdminResultsPage() {
                   awayName={m.away_team!.name}
                   homeFlag={m.home_team!.flag_emoji}
                   awayFlag={m.away_team!.flag_emoji}
+                  homeCode={m.home_team!.code}
+                  awayCode={m.away_team!.code}
                   homeTeamId={m.home_team!.id}
                   awayTeamId={m.away_team!.id}
                   isKO={m.stage?.code !== "group"}

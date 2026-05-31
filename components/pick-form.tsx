@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { Countdown } from "@/components/countdown";
+import { Flag } from "@/components/flag";
 import { submitPick } from "@/app/(authed)/matches/[matchId]/actions";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +13,8 @@ interface PickFormProps {
   awayTeamName: string;
   homeFlag: string | null;
   awayFlag: string | null;
+  homeCode?: string | null;
+  awayCode?: string | null;
   initialHome: number;
   initialAway: number;
   hasPick: boolean;
@@ -23,27 +26,30 @@ interface PickFormProps {
 }
 
 function Stepper({
-  label,
+  teamName,
+  flag,
   value,
   setValue,
   disabled,
 }: {
-  label: string;
+  teamName: string;
+  flag: ReactNode;
   value: number;
   setValue: (n: number) => void;
   disabled: boolean;
 }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-2">
-      <span className="text-center text-sm font-semibold text-ink/70">
-        {label}
+      <span className="flex items-center justify-center gap-1.5 text-center text-sm font-semibold text-ink/70">
+        {flag}
+        <span className="truncate">{teamName}</span>
       </span>
       <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={() => setValue(Math.max(0, value - 1))}
           disabled={disabled || value <= 0}
-          aria-label={`Restar gol a ${label}`}
+          aria-label={`Restar gol a ${teamName}`}
           className="grid size-9 place-items-center rounded-full bg-pitch text-xl font-bold text-cream transition-transform active:scale-90 disabled:opacity-30"
         >
           −
@@ -55,7 +61,7 @@ function Stepper({
           type="button"
           onClick={() => setValue(Math.min(20, value + 1))}
           disabled={disabled || value >= 20}
-          aria-label={`Sumar gol a ${label}`}
+          aria-label={`Sumar gol a ${teamName}`}
           className="grid size-9 place-items-center rounded-full bg-pitch text-xl font-bold text-cream transition-transform active:scale-90 disabled:opacity-30"
         >
           +
@@ -72,6 +78,8 @@ export function PickForm({
   awayTeamName,
   homeFlag,
   awayFlag,
+  homeCode,
+  awayCode,
   initialHome,
   initialAway,
   hasPick,
@@ -130,14 +138,16 @@ export function PickForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="flex items-start justify-around gap-2">
         <Stepper
-          label={`${homeFlag ?? "🏳️"} ${homeTeamName}`}
+          teamName={homeTeamName}
+          flag={<Flag emoji={homeFlag} code={homeCode} name={homeTeamName} className="h-5" />}
           value={home}
           setValue={setHome}
           disabled={disabled}
         />
         <span className="mt-9 text-2xl font-black text-ink/30">-</span>
         <Stepper
-          label={`${awayFlag ?? "🏳️"} ${awayTeamName}`}
+          teamName={awayTeamName}
+          flag={<Flag emoji={awayFlag} code={awayCode} name={awayTeamName} className="h-5" />}
           value={away}
           setValue={setAway}
           disabled={disabled}
@@ -159,26 +169,28 @@ export function PickForm({
                 disabled={disabled}
                 onClick={() => setKoWinner(homeTeamId ?? "")}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-sm font-bold ring-1 transition-colors disabled:opacity-50",
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold ring-1 transition-colors disabled:opacity-50",
                   koWinner && koWinner === homeTeamId
                     ? "bg-pitch text-cream ring-pitch"
                     : "bg-white text-ink ring-ink/15 hover:ring-gold",
                 )}
               >
-                {homeFlag ?? ""} {homeTeamName}
+                <Flag emoji={homeFlag} code={homeCode} name={homeTeamName} className="h-4" />
+                {homeTeamName}
               </button>
               <button
                 type="button"
                 disabled={disabled}
                 onClick={() => setKoWinner(awayTeamId ?? "")}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-sm font-bold ring-1 transition-colors disabled:opacity-50",
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold ring-1 transition-colors disabled:opacity-50",
                   koWinner && koWinner === awayTeamId
                     ? "bg-pitch text-cream ring-pitch"
                     : "bg-white text-ink ring-ink/15 hover:ring-gold",
                 )}
               >
-                {awayFlag ?? ""} {awayTeamName}
+                <Flag emoji={awayFlag} code={awayCode} name={awayTeamName} className="h-4" />
+                {awayTeamName}
               </button>
             </div>
           </div>

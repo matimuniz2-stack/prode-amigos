@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { submitPick } from "@/app/(authed)/matches/[matchId]/actions";
+import { Flag } from "@/components/flag";
 
 export type MatchCardVariant = "editable" | "locked" | "pending";
 
@@ -11,6 +12,8 @@ interface MatchCardProps {
   awayName: string;
   homeFlag: string | null;
   awayFlag: string | null;
+  homeCode?: string | null;
+  awayCode?: string | null;
   meta?: string; // ej. "Grupo A · 16:00"
   initialHome: number | null;
   initialAway: number | null;
@@ -107,6 +110,8 @@ export function MatchCard({
   awayName,
   homeFlag,
   awayFlag,
+  homeCode,
+  awayCode,
   meta,
   initialHome,
   initialAway,
@@ -163,9 +168,7 @@ export function MatchCard({
         {/* Equipos + marcador/pick */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span aria-hidden className="text-2xl leading-none">
-              {homeFlag ?? "🏳️"}
-            </span>
+            <Flag emoji={homeFlag} code={homeCode} name={homeName} className="h-6" />
             <span className="truncate font-bold">{homeName}</span>
           </div>
 
@@ -201,9 +204,7 @@ export function MatchCard({
 
           <div className="flex min-w-0 items-center justify-end gap-2">
             <span className="truncate text-right font-bold">{awayName}</span>
-            <span aria-hidden className="text-2xl leading-none">
-              {awayFlag ?? "🏳️"}
-            </span>
+            <Flag emoji={awayFlag} code={awayCode} name={awayName} className="h-6" />
           </div>
         </div>
 

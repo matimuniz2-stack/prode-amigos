@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Countdown } from "@/components/countdown";
 import { PickForm } from "@/components/pick-form";
+import { Flag } from "@/components/flag";
 import {
   displayStatus,
   matchTimeLabel,
@@ -37,13 +38,16 @@ function StatusBadge({ status }: { status: ReturnType<typeof displayStatus> }) {
 
 function TeamSide({
   flag,
+  code,
   name,
   align,
 }: {
   flag: string | null;
+  code: string | null;
   name: string;
   align: "left" | "right";
 }) {
+  const flagEl = <Flag emoji={flag} code={code} name={name} className="h-6" />;
   return (
     <div
       className={cn(
@@ -53,17 +57,13 @@ function TeamSide({
     >
       {align === "left" ? (
         <>
-          <span className="text-2xl leading-none" aria-hidden>
-            {flag ?? "🏳️"}
-          </span>
+          {flagEl}
           <span className="truncate font-bold text-ink">{name}</span>
         </>
       ) : (
         <>
           <span className="truncate text-right font-bold text-ink">{name}</span>
-          <span className="text-2xl leading-none" aria-hidden>
-            {flag ?? "🏳️"}
-          </span>
+          {flagEl}
         </>
       )}
     </div>
@@ -129,6 +129,7 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <TeamSide
             flag={match.home_team?.flag_emoji ?? null}
+            code={match.home_team?.code ?? null}
             name={homeName}
             align="left"
           />
@@ -149,6 +150,7 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
           </div>
           <TeamSide
             flag={match.away_team?.flag_emoji ?? null}
+            code={match.away_team?.code ?? null}
             name={awayName}
             align="right"
           />
@@ -227,6 +229,8 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
                 awayTeamName={match.away_team.name}
                 homeFlag={match.home_team.flag_emoji}
                 awayFlag={match.away_team.flag_emoji}
+                homeCode={match.home_team.code}
+                awayCode={match.away_team.code}
                 initialHome={match.user_pick?.predicted_home ?? 0}
                 initialAway={match.user_pick?.predicted_away ?? 0}
                 hasPick={hasPick}

@@ -6,6 +6,7 @@ import {
   setMatchResult,
 } from "@/app/(authed)/admin/results/actions";
 import { cn } from "@/lib/utils";
+import { Flag } from "@/components/flag";
 
 interface Props {
   matchId: string;
@@ -14,6 +15,8 @@ interface Props {
   awayName: string;
   homeFlag: string | null;
   awayFlag: string | null;
+  homeCode?: string | null;
+  awayCode?: string | null;
   homeTeamId: string;
   awayTeamId: string;
   isKO: boolean;
@@ -112,9 +115,7 @@ export function AdminResultRow(props: Props) {
 
       <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <span aria-hidden className="text-2xl leading-none">
-            {props.homeFlag ?? "🏳️"}
-          </span>
+          <Flag emoji={props.homeFlag} code={props.homeCode} name={props.homeName} className="h-6" />
           <span className="truncate font-bold">{props.homeName}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -134,9 +135,7 @@ export function AdminResultRow(props: Props) {
         </div>
         <div className="flex min-w-0 items-center justify-end gap-2">
           <span className="truncate text-right font-bold">{props.awayName}</span>
-          <span aria-hidden className="text-2xl leading-none">
-            {props.awayFlag ?? "🏳️"}
-          </span>
+          <Flag emoji={props.awayFlag} code={props.awayCode} name={props.awayName} className="h-6" />
         </div>
       </div>
 

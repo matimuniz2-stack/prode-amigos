@@ -10,6 +10,7 @@ import {
 } from "@/lib/matches";
 import type { Database } from "@/lib/types/database";
 import { NicknameEditor } from "@/components/nickname-editor";
+import { Flag } from "@/components/flag";
 
 export const dynamic = "force-dynamic";
 
@@ -157,10 +158,22 @@ export default async function MiProdePage() {
                   )}
                 </div>
 
-                <p className="mt-1.5 font-bold leading-snug">
-                  {m.home_team?.flag_emoji} {m.home_team?.name ?? "TBD"}{" "}
-                  <span className="text-ink/40">vs</span>{" "}
-                  {m.away_team?.flag_emoji} {m.away_team?.name ?? "TBD"}
+                <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 font-bold leading-snug">
+                  <Flag
+                    emoji={m.home_team?.flag_emoji}
+                    code={m.home_team?.code}
+                    name={m.home_team?.name}
+                    className="h-5"
+                  />
+                  {m.home_team?.name ?? "TBD"}
+                  <span className="text-ink/40">vs</span>
+                  <Flag
+                    emoji={m.away_team?.flag_emoji}
+                    code={m.away_team?.code}
+                    name={m.away_team?.name}
+                    className="h-5"
+                  />
+                  {m.away_team?.name ?? "TBD"}
                 </p>
 
                 <div className="mt-2 flex items-center gap-4 text-sm">

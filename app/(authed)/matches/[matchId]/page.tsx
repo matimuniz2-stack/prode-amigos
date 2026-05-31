@@ -152,6 +152,8 @@ export default async function MatchDetailPage({
                   awayTeamName={match.away_team.name}
                   homeFlag={match.home_team.flag_emoji}
                   awayFlag={match.away_team.flag_emoji}
+                  homeCode={match.home_team.code}
+                  awayCode={match.away_team.code}
                   initialHome={pick?.predicted_home ?? 0}
                   initialAway={pick?.predicted_away ?? 0}
                   hasPick={pick !== null}

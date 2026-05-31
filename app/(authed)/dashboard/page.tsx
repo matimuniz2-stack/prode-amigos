@@ -205,6 +205,8 @@ export default async function DashboardPage() {
                       awayName={m.away_team?.name ?? "TBD"}
                       homeFlag={m.home_team?.flag_emoji ?? null}
                       awayFlag={m.away_team?.flag_emoji ?? null}
+                      homeCode={m.home_team?.code ?? null}
+                      awayCode={m.away_team?.code ?? null}
                       meta={matchMeta(m)}
                       initialHome={pick?.predicted_home ?? 0}
                       initialAway={pick?.predicted_away ?? 0}
