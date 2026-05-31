@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SectionHeading } from "@/components/home/section-heading";
+import { TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ interface Standing {
   points: number;
   rank: number;
   prize: number;
+  tags: string[];
 }
 
 function money(n: number, currency: string) {
@@ -64,6 +66,16 @@ export default async function LeaderboardPage() {
   const currency = pool?.currency ?? projection[0]?.currency ?? "ARS";
   const poolTotal = pool?.total_amount ?? projection[0]?.pool_total ?? 0;
 
+  // Etiquetas (logros) que el admin le puso a cada participante.
+  const { data: tagRows } = await supabase
+    .from("profiles")
+    .select("id, nickname, tags")
+    .order("nickname", { ascending: true })
+    .returns<{ id: string; nickname: string; tags: string[] }[]>();
+  const tagsByUser = new Map<string, string[]>(
+    (tagRows ?? []).map((p) => [p.id, p.tags ?? []]),
+  );
+
   let standings: Standing[];
   if (hasScores) {
     standings = projection.map((r) => ({
@@ -72,19 +84,17 @@ export default async function LeaderboardPage() {
       points: r.total_points ?? 0,
       rank: r.rank ?? 0,
       prize: r.projected_prize ?? 0,
+      tags: tagsByUser.get(r.user_id ?? "") ?? [],
     }));
   } else {
     // Pre-torneo: nadie puntuó todavía → mostramos a los participantes en 0.
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, nickname")
-      .order("nickname", { ascending: true });
-    standings = (profiles ?? []).map((p) => ({
+    standings = (tagRows ?? []).map((p) => ({
       userId: p.id,
       nickname: p.nickname ?? "—",
       points: 0,
       rank: 1,
       prize: 0,
+      tags: p.tags ?? [],
     }));
   }
 
@@ -185,9 +195,26 @@ export default async function LeaderboardPage() {
                 <span className="w-6 text-center text-sm font-bold tabular-nums text-ink/50">
                   {hasScores ? s.rank : "–"}
                 </span>
-                <span className="flex-1 truncate font-semibold text-ink">
-                  {s.nickname}
-                  {isMe && <span className="text-ink/50"> (vos)</span>}
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="truncate font-semibold text-ink">
+                    {s.nickname}
+                    {isMe && <span className="text-ink/50"> (vos)</span>}
+                  </span>
+                  {s.tags.length > 0 && (
+                    <span className="flex flex-wrap gap-1">
+                      {s.tags.map((t) => (
+                        <span
+                          key={t}
+                          className={cn(
+                            "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold",
+                            TAG_TONE_CLASS[toneForTag(t)],
+                          )}
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </span>
                 {hasScores && s.prize > 0 && (
                   <span className="text-xs font-bold text-pitch">

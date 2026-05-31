@@ -10,8 +10,11 @@ export default async function AdminParticipantsPage() {
 
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, nickname, email, role")
-    .order("nickname", { ascending: true });
+    .select("id, nickname, email, role, tags")
+    .order("nickname", { ascending: true })
+    .returns<
+      { id: string; nickname: string; email: string; role: string; tags: string[] }[]
+    >();
 
   return (
     <div className="flex flex-col gap-4">
@@ -26,9 +29,8 @@ export default async function AdminParticipantsPage() {
       </div>
 
       <p className="text-sm text-cream/70">
-        Corregí el apodo de cualquier jugador (los resultados quedan blindados:
-        no se tocan). Las etiquetas se habilitan cuando apliques la migración de
-        tags.
+        Corregí el apodo y poné etiquetas (logros) a cualquier jugador. Los
+        resultados quedan blindados: no se tocan.
       </p>
 
       {!profiles || profiles.length === 0 ? (
@@ -42,6 +44,7 @@ export default async function AdminParticipantsPage() {
               nickname={p.nickname}
               email={p.email}
               role={p.role}
+              tags={p.tags ?? []}
             />
           ))}
         </div>

@@ -1,19 +1,25 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { adminUpdateNickname } from "@/app/(authed)/admin/participants/actions";
+import {
+  adminUpdateNickname,
+  adminUpdateTags,
+} from "@/app/(authed)/admin/participants/actions";
 import { cn } from "@/lib/utils";
+import { MAX_TAGS, PRESET_TAGS, TAG_TONE_CLASS } from "@/lib/tags";
 
 export function ParticipantRow({
   userId,
   nickname,
   email,
   role,
+  tags,
 }: {
   userId: string;
   nickname: string;
   email: string;
   role: string;
+  tags: string[];
 }) {
   const [value, setValue] = useState(nickname);
   const [saved, setSaved] = useState(nickname);
@@ -21,6 +27,10 @@ export function ParticipantRow({
     null,
   );
   const [isPending, startTransition] = useTransition();
+
+  const [activeTags, setActiveTags] = useState<string[]>(tags);
+  const [tagMsg, setTagMsg] = useState<string | null>(null);
+  const [tagPending, startTagTransition] = useTransition();
 
   const changed = value.trim() !== saved && value.trim().length >= 2;
 
@@ -34,6 +44,27 @@ export function ParticipantRow({
         setMsg({ type: "ok", text: "Guardado ✓" });
       } else {
         setMsg({ type: "err", text: res.error });
+      }
+    });
+  };
+
+  const toggleTag = (label: string) => {
+    const has = activeTags.includes(label);
+    if (!has && activeTags.length >= MAX_TAGS) {
+      setTagMsg(`Máximo ${MAX_TAGS} etiquetas.`);
+      return;
+    }
+    const next = has
+      ? activeTags.filter((t) => t !== label)
+      : [...activeTags, label];
+    const prev = activeTags;
+    setActiveTags(next);
+    setTagMsg(null);
+    startTagTransition(async () => {
+      const res = await adminUpdateTags(userId, next);
+      if (!res.ok) {
+        setActiveTags(prev); // revertir si falló
+        setTagMsg(res.error);
       }
     });
   };
@@ -77,6 +108,40 @@ export function ParticipantRow({
           {msg.text}
         </p>
       )}
+
+      {/* Etiquetas / logros — se guardan al togglear */}
+      <div className="mt-0.5 flex flex-col gap-1.5 border-t border-ink/10 pt-2.5">
+        <span className="text-xs font-semibold text-ink/50">
+          Etiquetas{" "}
+          <span className="font-normal">
+            ({activeTags.length}/{MAX_TAGS})
+          </span>
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {PRESET_TAGS.map((t) => {
+            const active = activeTags.includes(t.label);
+            return (
+              <button
+                key={t.label}
+                type="button"
+                onClick={() => toggleTag(t.label)}
+                disabled={tagPending}
+                className={cn(
+                  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold transition-all active:scale-95 disabled:opacity-50",
+                  active
+                    ? TAG_TONE_CLASS[t.tone]
+                    : "border-ink/15 bg-white text-ink/40 hover:text-ink/70",
+                )}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+        {tagMsg && (
+          <p className="text-xs font-semibold text-cardred">{tagMsg}</p>
+        )}
+      </div>
     </form>
   );
 }
