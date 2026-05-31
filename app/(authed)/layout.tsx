@@ -14,12 +14,13 @@ export default async function AuthedLayout({
 
   if (hasSupabaseEnv()) {
     const supabase = await createClient();
-    const { count } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true });
-    playerCount = count ?? 0;
+    // count y getClaims son independientes → en paralelo.
+    const [countRes, { data: claims }] = await Promise.all([
+      supabase.from("profiles").select("*", { count: "exact", head: true }),
+      supabase.auth.getClaims(),
+    ]);
+    playerCount = countRes.count ?? 0;
 
-    const { data: claims } = await supabase.auth.getClaims();
     if (claims?.claims) {
       const { data: p } = await supabase
         .from("profiles")

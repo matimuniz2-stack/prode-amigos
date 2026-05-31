@@ -6,6 +6,23 @@ import { MAX_TAGS } from "@/lib/tags";
 
 type Result = { ok: true } | { ok: false; error: string };
 
+type Client = Awaited<ReturnType<typeof createClient>>;
+
+/** Verifica en el SERVER que quien llama es admin/owner. Las server actions no
+ *  están protegidas por el guard del layout (se pueden invocar directo), así
+ *  que validamos acá además de la RLS (defensa en capas). */
+async function callerIsAdmin(supabase: Client): Promise<boolean> {
+  const { data: claims } = await supabase.auth.getClaims();
+  const uid = claims?.claims?.sub as string | undefined;
+  if (!uid) return false;
+  const { data } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", uid)
+    .maybeSingle();
+  return data?.role === "admin" || data?.role === "owner";
+}
+
 /** El admin corrige el apodo de cualquier participante (RLS profiles_admin_all). */
 export async function adminUpdateNickname(
   userId: string,
@@ -17,6 +34,9 @@ export async function adminUpdateNickname(
   }
 
   const supabase = await createClient();
+  if (!(await callerIsAdmin(supabase))) {
+    return { ok: false, error: "No tenés permisos." };
+  }
   const { error } = await supabase
     .from("profiles")
     .update({ nickname: clean })
@@ -56,6 +76,9 @@ export async function adminUpdateTags(
   }
 
   const supabase = await createClient();
+  if (!(await callerIsAdmin(supabase))) {
+    return { ok: false, error: "No tenés permisos." };
+  }
   // tags aún no está en los tipos generados (migración 0017 aplicada en prod,
   // tipos sin regenerar) → cast as never, consistente con el resto del código.
   const { error } = await supabase

@@ -24,22 +24,26 @@ const STATUS_LABEL: Record<string, string> = {
 export default async function AdminPage() {
   const supabase = await createClient();
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("name, status")
-    .order("starts_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  const { count: finishedCount } = await supabase
-    .from("matches")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "finished");
-
-  const { count: liveCount } = await supabase
-    .from("matches")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "live");
+  // Las tres son independientes → en paralelo.
+  const [tournamentRes, finishedRes, liveRes] = await Promise.all([
+    supabase
+      .from("tournaments")
+      .select("name, status")
+      .order("starts_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("matches")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "finished"),
+    supabase
+      .from("matches")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "live"),
+  ]);
+  const tournament = tournamentRes.data;
+  const finishedCount = finishedRes.count;
+  const liveCount = liveRes.count;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">

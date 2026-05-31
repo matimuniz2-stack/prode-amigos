@@ -109,7 +109,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <AutoRefresh seconds={30} />
+      <AutoRefresh seconds={60} />
 
       <SectionHeading className="pt-1">Ranking</SectionHeading>
 
@@ -165,7 +165,7 @@ export default async function LeaderboardPage() {
                 )}
                 {s.tags.length > 0 && (
                   <span className="flex flex-wrap justify-center gap-1">
-                    {s.tags.map((t) => (
+                    {s.tags.slice(0, 2).map((t) => (
                       <span
                         key={t}
                         className={cn(

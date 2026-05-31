@@ -38,7 +38,7 @@ function GoalStepper({
   ariaLabel: string;
 }) {
   const arrowCls =
-    "grid h-6 w-12 place-items-center text-pitch transition-transform active:scale-90 disabled:opacity-25 disabled:active:scale-100";
+    "grid h-9 w-12 place-items-center text-pitch transition-transform active:scale-90 disabled:opacity-25 disabled:active:scale-100";
   return (
     <div
       role="group"
