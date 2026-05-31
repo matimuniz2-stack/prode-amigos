@@ -37,22 +37,37 @@ export default async function DashboardPage() {
   }
   const userId = claims.claims.sub as string;
 
-  // Próximos partidos reales + picks
-  const { data: matchesData } = await supabase
-    .from("matches")
-    .select(matchSelect)
-    .order("kickoff_at", { ascending: true })
-    .order("match_number", { ascending: true })
-    .returns<MatchWithRelations[]>();
-
   const now = Date.now();
-  const upcoming = (matchesData ?? []).filter((m) => {
+
+  // Consultas independientes en paralelo (antes iban una atrás de otra).
+  const [matchesRes, rankingRes, meRes, playerCountRes, globalsCountRes] =
+    await Promise.all([
+      supabase
+        .from("matches")
+        .select(matchSelect)
+        .order("kickoff_at", { ascending: true })
+        .order("match_number", { ascending: true })
+        .returns<MatchWithRelations[]>(),
+      supabase
+        .from("leaderboard_projection")
+        .select("user_id, nickname, total_points, rank")
+        .order("rank", { ascending: true }),
+      supabase.from("profiles").select("nickname").eq("id", userId).maybeSingle(),
+      supabase.from("profiles").select("*", { count: "exact", head: true }),
+      supabase
+        .from("global_predictions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
+    ]);
+
+  const upcoming = (matchesRes.data ?? []).filter((m) => {
     const s = displayStatus(m, now);
     return (
       (s === "upcoming" || s === "locking_soon") && m.home_team && m.away_team
     );
   });
 
+  // Los picks dependen de qué partidos están "próximos" → va después.
   const picksByMatch = new Map<
     string,
     { predicted_home: number; predicted_away: number; is_auto_random: boolean }
@@ -74,26 +89,11 @@ export default async function DashboardPage() {
     ? `${nextMatch.home_team?.name} vs ${nextMatch.away_team?.name}`
     : "Por definirse";
 
-  // Ranking REAL + datos del usuario
-  const { data: ranking } = await supabase
-    .from("leaderboard_projection")
-    .select("user_id, nickname, total_points, rank")
-    .order("rank", { ascending: true });
-  const standings = ranking ?? [];
+  const standings = rankingRes.data ?? [];
   const hasScores = standings.some((r) => (r.total_points ?? 0) > 0);
-
-  const { data: me } = await supabase
-    .from("profiles")
-    .select("nickname")
-    .eq("id", userId)
-    .maybeSingle();
-  const { count: playerCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true });
-  const { count: globalsCount } = await supabase
-    .from("global_predictions")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
+  const me = meRes.data;
+  const playerCount = playerCountRes.count;
+  const globalsCount = globalsCountRes.count;
 
   const myRow = standings.find((r) => r.user_id === userId);
   const myPoints = myRow?.total_points ?? 0;

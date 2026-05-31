@@ -43,12 +43,28 @@ export async function computeAutoBadges(
     badges.set(userId, arr);
   };
 
+  // Ranking y points_log son independientes → en paralelo.
+  const [projRes, logRes] = await Promise.all([
+    supabase
+      .from("leaderboard_projection")
+      .select("user_id, total_points, rank")
+      .returns<{ user_id: string; total_points: number; rank: number }[]>(),
+    supabase
+      .from("points_log")
+      .select("user_id, points, breakdown, source_id")
+      .eq("source_kind", "match")
+      .returns<
+        {
+          user_id: string;
+          points: number;
+          breakdown: Record<string, unknown> | null;
+          source_id: string;
+        }[]
+      >(),
+  ]);
+
   // 1) GOAT + Mufa desde el ranking (solo si ya hay puntaje real).
-  const { data: proj } = await supabase
-    .from("leaderboard_projection")
-    .select("user_id, total_points, rank")
-    .returns<{ user_id: string; total_points: number; rank: number }[]>();
-  const ranking = proj ?? [];
+  const ranking = projRes.data ?? [];
   const hasScores = ranking.some((r) => (r.total_points ?? 0) > 0);
   if (hasScores && ranking.length > 0) {
     const maxRank = Math.max(...ranking.map((r) => r.rank ?? 0));
@@ -61,19 +77,7 @@ export async function computeAutoBadges(
   }
 
   // 2) points_log de partidos: para Francotirador y En racha.
-  const { data: logRows } = await supabase
-    .from("points_log")
-    .select("user_id, points, breakdown, source_id")
-    .eq("source_kind", "match")
-    .returns<
-      {
-        user_id: string;
-        points: number;
-        breakdown: Record<string, unknown> | null;
-        source_id: string;
-      }[]
-    >();
-  const logs = logRows ?? [];
+  const logs = logRes.data ?? [];
 
   // Francotirador: el/los que más exactos clavaron.
   const exactByUser = new Map<string, number>();
