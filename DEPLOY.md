@@ -34,7 +34,7 @@ Supabase → **Authentication → Settings**:
 
 ## 5. Para invitar a los amigos
 - Google Cloud → OAuth consent screen → **Test users** → agregar los Gmail de cada uno.
-- **Antes de invitar**: sacar los logros/novedades de ejemplo del dashboard (`lib/demo-data.ts`).
+- ~~Sacar los logros/novedades de ejemplo del dashboard (`lib/demo-data.ts`).~~ **✅ HECHO** (2026-05-31) — secciones de ejemplo eliminadas, el dashboard ahora es 100% data real (stats, ranking y partidos).
 - Mandar el link `https://www.prodelospibes.com` por WhatsApp.
 
 ## Fixes de auditoría — ✅ APLICADOS en prod (2026-05-30)

@@ -13,16 +13,9 @@ import { PrimaryButton } from "@/components/home/primary-button";
 import { StatCard } from "@/components/home/stat-card";
 import { SectionHeading } from "@/components/home/section-heading";
 import { MatchCard } from "@/components/home/match-card";
-import { DEMO_BADGES, DEMO_NEWS, type BadgeTone } from "@/lib/demo-data";
 
 export const dynamic = "force-dynamic";
 
-const BADGE_TONES: Record<BadgeTone, string> = {
-  gold: "border-gold/60 bg-gold/10 text-gold",
-  grass: "border-emerald-400/60 bg-emerald-400/10 text-emerald-300",
-  red: "border-cardred/60 bg-cardred/15 text-red-300",
-  sky: "border-sky-400/60 bg-sky-400/10 text-sky-300",
-};
 const MEDAL = ["🥇", "🥈", "🥉"];
 
 function matchMeta(m: MatchWithRelations): string {
@@ -31,14 +24,6 @@ function matchMeta(m: MatchWithRelations): string {
       ? `Grupo ${m.group.code}`
       : (m.stage && stageLabels[m.stage.code]) ?? "Partido";
   return `${stage} · ${matchTimeLabel(m.kickoff_at)}`;
-}
-
-function DemoTag() {
-  return (
-    <span className="font-sans text-[10px] font-semibold normal-case tracking-wide text-cream/40">
-      ejemplo
-    </span>
-  );
 }
 
 export default async function DashboardPage() {
@@ -286,44 +271,6 @@ export default async function DashboardPage() {
                 })}
               </div>
             )}
-          </div>
-
-          {/* Logros (ejemplo) */}
-          <div className="rounded-2xl bg-black/15 p-4 ring-1 ring-cream/10">
-            <h3 className="mb-3 flex items-center gap-2 text-display text-lg text-cream">
-              🎖️ Logros <DemoTag />
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {DEMO_BADGES.map((b) => (
-                <span
-                  key={b.label}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold",
-                    BADGE_TONES[b.tone],
-                  )}
-                >
-                  {b.emoji} {b.label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Novedades (ejemplo) */}
-          <div className="rounded-2xl bg-black/15 p-4 ring-1 ring-cream/10">
-            <h3 className="mb-3 flex items-center gap-2 text-display text-lg text-cream">
-              💬 Novedades <DemoTag />
-            </h3>
-            <div className="flex flex-col gap-2">
-              {DEMO_NEWS.map((n, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 rounded-xl bg-black/20 px-3 py-2 text-xs text-cream ring-1 ring-cream/10"
-                >
-                  <span aria-hidden>{n.emoji}</span>
-                  <span className="leading-snug">{n.text}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </aside>
       </div>
