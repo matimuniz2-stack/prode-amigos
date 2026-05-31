@@ -21,7 +21,9 @@ interface MatchCardProps {
   scoreAway?: number | null;
 }
 
-function ScoreInput({
+/** Stepper vertical: flechita arriba suma un gol, flechita abajo resta.
+ *  Así no hay que escribir el número, se carga tocando. */
+function GoalStepper({
   value,
   onChange,
   disabled,
@@ -32,23 +34,40 @@ function ScoreInput({
   disabled: boolean;
   ariaLabel: string;
 }) {
+  const arrowCls =
+    "grid h-6 w-12 place-items-center text-pitch transition-transform active:scale-90 disabled:opacity-25 disabled:active:scale-100";
   return (
-    <input
-      type="text"
-      inputMode="numeric"
-      pattern="[0-9]*"
+    <div
+      role="group"
       aria-label={ariaLabel}
-      disabled={disabled}
-      value={String(value)}
-      maxLength={2}
-      onFocus={(e) => e.currentTarget.select()}
-      onChange={(e) => {
-        const digits = e.target.value.replace(/\D/g, "");
-        const n = digits === "" ? 0 : Math.min(20, parseInt(digits, 10));
-        onChange(n);
-      }}
-      className="size-12 rounded-xl border-2 border-ink/15 bg-white text-center text-2xl font-black tabular-nums text-ink outline-none transition-colors focus:border-gold disabled:opacity-50"
-    />
+      className="flex flex-col items-center rounded-xl border-2 border-ink/15 bg-white py-1"
+    >
+      <button
+        type="button"
+        aria-label={`Sumar gol (${ariaLabel})`}
+        disabled={disabled || value >= 20}
+        onClick={() => onChange(Math.min(20, value + 1))}
+        className={arrowCls}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M6 15l6-6 6 6" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <span className="w-12 text-center text-2xl font-black tabular-nums text-ink">
+        {value}
+      </span>
+      <button
+        type="button"
+        aria-label={`Restar gol (${ariaLabel})`}
+        disabled={disabled || value <= 0}
+        onClick={() => onChange(Math.max(0, value - 1))}
+        className={arrowCls}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+    </div>
   );
 }
 
@@ -152,14 +171,14 @@ export function MatchCard({
 
           {editable ? (
             <div className="flex items-center gap-2">
-              <ScoreInput
+              <GoalStepper
                 value={home}
                 onChange={setHome}
                 disabled={disabled}
                 ariaLabel={`Goles de ${homeName}`}
               />
               <span className="text-xl font-black text-ink/40">-</span>
-              <ScoreInput
+              <GoalStepper
                 value={away}
                 onChange={setAway}
                 disabled={disabled}
