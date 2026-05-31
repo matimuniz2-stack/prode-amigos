@@ -1,9 +1,13 @@
 /* ============================================================
-   Etiquetas (logros) que el admin le pone a cada participante.
-   Se guardan en profiles.tags (text[]) — el string completo, con
-   emoji incluido (ej. "🤡 Mufa"). El admin las edita desde
-   /admin/participants; se muestran como chips en el ranking.
-   Solo admin/owner puede escribirlas (RLS profiles_admin_all).
+   Etiquetas (logros) que se muestran como chips en el ranking.
+   Hay dos clases:
+   - MANUALES: las pone el admin a mano desde /admin/participants.
+     Se guardan en profiles.tags (text[]) con el string completo
+     (emoji incluido, ej. "🧊 Pecho frío"). Solo admin/owner las
+     escribe (RLS profiles_admin_all).
+   - AUTOMÁTICAS: las calcula la app sola desde los resultados — ver
+     lib/badges.ts. No se guardan en la DB, se derivan al vuelo.
+   Las dos se renderizan igual (chips), con el tono de toneForTag().
    ============================================================ */
 
 export type TagTone = "gold" | "grass" | "red" | "sky";
@@ -14,17 +18,24 @@ export interface TagDef {
   tone: TagTone;
 }
 
+/** Etiquetas que el admin asigna a mano (las subjetivas). */
 export const PRESET_TAGS: TagDef[] = [
-  { label: "🧠 El sabio", tone: "grass" },
-  { label: "🎯 Francotirador", tone: "sky" },
-  { label: "🔥 En racha", tone: "gold" },
-  { label: "🤡 Mufa", tone: "red" },
+  { label: "🧠 El Maestro", tone: "grass" },
   { label: "🧊 Pecho frío", tone: "sky" },
-  { label: "🐐 El GOAT", tone: "gold" },
 ];
 
-/** Cuántas etiquetas como máximo por participante. */
+/** Cuántas etiquetas manuales como máximo por participante. */
 export const MAX_TAGS = 4;
+
+/** Tono por etiqueta conocida (manuales + automáticas de lib/badges.ts). */
+const TONE_BY_LABEL: Record<string, TagTone> = {
+  "🧠 El Maestro": "grass",
+  "🧊 Pecho frío": "sky",
+  "🎯 Francotirador": "sky",
+  "🔥 En racha": "gold",
+  "🐐 El GOAT": "gold",
+  "🤡 Mufa": "red",
+};
 
 /** Estilos de chip pensados para fondo claro (cards crema del ranking/admin). */
 export const TAG_TONE_CLASS: Record<TagTone, string> = {
@@ -34,7 +45,7 @@ export const TAG_TONE_CLASS: Record<TagTone, string> = {
   sky: "border-sky-400 bg-sky-100 text-sky-700",
 };
 
-/** Tono de una etiqueta (default grass para etiquetas que no son preset). */
+/** Tono de una etiqueta (default grass para etiquetas desconocidas). */
 export function toneForTag(label: string): TagTone {
-  return PRESET_TAGS.find((t) => t.label === label)?.tone ?? "grass";
+  return TONE_BY_LABEL[label] ?? "grass";
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SectionHeading } from "@/components/home/section-heading";
 import { ParticipantRow } from "@/components/admin/participant-row";
+import { computeAutoBadges } from "@/lib/badges";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,8 @@ export default async function AdminParticipantsPage() {
       { id: string; nickname: string; email: string; role: string; tags: string[] }[]
     >();
 
+  const autoBadges = await computeAutoBadges(supabase);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2 pt-1">
@@ -29,8 +32,9 @@ export default async function AdminParticipantsPage() {
       </div>
 
       <p className="text-sm text-cream/70">
-        Corregí el apodo y poné etiquetas (logros) a cualquier jugador. Los
-        resultados quedan blindados: no se tocan.
+        Corregí el apodo y poné etiquetas a cualquier jugador. El Maestro y
+        Pecho frío las elegís vos; las demás (🐐 🤡 🎯 🔥) las pone la app sola
+        según los resultados. Los resultados quedan blindados: no se tocan.
       </p>
 
       {!profiles || profiles.length === 0 ? (
@@ -45,6 +49,7 @@ export default async function AdminParticipantsPage() {
               email={p.email}
               role={p.role}
               tags={p.tags ?? []}
+              autoTags={autoBadges.get(p.id) ?? []}
             />
           ))}
         </div>

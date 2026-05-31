@@ -4,6 +4,7 @@ import { cn, hasSupabaseEnv } from "@/lib/utils";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SectionHeading } from "@/components/home/section-heading";
 import { TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
+import { computeAutoBadges } from "@/lib/badges";
 
 export const dynamic = "force-dynamic";
 
@@ -66,14 +67,19 @@ export default async function LeaderboardPage() {
   const currency = pool?.currency ?? projection[0]?.currency ?? "ARS";
   const poolTotal = pool?.total_amount ?? projection[0]?.pool_total ?? 0;
 
-  // Etiquetas (logros) que el admin le puso a cada participante.
+  // Etiquetas manuales (las pone el admin) + insignias automáticas
+  // (calculadas desde los resultados). Se muestran juntas como chips.
   const { data: tagRows } = await supabase
     .from("profiles")
     .select("id, nickname, tags")
     .order("nickname", { ascending: true })
     .returns<{ id: string; nickname: string; tags: string[] }[]>();
+  const autoBadges = await computeAutoBadges(supabase);
+  const tagsFor = (userId: string, manual: string[]) => [
+    ...new Set([...(manual ?? []), ...(autoBadges.get(userId) ?? [])]),
+  ];
   const tagsByUser = new Map<string, string[]>(
-    (tagRows ?? []).map((p) => [p.id, p.tags ?? []]),
+    (tagRows ?? []).map((p) => [p.id, tagsFor(p.id, p.tags)]),
   );
 
   let standings: Standing[];
@@ -94,7 +100,7 @@ export default async function LeaderboardPage() {
       points: 0,
       rank: 1,
       prize: 0,
-      tags: p.tags ?? [],
+      tags: tagsByUser.get(p.id) ?? [],
     }));
   }
 
@@ -155,6 +161,21 @@ export default async function LeaderboardPage() {
                 {s.prize > 0 && (
                   <span className="text-[10px] font-bold text-gold/90">
                     {money(s.prize, currency)}
+                  </span>
+                )}
+                {s.tags.length > 0 && (
+                  <span className="flex flex-wrap justify-center gap-1">
+                    {s.tags.map((t) => (
+                      <span
+                        key={t}
+                        className={cn(
+                          "inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-bold",
+                          TAG_TONE_CLASS[toneForTag(t)],
+                        )}
+                      >
+                        {t}
+                      </span>
+                    ))}
                   </span>
                 )}
                 <div

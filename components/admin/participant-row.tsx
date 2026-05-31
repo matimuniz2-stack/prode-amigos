@@ -6,7 +6,7 @@ import {
   adminUpdateTags,
 } from "@/app/(authed)/admin/participants/actions";
 import { cn } from "@/lib/utils";
-import { MAX_TAGS, PRESET_TAGS, TAG_TONE_CLASS } from "@/lib/tags";
+import { MAX_TAGS, PRESET_TAGS, TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
 
 export function ParticipantRow({
   userId,
@@ -14,12 +14,14 @@ export function ParticipantRow({
   email,
   role,
   tags,
+  autoTags,
 }: {
   userId: string;
   nickname: string;
   email: string;
   role: string;
   tags: string[];
+  autoTags: string[];
 }) {
   const [value, setValue] = useState(nickname);
   const [saved, setSaved] = useState(nickname);
@@ -112,10 +114,7 @@ export function ParticipantRow({
       {/* Etiquetas / logros — se guardan al togglear */}
       <div className="mt-0.5 flex flex-col gap-1.5 border-t border-ink/10 pt-2.5">
         <span className="text-xs font-semibold text-ink/50">
-          Etiquetas{" "}
-          <span className="font-normal">
-            ({activeTags.length}/{MAX_TAGS})
-          </span>
+          Etiquetas a mano
         </span>
         <div className="flex flex-wrap gap-1.5">
           {PRESET_TAGS.map((t) => {
@@ -140,6 +139,27 @@ export function ParticipantRow({
         </div>
         {tagMsg && (
           <p className="text-xs font-semibold text-cardred">{tagMsg}</p>
+        )}
+
+        {autoTags.length > 0 && (
+          <div className="mt-1 flex flex-col gap-1">
+            <span className="text-[11px] font-semibold text-ink/40">
+              Automáticas (las pone la app)
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {autoTags.map((t) => (
+                <span
+                  key={t}
+                  className={cn(
+                    "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold opacity-90",
+                    TAG_TONE_CLASS[toneForTag(t)],
+                  )}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </form>
