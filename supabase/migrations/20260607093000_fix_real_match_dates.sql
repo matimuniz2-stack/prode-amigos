@@ -1,0 +1,128 @@
+-- 20260607093000_fix_real_match_dates.sql
+-- Corrige las fechas/horarios de los 104 partidos al CALENDARIO REAL FIFA 2026.
+-- El seed original usaba fechas placeholder sinteticas (GROUP_MATCH_DAYS en
+-- scripts/seed_from_old_repo.py) y un orden round-robin inventado que NO
+-- coincidia con el fixture real (ej: Suiza-Bosnia figuraba el 12/06 cuando se
+-- juega el 18/06).
+--
+-- Fuentes: ESPN (fase de grupos) + Wikipedia "2026 FIFA World Cup knockout
+-- stage" (KO). Horarios en UTC. El bracket de 0018 ya usa la numeracion
+-- oficial FIFA, asi que el KO se mapea por match_number.
+--
+-- SOLO toca kickoff_at y lock_at (no resultados, no picks, no scoring).
+-- lock_at = kickoff_at - 5 min (misma convencion que 20260530160000).
+-- Defensivo: solo partidos no jugados (scheduled / pending_bracket).
+-- Idempotente: valores absolutos, se puede correr varias veces.
+
+update public.matches m
+set kickoff_at = v.kickoff,
+    lock_at    = v.kickoff - interval '5 minutes'
+from (values
+  (1, timestamptz '2026-06-11T19:00:00Z'),
+  (2, timestamptz '2026-06-12T02:00:00Z'),
+  (3, timestamptz '2026-06-19T03:00:00Z'),
+  (4, timestamptz '2026-06-18T16:00:00Z'),
+  (5, timestamptz '2026-06-25T01:00:00Z'),
+  (6, timestamptz '2026-06-25T01:00:00Z'),
+  (7, timestamptz '2026-06-18T22:00:00Z'),
+  (8, timestamptz '2026-06-18T19:00:00Z'),
+  (9, timestamptz '2026-06-24T19:00:00Z'),
+  (10, timestamptz '2026-06-24T19:00:00Z'),
+  (11, timestamptz '2026-06-12T19:00:00Z'),
+  (12, timestamptz '2026-06-13T19:00:00Z'),
+  (13, timestamptz '2026-06-13T22:00:00Z'),
+  (14, timestamptz '2026-06-14T01:00:00Z'),
+  (15, timestamptz '2026-06-20T01:00:00Z'),
+  (16, timestamptz '2026-06-19T22:00:00Z'),
+  (17, timestamptz '2026-06-24T22:00:00Z'),
+  (18, timestamptz '2026-06-24T22:00:00Z'),
+  (19, timestamptz '2026-06-13T01:00:00Z'),
+  (20, timestamptz '2026-06-14T04:00:00Z'),
+  (21, timestamptz '2026-06-19T19:00:00Z'),
+  (22, timestamptz '2026-06-20T04:00:00Z'),
+  (23, timestamptz '2026-06-26T02:00:00Z'),
+  (24, timestamptz '2026-06-26T02:00:00Z'),
+  (25, timestamptz '2026-06-14T17:00:00Z'),
+  (26, timestamptz '2026-06-14T23:00:00Z'),
+  (27, timestamptz '2026-06-20T20:00:00Z'),
+  (28, timestamptz '2026-06-21T00:00:00Z'),
+  (29, timestamptz '2026-06-25T20:00:00Z'),
+  (30, timestamptz '2026-06-25T20:00:00Z'),
+  (31, timestamptz '2026-06-14T20:00:00Z'),
+  (32, timestamptz '2026-06-15T02:00:00Z'),
+  (33, timestamptz '2026-06-20T17:00:00Z'),
+  (34, timestamptz '2026-06-21T04:00:00Z'),
+  (35, timestamptz '2026-06-25T23:00:00Z'),
+  (36, timestamptz '2026-06-25T23:00:00Z'),
+  (37, timestamptz '2026-06-15T22:00:00Z'),
+  (38, timestamptz '2026-06-16T04:00:00Z'),
+  (39, timestamptz '2026-06-21T19:00:00Z'),
+  (40, timestamptz '2026-06-22T01:00:00Z'),
+  (41, timestamptz '2026-06-27T03:00:00Z'),
+  (42, timestamptz '2026-06-27T03:00:00Z'),
+  (43, timestamptz '2026-06-15T17:00:00Z'),
+  (44, timestamptz '2026-06-15T22:00:00Z'),
+  (45, timestamptz '2026-06-21T16:00:00Z'),
+  (46, timestamptz '2026-06-21T22:00:00Z'),
+  (47, timestamptz '2026-06-27T00:00:00Z'),
+  (48, timestamptz '2026-06-27T00:00:00Z'),
+  (49, timestamptz '2026-06-16T19:00:00Z'),
+  (50, timestamptz '2026-06-16T22:00:00Z'),
+  (51, timestamptz '2026-06-22T21:00:00Z'),
+  (52, timestamptz '2026-06-23T00:00:00Z'),
+  (53, timestamptz '2026-06-26T19:00:00Z'),
+  (54, timestamptz '2026-06-26T19:00:00Z'),
+  (55, timestamptz '2026-06-17T01:00:00Z'),
+  (56, timestamptz '2026-06-17T04:00:00Z'),
+  (57, timestamptz '2026-06-22T17:00:00Z'),
+  (58, timestamptz '2026-06-23T03:00:00Z'),
+  (59, timestamptz '2026-06-28T02:00:00Z'),
+  (60, timestamptz '2026-06-28T02:00:00Z'),
+  (61, timestamptz '2026-06-23T17:00:00Z'),
+  (62, timestamptz '2026-06-24T02:00:00Z'),
+  (63, timestamptz '2026-06-17T17:00:00Z'),
+  (64, timestamptz '2026-06-18T02:00:00Z'),
+  (65, timestamptz '2026-06-27T23:30:00Z'),
+  (66, timestamptz '2026-06-27T23:30:00Z'),
+  (67, timestamptz '2026-06-17T20:00:00Z'),
+  (68, timestamptz '2026-06-17T23:00:00Z'),
+  (69, timestamptz '2026-06-23T20:00:00Z'),
+  (70, timestamptz '2026-06-23T23:00:00Z'),
+  (71, timestamptz '2026-06-27T21:00:00Z'),
+  (72, timestamptz '2026-06-27T21:00:00Z'),
+  (73, timestamptz '2026-06-28T19:00:00Z'),
+  (74, timestamptz '2026-06-29T20:30:00Z'),
+  (75, timestamptz '2026-06-30T01:00:00Z'),
+  (76, timestamptz '2026-06-29T17:00:00Z'),
+  (77, timestamptz '2026-06-30T21:00:00Z'),
+  (78, timestamptz '2026-06-30T17:00:00Z'),
+  (79, timestamptz '2026-07-01T01:00:00Z'),
+  (80, timestamptz '2026-07-01T16:00:00Z'),
+  (81, timestamptz '2026-07-02T00:00:00Z'),
+  (82, timestamptz '2026-07-01T20:00:00Z'),
+  (83, timestamptz '2026-07-02T23:00:00Z'),
+  (84, timestamptz '2026-07-02T19:00:00Z'),
+  (85, timestamptz '2026-07-03T03:00:00Z'),
+  (86, timestamptz '2026-07-03T22:00:00Z'),
+  (87, timestamptz '2026-07-04T01:30:00Z'),
+  (88, timestamptz '2026-07-03T18:00:00Z'),
+  (89, timestamptz '2026-07-04T21:00:00Z'),
+  (90, timestamptz '2026-07-04T17:00:00Z'),
+  (91, timestamptz '2026-07-05T20:00:00Z'),
+  (92, timestamptz '2026-07-06T00:00:00Z'),
+  (93, timestamptz '2026-07-06T19:00:00Z'),
+  (94, timestamptz '2026-07-07T00:00:00Z'),
+  (95, timestamptz '2026-07-07T16:00:00Z'),
+  (96, timestamptz '2026-07-07T20:00:00Z'),
+  (97, timestamptz '2026-07-09T20:00:00Z'),
+  (98, timestamptz '2026-07-10T19:00:00Z'),
+  (99, timestamptz '2026-07-11T21:00:00Z'),
+  (100, timestamptz '2026-07-12T01:00:00Z'),
+  (101, timestamptz '2026-07-14T19:00:00Z'),
+  (102, timestamptz '2026-07-15T19:00:00Z'),
+  (103, timestamptz '2026-07-18T21:00:00Z'),
+  (104, timestamptz '2026-07-19T19:00:00Z')
+) as v(num, kickoff)
+where m.match_number = v.num
+  and m.tournament_id = '00000000-0000-0000-0000-00000000a001'
+  and m.status in ('scheduled', 'pending_bracket');

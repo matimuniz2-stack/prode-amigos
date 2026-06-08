@@ -117,6 +117,14 @@ GROUPS = {
 # Dia de cada fecha por grupo (UTC). Hora placeholder fija a 18:00 UTC
 # (15:00 ART, mediodia tipico en EE.UU.); el admin ajusta despues con la
 # hora exacta de FIFA.
+#
+# SUPERADO (2026-06-07): estas fechas y el orden round-robin de abajo eran
+# placeholders sinteticos que NO coincidian con el fixture real (ej:
+# Suiza-Bosnia caia el 12/06 en vez del 18/06). Las fechas reales del
+# calendario FIFA 2026 se aplicaron en la migracion
+# 20260607093000_fix_real_match_dates.sql (mapeadas por par de equipos) y ya
+# estan en los seeds 03/04. Si re-corres este script, volve a aplicar esa
+# migracion despues. Ver scripts/seed_real_dates_2026.py para el mapeo real.
 GROUP_MATCH_DAYS = {
     "A": ["2026-06-11", "2026-06-18", "2026-06-24"],
     "B": ["2026-06-12", "2026-06-18", "2026-06-24"],
