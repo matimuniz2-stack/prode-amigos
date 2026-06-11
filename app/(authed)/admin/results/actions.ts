@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { runPollResults, type PollSummary } from "@/lib/poll-results";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -44,6 +46,31 @@ export async function setMatchResult(input: {
   revalidatePath("/mi-prode");
   revalidatePath("/matches");
   return { ok: true };
+}
+
+/**
+ * Trae los resultados de ESPN ya mismo (mismo camino que el cron, pero
+ * autorizado por ser admin en vez del secret del Vault).
+ */
+export async function pollEspnNow(): Promise<
+  { ok: true; summary: PollSummary } | { ok: false; error: string }
+> {
+  const supabase = await createClient();
+  try {
+    const summary = await runPollResults(
+      supabase as unknown as SupabaseClient,
+      "",
+    );
+    revalidatePath("/admin/results");
+    revalidatePath("/leaderboard");
+    revalidatePath("/mi-prode");
+    revalidatePath("/matches");
+    revalidatePath("/dashboard");
+    return { ok: true, summary };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return { ok: false, error: friendlyError(message) };
+  }
 }
 
 /** Recalcula los puntos de un partido ya finalizado (idempotente). */

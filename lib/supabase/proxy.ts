@@ -50,7 +50,10 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname !== "/" &&
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !request.nextUrl.pathname.startsWith("/auth") &&
+    // El cron de resultados se autentica con su propio secret (Vault), no
+    // con sesión de usuario — redirigirlo a /auth/login lo rompería.
+    !request.nextUrl.pathname.startsWith("/api/cron")
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();

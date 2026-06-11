@@ -13,6 +13,8 @@ import { PrimaryButton } from "@/components/home/primary-button";
 import { StatCard } from "@/components/home/stat-card";
 import { SectionHeading } from "@/components/home/section-heading";
 import { MatchCard } from "@/components/home/match-card";
+import { LiveRefresher } from "@/components/live-refresher";
+import { Flag } from "@/components/flag";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +69,10 @@ export default async function DashboardPage() {
     );
   });
 
+  const liveMatches = (matchesRes.data ?? []).filter(
+    (m) => displayStatus(m, now) === "live" && m.home_team && m.away_team,
+  );
+
   // Los picks dependen de qué partidos están "próximos" → va después.
   const picksByMatch = new Map<
     string,
@@ -102,6 +108,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex animate-fade-up flex-col gap-6">
+      <LiveRefresher enabled={liveMatches.length > 0} />
       {/* Header */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col items-center gap-1 text-center lg:items-start lg:text-left">
@@ -182,6 +189,59 @@ export default async function DashboardPage() {
               {globalsCount ?? 0}/5
             </span>
           </Link>
+
+          {/* En vivo */}
+          {liveMatches.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <SectionHeading>En vivo</SectionHeading>
+              <div className="flex flex-col gap-3">
+                {liveMatches.map((m) => (
+                  <Link
+                    key={m.id}
+                    href={`/matches/${m.id}`}
+                    className="flex flex-col gap-1.5 rounded-2xl bg-cream p-3.5 text-ink shadow-card ring-1 ring-black/5 transition-transform active:scale-[0.99]"
+                  >
+                    <div className="flex items-center justify-between text-xs text-ink/50">
+                      <span className="font-semibold uppercase tracking-wide">
+                        {matchMeta(m)}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-cardred px-2.5 py-0.5 text-xs font-bold text-white">
+                        <span className="size-1.5 animate-pulse rounded-full bg-white" />
+                        EN VIVO
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Flag
+                          emoji={m.home_team?.flag_emoji ?? null}
+                          code={m.home_team?.code ?? null}
+                          name={m.home_team?.name ?? "TBD"}
+                          className="h-6"
+                        />
+                        <span className="truncate font-bold">
+                          {m.home_team?.name}
+                        </span>
+                      </div>
+                      <span className="min-w-[3.5rem] text-center text-lg font-black tabular-nums">
+                        {m.score_home ?? 0} - {m.score_away ?? 0}
+                      </span>
+                      <div className="flex min-w-0 items-center justify-end gap-2">
+                        <span className="truncate text-right font-bold">
+                          {m.away_team?.name}
+                        </span>
+                        <Flag
+                          emoji={m.away_team?.flag_emoji ?? null}
+                          code={m.away_team?.code ?? null}
+                          name={m.away_team?.name ?? "TBD"}
+                          className="h-6"
+                        />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Partidos */}
           <section className="flex flex-col gap-3">

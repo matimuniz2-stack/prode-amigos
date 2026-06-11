@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import { MatchRow } from "@/components/match-row";
+import { LiveRefresher } from "@/components/live-refresher";
 import { StatCard } from "@/components/home/stat-card";
 import {
   displayStatus,
@@ -77,9 +78,13 @@ export default async function MatchesPage() {
   }
 
   const days = groupMatchesByDay(matchesWithPicks);
+  const hasLive = matchesWithPicks.some(
+    (m) => displayStatus(m, now) === "live",
+  );
 
   return (
     <div className="flex flex-col gap-6">
+      <LiveRefresher enabled={hasLive} />
       <header className="flex flex-col gap-4 pt-1">
         <h1 className="text-display text-3xl text-cream">Partidos</h1>
         <div className="grid grid-cols-3 gap-2">

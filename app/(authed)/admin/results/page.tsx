@@ -9,6 +9,7 @@ import {
 } from "@/lib/matches";
 import { SectionHeading } from "@/components/home/section-heading";
 import { AdminResultRow } from "@/components/admin/result-row";
+import { EspnSyncButton } from "@/components/admin/espn-sync-button";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,14 @@ export default async function AdminResultsPage() {
         >
           ← Panel
         </Link>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 rounded-2xl bg-black/15 p-3 ring-1 ring-cream/10">
+        <p className="text-xs text-cream/70">
+          Los partidos en vivo se actualizan solos cada minuto desde ESPN. Esto
+          fuerza una pasada ya mismo.
+        </p>
+        <EspnSyncButton />
       </div>
 
       {days.length === 0 ? (
