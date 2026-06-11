@@ -24,6 +24,8 @@ export type MatchWithPick = MatchWithRelations & {
     | "is_auto_random"
     | "state"
   > | null;
+  /** Puntos que el usuario sacó en este partido (points_log), null si no puntuó aún. */
+  user_points: number | null;
 };
 
 const MATCH_RELATIONS_SELECT = `

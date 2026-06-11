@@ -110,6 +110,18 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
             {matchTimeLabel(match.kickoff_at)}
           </span>
           <div className="flex items-center gap-2">
+            {status === "finished" && match.user_points !== null && (
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-black tabular-nums",
+                  match.user_points > 0
+                    ? "bg-gold text-ink"
+                    : "bg-ink/10 text-ink/50",
+                )}
+              >
+                {match.user_points > 0 ? `+${match.user_points}` : "0"} pts
+              </span>
+            )}
             <StatusBadge status={status} />
             {canExpand && (
               <span
@@ -135,9 +147,18 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
           />
           <div className="flex min-w-[3.5rem] flex-col items-center">
             {match.score_home !== null && match.score_away !== null ? (
-              <span className="text-lg font-black tabular-nums">
-                {match.score_home} - {match.score_away}
-              </span>
+              <>
+                <span className="text-lg font-black tabular-nums">
+                  {match.score_home} - {match.score_away}
+                </span>
+                {hasPick && (
+                  <span className="whitespace-nowrap text-[11px] font-bold tabular-nums text-grass">
+                    tu pick {match.user_pick!.predicted_home}-
+                    {match.user_pick!.predicted_away}
+                    {match.user_pick!.is_auto_random && " 🎲"}
+                  </span>
+                )}
+              </>
             ) : hasPick && !isPending ? (
               <span className="text-sm font-bold tabular-nums text-grass">
                 {match.user_pick!.predicted_home}-

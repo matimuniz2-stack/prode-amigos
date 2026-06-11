@@ -46,21 +46,33 @@ export default async function MatchesPage() {
 
   const matches = matchesData ?? [];
 
-  const { data: picksData } = await supabase
-    .from("match_predictions")
-    .select(
-      "id, match_id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random, state",
-    )
-    .eq("user_id", userId);
+  const [{ data: picksData }, { data: pointsData }] = await Promise.all([
+    supabase
+      .from("match_predictions")
+      .select(
+        "id, match_id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random, state",
+      )
+      .eq("user_id", userId),
+    supabase
+      .from("points_log")
+      .select("source_id, points")
+      .eq("user_id", userId)
+      .eq("source_kind", "match"),
+  ]);
 
   const picksByMatch = new Map<string, MatchWithPick["user_pick"]>();
   for (const pick of picksData ?? []) {
     picksByMatch.set(pick.match_id, pick);
   }
+  const pointsByMatch = new Map<string, number>();
+  for (const row of pointsData ?? []) {
+    if (row.source_id !== null) pointsByMatch.set(row.source_id, row.points);
+  }
 
   const matchesWithPicks: MatchWithPick[] = matches.map((m) => ({
     ...m,
     user_pick: picksByMatch.get(m.id) ?? null,
+    user_points: pointsByMatch.get(m.id) ?? null,
   }));
 
   const now = Date.now();
