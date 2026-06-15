@@ -15,6 +15,8 @@ import { SectionHeading } from "@/components/home/section-heading";
 import { MatchCard } from "@/components/home/match-card";
 import { LiveRefresher } from "@/components/live-refresher";
 import { Flag } from "@/components/flag";
+import { RecapFecha } from "@/components/home/recap-fecha";
+import { computeRecap } from "@/lib/recap";
 
 export const dynamic = "force-dynamic";
 
@@ -106,6 +108,9 @@ export default async function DashboardPage() {
   const myRank = myRow?.rank ?? null;
   const myNick = me?.nickname ?? "vos";
 
+  // Recap de la última fecha terminada (Fase 4).
+  const recap = await computeRecap(supabase, matchesRes.data ?? []);
+
   return (
     <div className="flex animate-fade-up flex-col gap-6">
       <LiveRefresher enabled={liveMatches.length > 0} />
@@ -173,6 +178,9 @@ export default async function DashboardPage() {
               partidos
             </StatCard>
           </div>
+
+          {/* Recap de la última fecha */}
+          {recap && <RecapFecha recap={recap} />}
 
           {/* Acceso a globales */}
           <Link
