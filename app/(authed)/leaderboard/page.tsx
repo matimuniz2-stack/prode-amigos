@@ -107,6 +107,15 @@ export default async function LeaderboardPage() {
   const top3 = hasScores ? standings.slice(0, 3) : [];
   const rest = hasScores ? standings.slice(3) : standings;
 
+  // "Tu pelea": rival de arriba (al que persigo) y de abajo (el que me persigue).
+  const myIdx = standings.findIndex((s) => s.userId === myId);
+  const me = myIdx >= 0 ? standings[myIdx] : null;
+  const chasing = myIdx > 0 ? standings[myIdx - 1] : null;
+  const chaser =
+    myIdx >= 0 && myIdx < standings.length - 1 ? standings[myIdx + 1] : null;
+  const gapLabel = (n: number) =>
+    n === 0 ? "empate" : `${n} pt${n === 1 ? "" : "s"}`;
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <AutoRefresh seconds={60} />
@@ -189,6 +198,39 @@ export default async function LeaderboardPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Tu pelea: distancia con el de arriba y el de abajo */}
+      {hasScores && me && (
+        <div className="rounded-2xl bg-cream p-4 text-ink shadow-card ring-1 ring-black/5">
+          <div className="text-[11px] font-bold uppercase tracking-wide text-ink/50">
+            ⚔️ Tu pelea
+          </div>
+          <div className="mt-1.5 flex flex-col gap-1 text-sm">
+            {chasing ? (
+              <p>
+                Vas <span className="font-black tabular-nums">{me.rank}°</span> — a{" "}
+                <span className="font-black tabular-nums text-cardred">
+                  {gapLabel(chasing.points - me.points)}
+                </span>{" "}
+                de <span className="font-semibold">{chasing.nickname}</span>
+              </p>
+            ) : (
+              <p className="font-bold text-pitch">
+                👑 Vas puntero — no aflojes
+              </p>
+            )}
+            {chaser && (
+              <p className="text-ink/70">
+                <span className="font-semibold text-ink">{chaser.nickname}</span>{" "}
+                te sigue a{" "}
+                <span className="font-black tabular-nums">
+                  {gapLabel(me.points - chaser.points)}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
       )}
 
