@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardList, Home, Trophy, User } from "lucide-react";
+import { ClipboardList, Home, Radio, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/dashboard", label: "Inicio", icon: Home, soon: false },
   { href: "/matches", label: "Prode", icon: ClipboardList, soon: false },
   { href: "/leaderboard", label: "Ranking", icon: Trophy, soon: false },
+  { href: "/sala-en-vivo", label: "En vivo", icon: Radio, soon: false },
   { href: "/mi-prode", label: "Perfil", icon: User, soon: false },
 ];
 

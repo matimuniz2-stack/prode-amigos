@@ -18,10 +18,10 @@ export interface TagDef {
   tone: TagTone;
 }
 
-/** Etiquetas que el admin asigna a mano (las subjetivas). */
+/** Etiquetas que el admin asigna a mano (las subjetivas).
+ * "Pecho frío" pasó a ser AUTOMÁTICA (ver lib/badges.ts), por eso no está acá. */
 export const PRESET_TAGS: TagDef[] = [
   { label: "🧠 El Maestro", tone: "grass" },
-  { label: "🧊 Pecho frío", tone: "sky" },
 ];
 
 /** Cuántas etiquetas manuales como máximo por participante. */
@@ -35,6 +35,10 @@ const TONE_BY_LABEL: Record<string, TagTone> = {
   "🔥 En racha": "gold",
   "🐐 El GOAT": "gold",
   "🤡 Mufa": "red",
+  "👻 El Fantasma": "sky",
+  "🐔 El Cagón": "sky",
+  "💣 El Cebado": "gold",
+  "🏅 MVP de la Fecha": "gold",
 };
 
 /** Estilos de chip pensados para fondo claro (cards crema del ranking/admin). */

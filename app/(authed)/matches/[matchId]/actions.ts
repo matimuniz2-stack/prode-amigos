@@ -99,3 +99,47 @@ export async function submitPick(
   revalidatePath("/mi-prode");
   return { ok: true };
 }
+
+export async function sendChatMessage(
+  matchId: string,
+  formData: FormData,
+): Promise<SubmitResult> {
+  const raw = formData.get("content");
+  const content = typeof raw === "string" ? raw.trim() : "";
+  if (content.length < 1) {
+    return { ok: false, error: "Escribí algo." };
+  }
+  if (content.length > 280) {
+    return { ok: false, error: "Máximo 280 caracteres." };
+  }
+
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims) {
+    redirect("/auth/login");
+  }
+  const userId = claims.claims.sub as string;
+
+  // La RLS valida que el partido esté cerrado; igual chequeamos para dar un
+  // error lindo en vez del 42501.
+  const { data: match } = await supabase
+    .from("matches")
+    .select("lock_at, status")
+    .eq("id", matchId)
+    .maybeSingle();
+  if (!match) return { ok: false, error: "No encontré el partido." };
+  if (new Date(match.lock_at).getTime() > Date.now()) {
+    return { ok: false, error: "El chat se abre cuando cierra el partido." };
+  }
+
+  const { error } = await supabase
+    .from("match_chat_messages")
+    .insert({ match_id: matchId, user_id: userId, content });
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  return { ok: true };
+}

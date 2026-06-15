@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
@@ -5,6 +6,8 @@ import { AutoRefresh } from "@/components/auto-refresh";
 import { SectionHeading } from "@/components/home/section-heading";
 import { TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
 import { computeAutoBadges } from "@/lib/badges";
+import { computeCareer } from "@/lib/career";
+import { CareerChart } from "@/components/leaderboard/career-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -162,6 +165,9 @@ export default async function LeaderboardPage() {
   };
   const myMove = me ? moveOf(me.userId, me.rank) : null;
 
+  // Gráfico de la carrera: acumulado por fecha (solo si ya se jugó algo).
+  const career = hasScores ? await computeCareer(supabase) : null;
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <AutoRefresh seconds={60} />
@@ -192,7 +198,11 @@ export default async function LeaderboardPage() {
             const m = PODIUM[idx];
             const isMe = s.userId === myId;
             return (
-              <div key={s.userId} className="flex flex-1 flex-col items-center gap-1">
+              <Link
+                key={s.userId}
+                href={`/jugador/${s.userId}`}
+                className="flex flex-1 flex-col items-center gap-1 transition-transform active:scale-95"
+              >
                 {idx === 0 && (
                   <span aria-hidden className="-mb-1 text-lg">
                     👑
@@ -242,7 +252,7 @@ export default async function LeaderboardPage() {
                 >
                   {m.medal}
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -308,10 +318,11 @@ export default async function LeaderboardPage() {
           {rest.map((s, i) => {
             const isMe = s.userId === myId;
             return (
-              <div
+              <Link
                 key={s.userId}
+                href={`/jugador/${s.userId}`}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3",
+                  "flex items-center gap-3 px-4 py-3 transition active:bg-ink/[0.03]",
                   i > 0 && "border-t border-ink/10",
                   isMe && "bg-gold/20",
                 )}
@@ -354,10 +365,14 @@ export default async function LeaderboardPage() {
                     pts
                   </span>
                 </span>
-              </div>
+              </Link>
             );
           })}
         </div>
+      )}
+
+      {career && career.days.length > 0 && (
+        <CareerChart career={career} myId={myId} />
       )}
     </div>
   );

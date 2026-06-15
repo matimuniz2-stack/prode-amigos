@@ -7,6 +7,8 @@ import {
   MatchOthersPicks,
   type MatchPickEntry,
 } from "@/components/match-others-picks";
+import { MatchGrieta } from "@/components/match-grieta";
+import { MatchChat, type ChatMessage } from "@/components/match-chat";
 import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import {
@@ -80,6 +82,7 @@ export default async function MatchDetailPage({
   const projectLive = isLive && hasScore;
   let otherPicks: MatchPickEntry[] = [];
   let myProjected: number | null = null;
+  let chatMessages: ChatMessage[] = [];
   if (isLocked) {
     const [{ data: allPicks }, { data: matchPoints }, { data: ruleRows }] =
       await Promise.all([
@@ -163,6 +166,30 @@ export default async function MatchDetailPage({
         }
         return a.nickname.localeCompare(b.nickname, "es");
       });
+
+    // Chat del partido (post-lock).
+    const { data: chatRows } = await supabase
+      .from("match_chat_messages")
+      .select("id, content, created_at, user_id")
+      .eq("match_id", match.id)
+      .order("created_at", { ascending: true });
+    const missing = [
+      ...new Set((chatRows ?? []).map((m) => m.user_id)),
+    ].filter((uid) => !nameById.has(uid));
+    if (missing.length > 0) {
+      const { data: extra } = await supabase
+        .from("profiles")
+        .select("id, nickname")
+        .in("id", missing);
+      for (const p of extra ?? []) nameById.set(p.id, p.nickname);
+    }
+    chatMessages = (chatRows ?? []).map((m) => ({
+      id: m.id,
+      nickname: nameById.get(m.user_id) ?? "Jugador",
+      content: m.content,
+      time: matchTimeLabel(m.created_at),
+      isSelf: m.user_id === userId,
+    }));
   }
 
   return (
@@ -281,12 +308,25 @@ export default async function MatchDetailPage({
                     </span>
                   )}
                 </h3>
+                {otherPicks.length > 0 && (
+                  <MatchGrieta
+                    entries={otherPicks}
+                    homeLabel={
+                      match.home_team?.name ?? match.home_placeholder ?? "Local"
+                    }
+                    awayLabel={
+                      match.away_team?.name ?? match.away_placeholder ?? "Visita"
+                    }
+                  />
+                )}
                 <MatchOthersPicks
                   entries={otherPicks}
                   finished={isFinished}
                   live={projectLive}
                 />
               </div>
+
+              <MatchChat matchId={match.id} messages={chatMessages} />
             </div>
           ) : (
             <div className="flex flex-col gap-4">

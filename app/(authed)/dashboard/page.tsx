@@ -16,7 +16,9 @@ import { MatchCard } from "@/components/home/match-card";
 import { LiveRefresher } from "@/components/live-refresher";
 import { Flag } from "@/components/flag";
 import { RecapFecha } from "@/components/home/recap-fecha";
+import { DiarioProde } from "@/components/home/diario-prode";
 import { computeRecap } from "@/lib/recap";
+import { buildDiario } from "@/lib/diario";
 
 export const dynamic = "force-dynamic";
 
@@ -179,8 +181,9 @@ export default async function DashboardPage() {
             </StatCard>
           </div>
 
-          {/* Recap de la última fecha */}
+          {/* Recap de la última fecha + diario compartible */}
           {recap && <RecapFecha recap={recap} />}
+          {recap && <DiarioProde text={buildDiario(recap)} />}
 
           {/* Acceso a globales */}
           <Link

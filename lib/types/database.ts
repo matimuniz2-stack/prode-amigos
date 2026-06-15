@@ -303,6 +303,30 @@ export type Database = {
         }
         Relationships: []
       }
+      match_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_predictions: {
         Row: {
           created_at: string
