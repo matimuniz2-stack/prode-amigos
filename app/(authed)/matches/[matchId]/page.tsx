@@ -10,6 +10,11 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import {
+  scorePrediction,
+  type PredictionInput,
+  type ScoringRule,
+} from "@/lib/scoring";
+import {
   matchDayLabel,
   matchSelect,
   matchTimeLabel,
@@ -71,21 +76,34 @@ export default async function MatchDetailPage({
 
   // Una vez cerrado el partido se revelan los picks de todos (la RLS ya
   // permite leer los ajenos sólo cuando lock_at <= now()).
+  const stageCode = match.stage?.code ?? "group";
+  const projectLive = isLive && hasScore;
   let otherPicks: MatchPickEntry[] = [];
+  let myProjected: number | null = null;
   if (isLocked) {
-    const [{ data: allPicks }, { data: matchPoints }] = await Promise.all([
-      supabase
-        .from("match_predictions")
-        .select(
-          "user_id, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random",
-        )
-        .eq("match_id", match.id),
-      supabase
-        .from("points_log")
-        .select("user_id, points")
-        .eq("source_kind", "match")
-        .eq("source_id", match.id),
-    ]);
+    const [{ data: allPicks }, { data: matchPoints }, { data: ruleRows }] =
+      await Promise.all([
+        supabase
+          .from("match_predictions")
+          .select(
+            "user_id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random",
+          )
+          .eq("match_id", match.id),
+        supabase
+          .from("points_log")
+          .select("user_id, points")
+          .eq("source_kind", "match")
+          .eq("source_id", match.id),
+        projectLive
+          ? supabase
+              .from("scoring_rules")
+              .select("rule_key, scope_stage, points")
+              .eq("tournament_id", match.tournament_id)
+              .is("active_to", null)
+          : Promise.resolve({ data: [] as ScoringRule[] }),
+      ]);
+
+    const rules = (ruleRows ?? []) as ScoringRule[];
 
     const ids = [...new Set((allPicks ?? []).map((p) => p.user_id))];
     const { data: profiles } = ids.length
@@ -102,21 +120,41 @@ export default async function MatchDetailPage({
         .map((t) => [t.id, t.name]),
     );
 
+    // Puntos: si terminó, los reales (points_log); si está en juego, los
+    // proyectados sobre el marcador actual.
+    const pointsFor = (p: { user_id: string } & PredictionInput): number | null => {
+      if (isFinished) return pointsById.get(p.user_id) ?? null;
+      if (projectLive) {
+        return scorePrediction(
+          p,
+          match.score_home as number,
+          match.score_away as number,
+          stageCode,
+          rules,
+        ).points;
+      }
+      return null;
+    };
+
     otherPicks = (allPicks ?? [])
-      .map((p) => ({
-        userId: p.user_id,
-        nickname: nameById.get(p.user_id) ?? "Jugador",
-        predictedHome: p.predicted_home,
-        predictedAway: p.predicted_away,
-        isAutoRandom: p.is_auto_random,
-        koWinnerName: p.predicted_ko_winner_team_id
-          ? (teamNameById.get(p.predicted_ko_winner_team_id) ?? null)
-          : null,
-        points: pointsById.get(p.user_id) ?? null,
-        isSelf: p.user_id === userId,
-      }))
+      .map((p) => {
+        const points = pointsFor(p);
+        if (p.user_id === userId) myProjected = projectLive ? points : null;
+        return {
+          userId: p.user_id,
+          nickname: nameById.get(p.user_id) ?? "Jugador",
+          predictedHome: p.predicted_home,
+          predictedAway: p.predicted_away,
+          isAutoRandom: p.is_auto_random,
+          koWinnerName: p.predicted_ko_winner_team_id
+            ? (teamNameById.get(p.predicted_ko_winner_team_id) ?? null)
+            : null,
+          points,
+          isSelf: p.user_id === userId,
+        };
+      })
       .sort((a, b) => {
-        if (isFinished) {
+        if (isFinished || projectLive) {
           const pb = b.points ?? -1;
           const pa = a.points ?? -1;
           if (pb !== pa) return pb - pa;
@@ -209,6 +247,20 @@ export default async function MatchDetailPage({
                   No cargaste pick antes del cierre.
                 </p>
               )}
+              {projectLive && pick && myProjected !== null && (
+                <div
+                  className={cn(
+                    "rounded-xl px-3 py-2 text-sm font-bold",
+                    myProjected > 0
+                      ? "bg-grass/15 text-grass ring-1 ring-grass/30"
+                      : "bg-ink/5 text-ink/60",
+                  )}
+                >
+                  {myProjected > 0
+                    ? `🟢 Si termina así, sumás +${myProjected} pts`
+                    : "⚪ Si termina así, no sumás puntos"}
+                </div>
+              )}
               {isFinished &&
                 match.score_home !== null &&
                 match.score_away !== null && (
@@ -223,8 +275,17 @@ export default async function MatchDetailPage({
               <div className="mt-2 flex flex-col gap-3 border-t border-black/5 pt-4">
                 <h3 className="text-sm font-extrabold">
                   Lo que pusieron los demás
+                  {projectLive && (
+                    <span className="ml-1 font-medium text-ink/45">
+                      · puntos proyectados (~)
+                    </span>
+                  )}
                 </h3>
-                <MatchOthersPicks entries={otherPicks} finished={isFinished} />
+                <MatchOthersPicks
+                  entries={otherPicks}
+                  finished={isFinished}
+                  live={projectLive}
+                />
               </div>
             </div>
           ) : (

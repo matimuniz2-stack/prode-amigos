@@ -20,9 +20,12 @@ function initial(name: string) {
 export function MatchOthersPicks({
   entries,
   finished,
+  live = false,
 }: {
   entries: MatchPickEntry[];
   finished: boolean;
+  /** Partido en juego: los puntos son proyectados ("si termina así"). */
+  live?: boolean;
 }) {
   if (entries.length === 0) {
     return (
@@ -61,13 +64,21 @@ export function MatchOthersPicks({
               {e.predictedHome}-{e.predictedAway}
               {e.isAutoRandom && <span title="pick auto-random"> 🎲</span>}
             </span>
-            {finished && e.points !== null && (
+            {(finished || live) && e.points !== null && (
               <span
                 className={cn(
                   "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-black tabular-nums",
-                  e.points > 0 ? "bg-gold text-ink" : "bg-ink/10 text-ink/50",
+                  live
+                    ? e.points > 0
+                      ? "bg-grass/20 text-grass ring-1 ring-grass/40"
+                      : "bg-ink/10 text-ink/40"
+                    : e.points > 0
+                      ? "bg-gold text-ink"
+                      : "bg-ink/10 text-ink/50",
                 )}
+                title={live ? "si termina así" : undefined}
               >
+                {live && "~"}
                 {e.points > 0 ? `+${e.points}` : "0"}
               </span>
             )}
