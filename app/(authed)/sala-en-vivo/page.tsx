@@ -71,29 +71,46 @@ export default async function SalaEnVivoPage() {
   const liveIds = live.map((m) => m.id);
   const tournamentId = live[0].tournament_id;
 
-  const [{ data: picks }, { data: ruleRows }, { data: profiles }, { data: proj }] =
-    await Promise.all([
-      supabase
-        .from("match_predictions")
-        .select(
-          "user_id, match_id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random",
-        )
-        .in("match_id", liveIds)
-        .returns<PickRow[]>(),
-      supabase
-        .from("scoring_rules")
-        .select("rule_key, scope_stage, points")
-        .eq("tournament_id", tournamentId)
-        .is("active_to", null),
-      supabase
-        .from("profiles")
-        .select("id, nickname")
-        .returns<{ id: string; nickname: string }[]>(),
-      supabase
-        .from("leaderboard_projection")
-        .select("user_id, nickname, total_points, rank")
-        .order("rank", { ascending: true }),
-    ]);
+  const [
+    { data: picks },
+    { data: ruleRows },
+    { data: profiles },
+    { data: proj },
+    { data: reactRows },
+  ] = await Promise.all([
+    supabase
+      .from("match_predictions")
+      .select(
+        "user_id, match_id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random",
+      )
+      .in("match_id", liveIds)
+      .returns<PickRow[]>(),
+    supabase
+      .from("scoring_rules")
+      .select("rule_key, scope_stage, points")
+      .eq("tournament_id", tournamentId)
+      .is("active_to", null),
+    supabase
+      .from("profiles")
+      .select("id, nickname")
+      .returns<{ id: string; nickname: string }[]>(),
+    supabase
+      .from("leaderboard_projection")
+      .select("user_id, nickname, total_points, rank")
+      .order("rank", { ascending: true }),
+    supabase
+      .from("pick_reactions")
+      .select("match_id, target_user_id, emoji, reactor_user_id")
+      .in("match_id", liveIds)
+      .returns<
+        {
+          match_id: string;
+          target_user_id: string;
+          emoji: string;
+          reactor_user_id: string;
+        }[]
+      >(),
+  ]);
 
   const rules = (ruleRows ?? []) as ScoringRule[];
   const nameById = new Map((profiles ?? []).map((p) => [p.id, p.nickname]));
@@ -102,6 +119,22 @@ export default async function SalaEnVivoPage() {
     const arr = picksByMatch.get(p.match_id) ?? [];
     arr.push(p);
     picksByMatch.set(p.match_id, arr);
+  }
+
+  // Reacciones: matchId -> targetUserId -> emoji -> {count, mine}
+  const reByMatchUser = new Map<
+    string,
+    Map<string, Map<string, { count: number; mine: boolean }>>
+  >();
+  for (const r of reactRows ?? []) {
+    const byUser = reByMatchUser.get(r.match_id) ?? new Map();
+    const byEmoji = byUser.get(r.target_user_id) ?? new Map();
+    const cur = byEmoji.get(r.emoji) ?? { count: 0, mine: false };
+    cur.count += 1;
+    if (r.reactor_user_id === myId) cur.mine = true;
+    byEmoji.set(r.emoji, cur);
+    byUser.set(r.target_user_id, byEmoji);
+    reByMatchUser.set(r.match_id, byUser);
   }
 
   // Proyección agregada: cuántos puntos suma cada uno si TODOS los partidos en
@@ -141,6 +174,9 @@ export default async function SalaEnVivoPage() {
             : null,
           points,
           isSelf: p.user_id === myId,
+          reactions: [
+            ...(reByMatchUser.get(m.id)?.get(p.user_id)?.entries() ?? []),
+          ].map(([emoji, v]) => ({ emoji, count: v.count, mine: v.mine })),
         };
       })
       .sort((a, b) => (b.points ?? -1) - (a.points ?? -1));
@@ -249,7 +285,12 @@ export default async function SalaEnVivoPage() {
                 homeLabel={match.home_team?.name ?? "Local"}
                 awayLabel={match.away_team?.name ?? "Visita"}
               />
-              <MatchOthersPicks entries={entries} finished={false} live={hasScore} />
+              <MatchOthersPicks
+                entries={entries}
+                finished={false}
+                live={hasScore}
+                matchId={match.id}
+              />
             </>
           ) : (
             <p className="text-sm text-ink/60">Nadie cargó pick para este partido.</p>

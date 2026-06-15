@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isReactionEmoji } from "@/lib/reactions";
 
 export type SubmitResult = { ok: true } | { ok: false; error: string };
 
@@ -141,5 +142,55 @@ export async function sendChatMessage(
   }
 
   revalidatePath(`/matches/${matchId}`);
+  return { ok: true };
+}
+
+export async function toggleReaction(
+  matchId: string,
+  targetUserId: string,
+  emoji: string,
+): Promise<SubmitResult> {
+  if (!isReactionEmoji(emoji)) {
+    return { ok: false, error: "Emoji no permitido." };
+  }
+
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims) {
+    redirect("/auth/login");
+  }
+  const userId = claims.claims.sub as string;
+  if (userId === targetUserId) {
+    return { ok: false, error: "No te podés reaccionar a vos mismo." };
+  }
+
+  // Toggle: si ya existe la reacción, la saco; si no, la agrego.
+  const { data: existing } = await supabase
+    .from("pick_reactions")
+    .select("id")
+    .eq("match_id", matchId)
+    .eq("target_user_id", targetUserId)
+    .eq("reactor_user_id", userId)
+    .eq("emoji", emoji)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("pick_reactions")
+      .delete()
+      .eq("id", existing.id);
+    if (error) return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase.from("pick_reactions").insert({
+      match_id: matchId,
+      target_user_id: targetUserId,
+      reactor_user_id: userId,
+      emoji,
+    });
+    if (error) return { ok: false, error: error.message };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/sala-en-vivo");
   return { ok: true };
 }

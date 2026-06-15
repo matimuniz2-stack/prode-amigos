@@ -327,6 +327,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pick_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          match_id: string
+          reactor_user_id: string
+          target_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          match_id: string
+          reactor_user_id: string
+          target_user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          match_id?: string
+          reactor_user_id?: string
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       match_predictions: {
         Row: {
           created_at: string

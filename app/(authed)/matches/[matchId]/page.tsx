@@ -167,6 +167,27 @@ export default async function MatchDetailPage({
         return a.nickname.localeCompare(b.nickname, "es");
       });
 
+    // Reacciones con emoji a cada pick (chicana post-lock).
+    const { data: reactRows } = await supabase
+      .from("pick_reactions")
+      .select("target_user_id, emoji, reactor_user_id")
+      .eq("match_id", match.id);
+    const reByUser = new Map<string, Map<string, { count: number; mine: boolean }>>();
+    for (const r of reactRows ?? []) {
+      const m = reByUser.get(r.target_user_id) ?? new Map();
+      const cur = m.get(r.emoji) ?? { count: 0, mine: false };
+      cur.count += 1;
+      if (r.reactor_user_id === userId) cur.mine = true;
+      m.set(r.emoji, cur);
+      reByUser.set(r.target_user_id, m);
+    }
+    otherPicks = otherPicks.map((e) => ({
+      ...e,
+      reactions: [...(reByUser.get(e.userId)?.entries() ?? [])].map(
+        ([emoji, v]) => ({ emoji, count: v.count, mine: v.mine }),
+      ),
+    }));
+
     // Chat del partido (post-lock).
     const { data: chatRows } = await supabase
       .from("match_chat_messages")
@@ -323,6 +344,7 @@ export default async function MatchDetailPage({
                   entries={otherPicks}
                   finished={isFinished}
                   live={projectLive}
+                  matchId={match.id}
                 />
               </div>
 
