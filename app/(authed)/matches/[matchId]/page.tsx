@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Countdown } from "@/components/countdown";
 import { PickForm } from "@/components/pick-form";
+import {
+  MatchOthersPicks,
+  type MatchPickEntry,
+} from "@/components/match-others-picks";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/utils";
 import {
@@ -60,6 +64,64 @@ export default async function MatchDetailPage({
   const stageLabel = match.stage
     ? (stageLabels[match.stage.code] ?? match.stage.code)
     : "";
+
+  // Una vez cerrado el partido se revelan los picks de todos (la RLS ya
+  // permite leer los ajenos sólo cuando lock_at <= now()).
+  let otherPicks: MatchPickEntry[] = [];
+  if (isLocked) {
+    const [{ data: allPicks }, { data: matchPoints }] = await Promise.all([
+      supabase
+        .from("match_predictions")
+        .select(
+          "user_id, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random",
+        )
+        .eq("match_id", match.id),
+      supabase
+        .from("points_log")
+        .select("user_id, points")
+        .eq("source_kind", "match")
+        .eq("source_id", match.id),
+    ]);
+
+    const ids = [...new Set((allPicks ?? []).map((p) => p.user_id))];
+    const { data: profiles } = ids.length
+      ? await supabase.from("profiles").select("id, nickname").in("id", ids)
+      : { data: [] as { id: string; nickname: string }[] };
+
+    const nameById = new Map((profiles ?? []).map((p) => [p.id, p.nickname]));
+    const pointsById = new Map(
+      (matchPoints ?? []).map((r) => [r.user_id, r.points]),
+    );
+    const teamNameById = new Map(
+      [match.home_team, match.away_team]
+        .filter((t): t is NonNullable<typeof t> => t !== null)
+        .map((t) => [t.id, t.name]),
+    );
+
+    otherPicks = (allPicks ?? [])
+      .map((p) => ({
+        userId: p.user_id,
+        nickname: nameById.get(p.user_id) ?? "Jugador",
+        predictedHome: p.predicted_home,
+        predictedAway: p.predicted_away,
+        isAutoRandom: p.is_auto_random,
+        koWinnerName: p.predicted_ko_winner_team_id
+          ? (teamNameById.get(p.predicted_ko_winner_team_id) ?? null)
+          : null,
+        points: pointsById.get(p.user_id) ?? null,
+        isSelf: p.user_id === userId,
+      }))
+      .sort((a, b) => {
+        if (isFinished) {
+          const pb = b.points ?? -1;
+          const pa = a.points ?? -1;
+          if (pb !== pa) return pb - pa;
+        } else if (a.isSelf !== b.isSelf) {
+          return a.isSelf ? -1 : 1;
+        }
+        return a.nickname.localeCompare(b.nickname, "es");
+      });
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 pt-1">
@@ -133,6 +195,13 @@ export default async function MatchDetailPage({
                     </span>
                   </p>
                 )}
+
+              <div className="mt-2 flex flex-col gap-3 border-t border-black/5 pt-4">
+                <h3 className="text-sm font-extrabold">
+                  Lo que pusieron los demás
+                </h3>
+                <MatchOthersPicks entries={otherPicks} finished={isFinished} />
+              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
