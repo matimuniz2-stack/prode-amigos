@@ -33,6 +33,27 @@ function initial(name: string) {
   return name.trim().charAt(0).toUpperCase() || "?";
 }
 
+/** Flecha de movimiento en el ranking. delta>0 = subio puestos. */
+function Move({ delta }: { delta: number | null }) {
+  if (delta === null) return null;
+  if (delta === 0) {
+    return <span className="text-[11px] font-bold text-ink/30">=</span>;
+  }
+  const up = delta > 0;
+  return (
+    <span
+      className={cn(
+        "text-[11px] font-black tabular-nums",
+        up ? "text-grass" : "text-cardred",
+      )}
+      title={up ? `subió ${delta}` : `bajó ${-delta}`}
+    >
+      {up ? "▲" : "▼"}
+      {Math.abs(delta)}
+    </span>
+  );
+}
+
 // Meta por puesto del podio (índice 0 = 1°, 1 = 2°, 2 = 3°).
 const PODIUM = [
   { bar: "h-20 bg-gradient-to-b from-gold to-amber-500", ring: "ring-gold", medal: "🥇", pts: "text-gold" },
@@ -116,6 +137,31 @@ export default async function LeaderboardPage() {
   const gapLabel = (n: number) =>
     n === 0 ? "empate" : `${n} pt${n === 1 ? "" : "s"}`;
 
+  // Movimiento ▲▼: rank actual vs la foto mas reciente del ranking.
+  // delta > 0 = subio puestos (el numero de rank bajo). Si no hay baseline
+  // (tabla recien creada o sin partidos) queda vacio y no se muestra flecha.
+  const prevRankByUser = new Map<string, number>();
+  if (hasScores) {
+    const { data: lastSnap } = await supabase
+      .from("leaderboard_snapshots")
+      .select("snapshot_date")
+      .order("snapshot_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastSnap?.snapshot_date) {
+      const { data: baseRows } = await supabase
+        .from("leaderboard_snapshots")
+        .select("user_id, rank")
+        .eq("snapshot_date", lastSnap.snapshot_date);
+      for (const r of baseRows ?? []) prevRankByUser.set(r.user_id, r.rank);
+    }
+  }
+  const moveOf = (userId: string, rank: number): number | null => {
+    const prev = prevRankByUser.get(userId);
+    return prev === undefined ? null : prev - rank;
+  };
+  const myMove = me ? moveOf(me.userId, me.rank) : null;
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <AutoRefresh seconds={60} />
@@ -167,6 +213,7 @@ export default async function LeaderboardPage() {
                 <span className={cn("text-xs font-extrabold tabular-nums", m.pts)}>
                   {s.points} pts
                 </span>
+                <Move delta={moveOf(s.userId, s.rank)} />
                 {s.prize > 0 && (
                   <span className="text-[10px] font-bold text-gold/90">
                     {money(s.prize, currency)}
@@ -208,6 +255,20 @@ export default async function LeaderboardPage() {
             ⚔️ Tu pelea
           </div>
           <div className="mt-1.5 flex flex-col gap-1 text-sm">
+            {myMove !== null && myMove !== 0 && (
+              <p className="font-bold">
+                {myMove > 0 ? (
+                  <span className="text-grass">
+                    🔥 Subiste {myMove} puesto{myMove === 1 ? "" : "s"}
+                  </span>
+                ) : (
+                  <span className="text-cardred">
+                    😬 Bajaste {-myMove} puesto{myMove === -1 ? "" : "s"}
+                  </span>
+                )}{" "}
+                desde la última fecha
+              </p>
+            )}
             {chasing ? (
               <p>
                 Vas <span className="font-black tabular-nums">{me.rank}°</span> — a{" "}
@@ -255,8 +316,11 @@ export default async function LeaderboardPage() {
                   isMe && "bg-gold/20",
                 )}
               >
-                <span className="w-6 text-center text-sm font-bold tabular-nums text-ink/50">
-                  {hasScores ? s.rank : "–"}
+                <span className="flex w-9 flex-col items-center leading-tight">
+                  <span className="text-sm font-bold tabular-nums text-ink/50">
+                    {hasScores ? s.rank : "–"}
+                  </span>
+                  {hasScores && <Move delta={moveOf(s.userId, s.rank)} />}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="truncate font-semibold text-ink">

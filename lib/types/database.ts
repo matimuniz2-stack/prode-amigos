@@ -273,6 +273,36 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard_snapshots: {
+        Row: {
+          captured_at: string
+          id: string
+          rank: number
+          snapshot_date: string
+          total_points: number
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          captured_at?: string
+          id?: string
+          rank: number
+          snapshot_date: string
+          total_points: number
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          captured_at?: string
+          id?: string
+          rank?: number
+          snapshot_date?: string
+          total_points?: number
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_predictions: {
         Row: {
           created_at: string
