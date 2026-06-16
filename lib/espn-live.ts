@@ -134,11 +134,18 @@ interface SummaryKeyEvent {
   goalPositionY?: number;
 }
 
-/** Trae y parsea el detalle en vivo de un partido por su id de ESPN. */
+/** Trae y parsea el detalle en vivo de un partido por su id de ESPN.
+ *  Los datos estructurados (códigos, stats, posiciones) salen del idioma por
+ *  defecto porque las abreviaturas coinciden con nuestra DB (en español ESPN
+ *  cambia algunas, ej. IRQ→IRK, y romperían el mapeo). El relato se trae
+ *  aparte en castellano: es texto puro, no necesita mapeo de equipos. */
 export async function fetchLiveMatch(eventId: string): Promise<LiveMatch | null> {
-  const res = await fetch(`${SUMMARY_URL}?event=${eventId}`, {
-    cache: "no-store",
-  });
+  const [res, esRes] = await Promise.all([
+    fetch(`${SUMMARY_URL}?event=${eventId}`, { cache: "no-store" }),
+    fetch(`${SUMMARY_URL}?event=${eventId}&lang=es&region=ar`, {
+      cache: "no-store",
+    }).catch(() => null),
+  ]);
   if (!res.ok) return null;
   const j = (await res.json()) as {
     header?: {
@@ -211,7 +218,18 @@ export async function fetchLiveMatch(eventId: string): Promise<LiveMatch | null>
     });
   }
 
-  const commentary = (j.commentary ?? [])
+  // Relato en castellano (respuesta es); si falla, usamos la default.
+  let esJson: { commentary?: Array<{ time?: { value?: number }; text?: string }> } | null =
+    null;
+  if (esRes && esRes.ok) {
+    try {
+      esJson = await esRes.json();
+    } catch {
+      esJson = null;
+    }
+  }
+  const commentarySrc = esJson?.commentary ?? j.commentary ?? [];
+  const commentary = commentarySrc
     .slice(-8)
     .map((c) => ({
       minute: Math.round((c.time?.value ?? 0) / 60),

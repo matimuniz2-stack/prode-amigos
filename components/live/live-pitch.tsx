@@ -57,6 +57,13 @@ function num(n: number | null | undefined): number {
   return typeof n === "number" && Number.isFinite(n) ? n : 0;
 }
 
+/** Alpha en hex (00-5a) según cuánto supera el 50% de presión un equipo. */
+function alpha(press: number): string {
+  return Math.round(Math.max(0, (press - 50) / 50) * 90)
+    .toString(16)
+    .padStart(2, "0");
+}
+
 export function LivePitch({ matchId }: { matchId: string }) {
   const [data, setData] = useState<LiveData | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -159,21 +166,27 @@ export function LivePitch({ matchId }: { matchId: string }) {
 
       {/* La cancha */}
       <div className="relative w-full overflow-hidden rounded-2xl ring-1 ring-black/10">
-        {/* Tinte de dominio */}
+        {/* Tinte de dominio: cada equipo ataca hacia su lado (home → derecha). */}
         <div
-          className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-700"
+          className="pointer-events-none absolute inset-0 z-10 transition-all duration-700"
           style={{
-            background: `linear-gradient(90deg, ${HOME}${Math.round(
-              Math.max(0, (pressH - 50) / 50) * 90,
-            )
-              .toString(16)
-              .padStart(2, "0")} 0%, transparent 45%, transparent 55%, ${AWAY}${Math.round(
-              Math.max(0, (pressA - 50) / 50) * 90,
-            )
-              .toString(16)
-              .padStart(2, "0")} 100%)`,
+            background: `linear-gradient(90deg, ${AWAY}${alpha(pressA)} 0%, transparent 42%, transparent 58%, ${HOME}${alpha(pressH)} 100%)`,
           }}
         />
+        {/* Pelota de momentum: siempre presente, se desliza con la presión. */}
+        <div
+          className="pointer-events-none absolute top-1/2 z-[12] -translate-x-1/2 -translate-y-1/2 text-xl transition-all duration-1000 ease-out"
+          style={{ left: `${pressH}%`, filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))" }}
+        >
+          ⚽
+        </div>
+        {/* Tiros por equipo, en su arco de ataque (home ataca a la derecha) */}
+        <div className="pointer-events-none absolute right-2 top-2 z-[12] flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 text-[10px] font-bold text-cream">
+          <span style={{ color: HOME }}>●</span> {num(hs?.shots)} tiros · {num(hs?.shotsOnTarget)} 🎯
+        </div>
+        <div className="pointer-events-none absolute left-2 top-2 z-[12] flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 text-[10px] font-bold text-cream">
+          <span style={{ color: AWAY }}>●</span> {num(as?.shots)} tiros · {num(as?.shotsOnTarget)} 🎯
+        </div>
         <svg viewBox="0 0 100 64" className="block w-full" style={{ background: "#0f7a4d" }}>
           {/* Rayas de césped */}
           {Array.from({ length: 6 }).map((_, i) => (
