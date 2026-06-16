@@ -7,12 +7,13 @@ import { C, SIZE, CardShell, CardAvatar } from "../_ui";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   if (!hasSupabaseEnv()) return new Response("sin config", { status: 500 });
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   if (!claims?.claims) return new Response("no auth", { status: 401 });
   const userId = claims.claims.sub as string;
+  const origin = new URL(req.url).origin;
 
   const card = await getRecapCard(supabase, userId);
   if (!card) return new Response("sin fecha", { status: 404 });
@@ -32,7 +33,7 @@ export async function GET() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 28, marginTop: 24 }}>
-          <CardAvatar src={card.avatarUrl} name={card.nickname} size={130} />
+          <CardAvatar src={card.avatarUrl} name={card.nickname} size={130} origin={origin} />
           <div style={{ display: "flex", fontSize: 64, fontWeight: 900, color: C.cream }}>
             {card.nickname}
           </div>

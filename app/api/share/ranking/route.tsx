@@ -9,12 +9,13 @@ export const dynamic = "force-dynamic";
 
 const MEDAL = ["🥇", "🥈", "🥉"];
 
-export async function GET() {
+export async function GET(req: Request) {
   if (!hasSupabaseEnv()) return new Response("sin config", { status: 500 });
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   if (!claims?.claims) return new Response("no auth", { status: 401 });
 
+  const origin = new URL(req.url).origin;
   const { poolLabel, top } = await getRankingCard(supabase);
 
   return new ImageResponse(
@@ -59,7 +60,7 @@ export async function GET() {
                 >
                   {podium ? MEDAL[i] : p.rank}
                 </div>
-                <CardAvatar src={p.avatarUrl} name={p.nickname} size={76} />
+                <CardAvatar src={p.avatarUrl} name={p.nickname} size={76} origin={origin} />
                 <div style={{ display: "flex", flex: 1, fontSize: 44, fontWeight: 800, color: C.cream }}>
                   {p.nickname}
                 </div>

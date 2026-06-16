@@ -68,22 +68,28 @@ export function CardShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** Avatar circular: foto si hay, inicial si no. */
+/** Avatar circular: foto si hay, inicial si no.
+ *  Satori corre en el server y necesita URLs absolutas, así que las rutas
+ *  relativas (ej. "/avatars/x.jpeg") se resuelven contra `origin`. */
 export function CardAvatar({
   src,
   name,
   size,
+  origin,
 }: {
   src: string | null;
   name: string;
   size: number;
+  origin?: string;
 }) {
   const ring = `${Math.max(3, Math.round(size / 18))}px solid ${C.gold}`;
-  if (src) {
+  const absSrc =
+    src && src.startsWith("/") && origin ? `${origin}${src}` : src;
+  if (absSrc) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={src}
+        src={absSrc}
         alt={name}
         width={size}
         height={size}

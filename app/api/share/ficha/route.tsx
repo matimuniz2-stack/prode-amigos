@@ -13,7 +13,9 @@ export async function GET(req: Request) {
   const { data: claims } = await supabase.auth.getClaims();
   if (!claims?.claims) return new Response("no auth", { status: 401 });
 
-  const target = new URL(req.url).searchParams.get("u") || (claims.claims.sub as string);
+  const url = new URL(req.url);
+  const origin = url.origin;
+  const target = url.searchParams.get("u") || (claims.claims.sub as string);
   const card = await getFichaCard(supabase, target);
   if (!card) return new Response("sin ficha", { status: 404 });
 
@@ -25,7 +27,7 @@ export async function GET(req: Request) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 32, marginTop: 28 }}>
-          <CardAvatar src={card.avatarUrl} name={card.nickname} size={180} />
+          <CardAvatar src={card.avatarUrl} name={card.nickname} size={180} origin={origin} />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", fontSize: 78, fontWeight: 900, color: C.cream }}>
               {card.nickname}
