@@ -9,6 +9,7 @@ import { computeAutoBadges } from "@/lib/badges";
 import { computeCareer } from "@/lib/career";
 import { CareerChart } from "@/components/leaderboard/career-chart";
 import { Avatar } from "@/components/avatar";
+import { ShareButton } from "@/components/share-button";
 
 export const dynamic = "force-dynamic";
 
@@ -179,7 +180,17 @@ export default async function LeaderboardPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <AutoRefresh seconds={60} />
 
-      <SectionHeading className="pt-1">Ranking</SectionHeading>
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <SectionHeading>Ranking</SectionHeading>
+        {hasScores && (
+          <ShareButton
+            endpoint="/api/share/ranking"
+            filename="tabla-prode.png"
+            label="Compartir tabla"
+            text="La tabla del prode 🏆⚽"
+          />
+        )}
+      </div>
 
       {/* Pozo */}
       <div className="rounded-2xl bg-gradient-to-br from-gold to-amber-500 p-4 text-ink shadow-card ring-1 ring-black/10">

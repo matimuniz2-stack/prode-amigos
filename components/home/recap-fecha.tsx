@@ -1,4 +1,5 @@
 import type { Recap } from "@/lib/recap";
+import { ShareButton } from "@/components/share-button";
 
 function joinNicks(nicks: string[]): string {
   if (nicks.length <= 1) return nicks[0] ?? "—";
@@ -10,13 +11,21 @@ export function RecapFecha({ recap }: { recap: Recap }) {
 
   return (
     <section className="overflow-hidden rounded-2xl bg-cream text-ink shadow-card ring-1 ring-black/5">
-      <div className="bg-pitch px-4 py-2.5">
-        <div className="text-[11px] font-bold uppercase tracking-wide text-cream/70">
-          📋 Recap de la fecha
+      <div className="flex items-center justify-between gap-3 bg-pitch px-4 py-2.5">
+        <div>
+          <div className="text-[11px] font-bold uppercase tracking-wide text-cream/70">
+            📋 Recap de la fecha
+          </div>
+          <div className="text-sm font-extrabold capitalize text-cream">
+            {dayLabel}
+          </div>
         </div>
-        <div className="text-sm font-extrabold capitalize text-cream">
-          {dayLabel}
-        </div>
+        <ShareButton
+          endpoint="/api/share/recap"
+          filename="mi-fecha-prode.png"
+          label="Compartir"
+          text="Mi fecha en el prode ⚽"
+        />
       </div>
 
       <div className="flex flex-col gap-2.5 p-4 text-sm">

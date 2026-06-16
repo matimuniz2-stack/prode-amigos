@@ -7,6 +7,7 @@ import { computeAutoBadges } from "@/lib/badges";
 import { computeAdn } from "@/lib/adn";
 import { AdnFutbolero } from "@/components/player/adn-futbolero";
 import { Avatar } from "@/components/avatar";
+import { ShareButton } from "@/components/share-button";
 
 export const dynamic = "force-dynamic";
 
@@ -134,6 +135,13 @@ export default async function JugadorPage({
           src={target.avatar_url}
           name={target.nickname}
           className="size-24 text-4xl"
+        />
+        <ShareButton
+          endpoint={`/api/share/ficha?u=${id}`}
+          filename={`adn-${target.nickname}.png`}
+          label="Compartir"
+          text={`El ADN futbolero de ${target.nickname} 🧬⚽`}
+          className="order-last ml-auto self-start"
         />
         <div className="flex min-w-0 flex-col gap-1">
           <h1 className="truncate text-xl font-black">
