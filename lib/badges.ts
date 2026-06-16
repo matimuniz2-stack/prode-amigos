@@ -11,8 +11,8 @@
      (breakdown.exact_score en points_log), con al menos 1.
    - 🔥 En racha: racha actual de RACHA_MIN+ aciertos seguidos
      (picks scoreados con points>0, desde el más reciente).
-   - 🧊 Pecho frío: racha actual de RACHA_MIN+ picks scoreados SIN
-     pegar (points=0). Espejo inverso de "En racha".
+   - 🧊 Pecho frío: no pegó QUIÉN GANABA (el 1X2) en RACHA_MIN+ partidos
+     seguidos (comparando el ganador pronosticado vs el real).
    - 👻 El Fantasma: ≥FANTASMA_MIN partidos YA CERRADOS seguidos sin
      pick propio (auto-random o sin fila). Solo participantes.
    - 🐔 El Cagón: menor promedio de goles pronosticados (picks propios).
@@ -91,9 +91,16 @@ export async function computeAutoBadges(
       >(),
     supabase
       .from("matches")
-      .select("id, kickoff_at, lock_at, status")
+      .select("id, kickoff_at, lock_at, status, score_home, score_away")
       .returns<
-        { id: string; kickoff_at: string; lock_at: string; status: string }[]
+        {
+          id: string;
+          kickoff_at: string;
+          lock_at: string;
+          status: string;
+          score_home: number | null;
+          score_away: number | null;
+        }[]
       >(),
   ]);
 
@@ -106,6 +113,34 @@ export async function computeAutoBadges(
   const kickoffById = new Map<string, number>(
     matches.map((m) => [m.id, new Date(m.kickoff_at).getTime()]),
   );
+
+  // Ganador REAL (1X2) de cada partido finalizado.
+  const actualWinnerById = new Map<string, "home" | "draw" | "away">();
+  for (const m of matches) {
+    if (m.status !== "finished" || m.score_home === null || m.score_away === null) {
+      continue;
+    }
+    actualWinnerById.set(
+      m.id,
+      m.score_home > m.score_away
+        ? "home"
+        : m.score_home < m.score_away
+          ? "away"
+          : "draw",
+    );
+  }
+  // Ganador PRONOSTICADO (1X2) por cada (usuario, partido).
+  const predWinnerByUM = new Map<string, "home" | "draw" | "away">();
+  for (const p of preds) {
+    predWinnerByUM.set(
+      `${p.user_id}|${p.match_id}`,
+      p.predicted_home > p.predicted_away
+        ? "home"
+        : p.predicted_home < p.predicted_away
+          ? "away"
+          : "draw",
+    );
+  }
 
   // 1) GOAT + Mufa desde el ranking (solo si ya hay puntaje real).
   const hasScores = ranking.some((r) => (r.total_points ?? 0) > 0);
@@ -133,15 +168,24 @@ export async function computeAutoBadges(
     }
   }
 
-  // 3) En racha + Pecho frío: ordenar los picks scoreados por fecha del
-  // partido (más reciente primero) y contar la racha actual.
+  // 3) En racha (aciertos con puntos seguidos) + Pecho frío (no pegó quién
+  // ganaba —el 1X2— RACHA_MIN veces seguidas). Más reciente primero.
   if (logs.length > 0) {
-    const byUser = new Map<string, { t: number; points: number }[]>();
+    const byUser = new Map<
+      string,
+      { t: number; points: number; winnerMiss: boolean }[]
+    >();
     for (const l of logs) {
       const t = kickoffById.get(l.source_id);
-      if (t === undefined) continue; // pick de un partido no finalizado
+      const actual = actualWinnerById.get(l.source_id);
+      if (t === undefined || actual === undefined) continue; // no finalizado
+      const pred = predWinnerByUM.get(`${l.user_id}|${l.source_id}`);
       const arr = byUser.get(l.user_id) ?? [];
-      arr.push({ t, points: l.points ?? 0 });
+      arr.push({
+        t,
+        points: l.points ?? 0,
+        winnerMiss: pred !== undefined && pred !== actual,
+      });
       byUser.set(l.user_id, arr);
     }
     for (const [userId, picks] of byUser) {
@@ -154,7 +198,7 @@ export async function computeAutoBadges(
       if (hot >= RACHA_MIN) add(userId, AUTO_BADGE_LABELS.en_racha);
       let cold = 0;
       for (const p of picks) {
-        if (p.points === 0) cold++;
+        if (p.winnerMiss) cold++;
         else break;
       }
       if (cold >= RACHA_MIN) add(userId, AUTO_BADGE_LABELS.pecho_frio);
