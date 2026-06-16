@@ -218,7 +218,7 @@ export default async function LeaderboardPage() {
                 <Avatar
                   src={s.avatarUrl}
                   name={s.nickname}
-                  className={cn("size-11 text-lg ring-2", m.ring)}
+                  className={cn("size-16 text-2xl ring-2", m.ring)}
                 />
                 <span className="max-w-full truncate text-sm font-bold text-cream">
                   {s.nickname}
@@ -340,7 +340,7 @@ export default async function LeaderboardPage() {
                 <Avatar
                   src={s.avatarUrl}
                   name={s.nickname}
-                  className="size-8 text-sm"
+                  className="size-12 text-base"
                 />
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="truncate font-semibold text-ink">

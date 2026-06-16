@@ -54,7 +54,7 @@ export function MatchOthersPicks({
             <Avatar
               src={e.avatarUrl}
               name={e.nickname}
-              className="size-8 text-sm"
+              className="size-11 text-base"
             />
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-bold text-ink">

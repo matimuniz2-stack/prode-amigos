@@ -54,7 +54,7 @@ export function MatchChat({
               <Avatar
                 src={m.avatarUrl}
                 name={m.nickname}
-                className="size-7 text-xs"
+                className="size-9 text-sm"
               />
               <div className="flex min-w-0 flex-col">
                 <span className="text-xs">

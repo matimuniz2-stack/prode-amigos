@@ -150,7 +150,7 @@ export default async function DashboardPage() {
             <Avatar
               src={me?.avatar_url ?? null}
               name={myNick}
-              className="size-9 text-sm"
+              className="size-12 text-base"
             />
             <div className="leading-tight">
               <div className="text-sm font-extrabold">{myNick}</div>

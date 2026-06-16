@@ -133,7 +133,7 @@ export default async function JugadorPage({
         <Avatar
           src={target.avatar_url}
           name={target.nickname}
-          className="size-14 text-2xl"
+          className="size-24 text-4xl"
         />
         <div className="flex min-w-0 flex-col gap-1">
           <h1 className="truncate text-xl font-black">
