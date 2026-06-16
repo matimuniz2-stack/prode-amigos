@@ -52,30 +52,49 @@ function TeamSelect({
 function CategoryCard({
   emoji,
   label,
+  random = false,
   children,
 }: {
   emoji: string;
   label: string;
+  random?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-2 rounded-2xl bg-cream p-4 text-ink shadow-card ring-1 ring-black/5">
-      <label className="text-sm font-extrabold">
-        {emoji} {label}
+      <label className="flex items-center gap-2 text-sm font-extrabold">
+        <span>
+          {emoji} {label}
+        </span>
+        {random && (
+          <span className="inline-flex items-center rounded-full border border-amber-400 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+            🎲 random
+          </span>
+        )}
       </label>
       {children}
     </div>
   );
 }
 
+interface RandomFlags {
+  champion: boolean;
+  runner_up: boolean;
+  top_scorer: boolean;
+  mvp: boolean;
+  revelation: boolean;
+}
+
 export function GlobalesForm({
   teams,
   initial,
   locked,
+  random,
 }: {
   teams: Team[];
   initial: GlobalsInput;
   locked: boolean;
+  random?: RandomFlags;
 }) {
   const [v, setV] = useState<GlobalsInput>(initial);
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +121,7 @@ export function GlobalesForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <CategoryCard emoji="🏆" label="Campeón">
+      <CategoryCard emoji="🏆" label="Campeón" random={random?.champion}>
         <TeamSelect
           teams={teams}
           value={v.champion}
@@ -111,7 +130,7 @@ export function GlobalesForm({
         />
       </CategoryCard>
 
-      <CategoryCard emoji="🥈" label="Subcampeón">
+      <CategoryCard emoji="🥈" label="Subcampeón" random={random?.runner_up}>
         <TeamSelect
           teams={teams}
           value={v.runner_up}
@@ -120,7 +139,7 @@ export function GlobalesForm({
         />
       </CategoryCard>
 
-      <CategoryCard emoji="👟" label="Goleador">
+      <CategoryCard emoji="👟" label="Goleador" random={random?.top_scorer}>
         <TeamSelect
           teams={teams}
           value={v.top_scorer_team}
@@ -137,7 +156,7 @@ export function GlobalesForm({
         />
       </CategoryCard>
 
-      <CategoryCard emoji="⭐" label="Mejor jugador (MVP)">
+      <CategoryCard emoji="⭐" label="Mejor jugador (MVP)" random={random?.mvp}>
         <TeamSelect
           teams={teams}
           value={v.mvp_team}
@@ -154,7 +173,7 @@ export function GlobalesForm({
         />
       </CategoryCard>
 
-      <CategoryCard emoji="🌟" label="Revelación">
+      <CategoryCard emoji="🌟" label="Revelación" random={random?.revelation}>
         <TeamSelect
           teams={teams}
           value={v.revelation_team}

@@ -40,7 +40,7 @@ export default async function GlobalesPage() {
 
   const { data: picks } = await supabase
     .from("global_predictions")
-    .select("category, team_id, player_team_id, player_name")
+    .select("category, team_id, player_team_id, player_name, is_auto_random")
     .eq("user_id", userId)
     .eq("tournament_id", tournament.id);
 
@@ -61,6 +61,15 @@ export default async function GlobalesPage() {
     revelation_team: revelation?.player_team_id ?? "",
     revelation_name: revelation?.player_name ?? "",
   };
+
+  const random = {
+    champion: !!champion?.is_auto_random,
+    runner_up: !!runnerUp?.is_auto_random,
+    top_scorer: !!topScorer?.is_auto_random,
+    mvp: !!mvp?.is_auto_random,
+    revelation: !!revelation?.is_auto_random,
+  };
+  const anyRandom = Object.values(random).some(Boolean);
 
   const locked = new Date(tournament.globals_lock_at).getTime() <= Date.now();
 
@@ -84,7 +93,19 @@ export default async function GlobalesPage() {
         </p>
       </header>
 
-      <GlobalesForm teams={teams ?? []} initial={initial} locked={locked} />
+      {anyRandom && (
+        <div className="rounded-2xl bg-gold/15 p-3 text-sm text-cream ring-1 ring-gold/30">
+          🎲 No cargaste algunos globales a tiempo, así que se completaron solos
+          con un pick al azar (marcados abajo). Mejor que quedar en cero.
+        </div>
+      )}
+
+      <GlobalesForm
+        teams={teams ?? []}
+        initial={initial}
+        locked={locked}
+        random={random}
+      />
     </div>
   );
 }

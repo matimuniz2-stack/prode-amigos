@@ -89,6 +89,7 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          is_auto_random: boolean
           locked_at: string | null
           player_name: string | null
           player_team_id: string | null
@@ -103,6 +104,7 @@ export type Database = {
           category: string
           created_at?: string
           id?: string
+          is_auto_random?: boolean
           locked_at?: string | null
           player_name?: string | null
           player_team_id?: string | null
@@ -117,6 +119,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          is_auto_random?: boolean
           locked_at?: string | null
           player_name?: string | null
           player_team_id?: string | null
