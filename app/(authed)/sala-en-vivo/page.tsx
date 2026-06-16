@@ -9,6 +9,7 @@ import {
   type MatchPickEntry,
 } from "@/components/match-others-picks";
 import { MatchGrieta } from "@/components/match-grieta";
+import { LivePitch } from "@/components/live/live-pitch";
 import { scorePrediction, type ScoringRule } from "@/lib/scoring";
 import {
   displayStatus,
@@ -280,6 +281,10 @@ export default async function SalaEnVivoPage() {
               </span>
             </span>
           </div>
+
+          {/* Cancha en vivo (datos de ESPN: stats, goles posicionados, relato) */}
+          <LivePitch matchId={match.id} />
+
           {entries.length > 0 ? (
             <>
               <MatchGrieta
