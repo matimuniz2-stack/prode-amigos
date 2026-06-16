@@ -58,6 +58,16 @@ export function AppShell({
 }) {
   return (
     <>
+      {/* Degradé de cancha, fijo al viewport (iOS-safe). Detrás de los doodles. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-20"
+        style={{
+          backgroundColor: "hsl(158 69% 14%)",
+          backgroundImage:
+            "radial-gradient(120% 80% at 50% -10%, hsl(158 55% 20%) 0%, transparent 55%), linear-gradient(180deg, hsl(158 69% 14%) 0%, hsl(160 78% 8%) 100%)",
+        }}
+      />
       <PitchDoodles />
       <div
         className={cn(

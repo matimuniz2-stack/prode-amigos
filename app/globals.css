@@ -51,15 +51,17 @@
   * {
     @apply border-border;
   }
+  /* El verde más profundo en el <html>: así el rebote del scroll (overscroll
+     de iOS) nunca muestra blanco arriba ni abajo. El degradé visible lo pone
+     un div fijo en AppShell (más confiable que background-attachment: fixed,
+     que se rompe en el overscroll de iOS). */
+  html {
+    background-color: hsl(160 78% 8%);
+  }
   body {
     @apply text-foreground;
     min-height: 100svh;
     background-color: hsl(var(--background));
-    /* Luz cenital + degradé hacia un verde más profundo abajo */
-    background-image:
-      radial-gradient(120% 80% at 50% -10%, hsl(158 55% 20%) 0%, transparent 55%),
-      linear-gradient(180deg, hsl(158 69% 14%) 0%, hsl(160 78% 8%) 100%);
-    background-attachment: fixed;
   }
 }
 
