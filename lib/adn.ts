@@ -27,6 +27,8 @@ interface PredRow {
   predicted_home: number | null;
   predicted_away: number | null;
   match: {
+    kickoff_at: string | null;
+    status: string | null;
     home_team: TeamMini | null;
     away_team: TeamMini | null;
   } | null;
@@ -44,13 +46,23 @@ export async function computeAdn(
   const { data } = await supabase
     .from("match_predictions")
     .select(
-      "predicted_winner, predicted_home, predicted_away, match:matches(home_team:teams!matches_home_team_id_fkey(code, seed_pot), away_team:teams!matches_away_team_id_fkey(code, seed_pot))",
+      "predicted_winner, predicted_home, predicted_away, match:matches(kickoff_at, status, home_team:teams!matches_home_team_id_fkey(code, seed_pot), away_team:teams!matches_away_team_id_fkey(code, seed_pot))",
     )
     .eq("user_id", userId)
     .eq("is_auto_random", false)
     .returns<PredRow[]>();
 
-  const picks = data ?? [];
+  // Solo contamos picks de partidos que YA arrancaron: así el ADN refleja
+  // lo que realmente pasó y no spoilea las predicciones futuras del jugador
+  // (que recién se hacen públicas cuando el partido se cierra/arranca).
+  const now = Date.now();
+  const picks = (data ?? []).filter((p) => {
+    const m = p.match;
+    if (!m) return false;
+    if (m.status === "finished" || m.status === "live") return true;
+    if (m.status === "cancelled" || m.status === "void") return false;
+    return m.kickoff_at != null && new Date(m.kickoff_at).getTime() <= now;
+  });
   if (picks.length === 0) return null;
 
   let goalSum = 0;
