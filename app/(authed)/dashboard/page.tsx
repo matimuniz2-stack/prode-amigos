@@ -15,6 +15,7 @@ import { SectionHeading } from "@/components/home/section-heading";
 import { MatchCard } from "@/components/home/match-card";
 import { LiveRefresher } from "@/components/live-refresher";
 import { Flag } from "@/components/flag";
+import { Avatar } from "@/components/avatar";
 import { RecapFecha } from "@/components/home/recap-fecha";
 import { DiarioProde } from "@/components/home/diario-prode";
 import { computeRecap } from "@/lib/recap";
@@ -58,7 +59,11 @@ export default async function DashboardPage() {
         .from("leaderboard_projection")
         .select("user_id, nickname, total_points, rank")
         .order("rank", { ascending: true }),
-      supabase.from("profiles").select("nickname").eq("id", userId).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("nickname, avatar_url")
+        .eq("id", userId)
+        .maybeSingle(),
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase
         .from("global_predictions")
@@ -142,9 +147,11 @@ export default async function DashboardPage() {
             ⚽ Hacer mis pronósticos
           </PrimaryButton>
           <div className="flex items-center gap-2 rounded-2xl bg-cream px-3 py-2 text-ink shadow-card ring-1 ring-black/5">
-            <div className="grid size-9 place-items-center rounded-full bg-pitch text-sm font-black text-cream">
-              {myNick.charAt(0).toUpperCase()}
-            </div>
+            <Avatar
+              src={me?.avatar_url ?? null}
+              name={myNick}
+              className="size-9 text-sm"
+            />
             <div className="leading-tight">
               <div className="text-sm font-extrabold">{myNick}</div>
               <div className="text-xs font-bold text-pitch">⭐ {myPoints} pts</div>

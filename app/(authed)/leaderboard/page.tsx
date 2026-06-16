@@ -8,6 +8,7 @@ import { TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
 import { computeAutoBadges } from "@/lib/badges";
 import { computeCareer } from "@/lib/career";
 import { CareerChart } from "@/components/leaderboard/career-chart";
+import { Avatar } from "@/components/avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ interface Standing {
   rank: number;
   prize: number;
   tags: string[];
+  avatarUrl: string | null;
 }
 
 function money(n: number, currency: string) {
@@ -30,10 +32,6 @@ function money(n: number, currency: string) {
   } catch {
     return `${currency} ${Math.round(n)}`;
   }
-}
-
-function initial(name: string) {
-  return name.trim().charAt(0).toUpperCase() || "?";
 }
 
 /** Flecha de movimiento en el ranking. delta>0 = subio puestos. */
@@ -77,7 +75,9 @@ export default async function LeaderboardPage() {
 
   const { data: rows } = await supabase
     .from("leaderboard_projection")
-    .select("user_id, nickname, total_points, rank, projected_prize, pool_total, currency")
+    .select(
+      "user_id, nickname, total_points, rank, projected_prize, pool_total, currency, avatar_url",
+    )
     .order("rank", { ascending: true });
 
   const { data: pool } = await supabase
@@ -95,9 +95,14 @@ export default async function LeaderboardPage() {
   // (calculadas desde los resultados). Se muestran juntas como chips.
   const { data: tagRows } = await supabase
     .from("profiles")
-    .select("id, nickname, tags")
+    .select("id, nickname, tags, avatar_url")
     .order("nickname", { ascending: true })
-    .returns<{ id: string; nickname: string; tags: string[] }[]>();
+    .returns<
+      { id: string; nickname: string; tags: string[]; avatar_url: string | null }[]
+    >();
+  const avatarByUser = new Map(
+    (tagRows ?? []).map((p) => [p.id, p.avatar_url]),
+  );
   const autoBadges = await computeAutoBadges(supabase);
   const tagsFor = (userId: string, manual: string[]) => [
     ...new Set([...(manual ?? []), ...(autoBadges.get(userId) ?? [])]),
@@ -115,6 +120,7 @@ export default async function LeaderboardPage() {
       rank: r.rank ?? 0,
       prize: r.projected_prize ?? 0,
       tags: tagsByUser.get(r.user_id ?? "") ?? [],
+      avatarUrl: r.avatar_url ?? null,
     }));
   } else {
     // Pre-torneo: nadie puntuó todavía → mostramos a los participantes en 0.
@@ -125,6 +131,7 @@ export default async function LeaderboardPage() {
       rank: 1,
       prize: 0,
       tags: tagsByUser.get(p.id) ?? [],
+      avatarUrl: p.avatar_url ?? null,
     }));
   }
 
@@ -208,14 +215,11 @@ export default async function LeaderboardPage() {
                     👑
                   </span>
                 )}
-                <div
-                  className={cn(
-                    "grid size-11 place-items-center rounded-full bg-cream text-lg font-black text-ink ring-2",
-                    m.ring,
-                  )}
-                >
-                  {initial(s.nickname)}
-                </div>
+                <Avatar
+                  src={s.avatarUrl}
+                  name={s.nickname}
+                  className={cn("size-11 text-lg ring-2", m.ring)}
+                />
                 <span className="max-w-full truncate text-sm font-bold text-cream">
                   {s.nickname}
                   {isMe && " (vos)"}
@@ -333,6 +337,11 @@ export default async function LeaderboardPage() {
                   </span>
                   {hasScores && <Move delta={moveOf(s.userId, s.rank)} />}
                 </span>
+                <Avatar
+                  src={s.avatarUrl}
+                  name={s.nickname}
+                  className="size-8 text-sm"
+                />
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="truncate font-semibold text-ink">
                     {s.nickname}

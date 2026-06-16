@@ -110,10 +110,13 @@ export default async function MatchDetailPage({
 
     const ids = [...new Set((allPicks ?? []).map((p) => p.user_id))];
     const { data: profiles } = ids.length
-      ? await supabase.from("profiles").select("id, nickname").in("id", ids)
-      : { data: [] as { id: string; nickname: string }[] };
+      ? await supabase.from("profiles").select("id, nickname, avatar_url").in("id", ids)
+      : { data: [] as { id: string; nickname: string; avatar_url: string | null }[] };
 
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.nickname]));
+    const avatarById = new Map(
+      (profiles ?? []).map((p) => [p.id, p.avatar_url]),
+    );
     const pointsById = new Map(
       (matchPoints ?? []).map((r) => [r.user_id, r.points]),
     );
@@ -154,6 +157,7 @@ export default async function MatchDetailPage({
             : null,
           points,
           isSelf: p.user_id === userId,
+          avatarUrl: avatarById.get(p.user_id) ?? null,
         };
       })
       .sort((a, b) => {
@@ -200,9 +204,12 @@ export default async function MatchDetailPage({
     if (missing.length > 0) {
       const { data: extra } = await supabase
         .from("profiles")
-        .select("id, nickname")
+        .select("id, nickname, avatar_url")
         .in("id", missing);
-      for (const p of extra ?? []) nameById.set(p.id, p.nickname);
+      for (const p of extra ?? []) {
+        nameById.set(p.id, p.nickname);
+        avatarById.set(p.id, p.avatar_url);
+      }
     }
     chatMessages = (chatRows ?? []).map((m) => ({
       id: m.id,
@@ -210,6 +217,7 @@ export default async function MatchDetailPage({
       content: m.content,
       time: matchTimeLabel(m.created_at),
       isSelf: m.user_id === userId,
+      avatarUrl: avatarById.get(m.user_id) ?? null,
     }));
   }
 

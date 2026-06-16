@@ -6,6 +6,7 @@ import { TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
 import { computeAutoBadges } from "@/lib/badges";
 import { computeAdn } from "@/lib/adn";
 import { AdnFutbolero } from "@/components/player/adn-futbolero";
+import { Avatar } from "@/components/avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -45,9 +46,14 @@ export default async function JugadorPage({
 
   const { data: target } = await supabase
     .from("profiles")
-    .select("id, nickname, tags")
+    .select("id, nickname, tags, avatar_url")
     .eq("id", id)
-    .maybeSingle<{ id: string; nickname: string; tags: string[] }>();
+    .maybeSingle<{
+      id: string;
+      nickname: string;
+      tags: string[];
+      avatar_url: string | null;
+    }>();
   if (!target) notFound();
 
   const [{ data: proj }, { data: logsRaw }, autoBadges, adn] = await Promise.all([
@@ -124,9 +130,11 @@ export default async function JugadorPage({
 
       {/* Encabezado del jugador */}
       <header className="flex items-center gap-4 rounded-2xl bg-cream p-4 text-ink shadow-card ring-1 ring-black/5">
-        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-ink/10 text-2xl font-black text-ink/70">
-          {target.nickname.trim().charAt(0).toUpperCase() || "?"}
-        </span>
+        <Avatar
+          src={target.avatar_url}
+          name={target.nickname}
+          className="size-14 text-2xl"
+        />
         <div className="flex min-w-0 flex-col gap-1">
           <h1 className="truncate text-xl font-black">
             {target.nickname}

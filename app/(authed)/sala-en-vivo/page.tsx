@@ -92,8 +92,8 @@ export default async function SalaEnVivoPage() {
       .is("active_to", null),
     supabase
       .from("profiles")
-      .select("id, nickname")
-      .returns<{ id: string; nickname: string }[]>(),
+      .select("id, nickname, avatar_url")
+      .returns<{ id: string; nickname: string; avatar_url: string | null }[]>(),
     supabase
       .from("leaderboard_projection")
       .select("user_id, nickname, total_points, rank")
@@ -114,6 +114,7 @@ export default async function SalaEnVivoPage() {
 
   const rules = (ruleRows ?? []) as ScoringRule[];
   const nameById = new Map((profiles ?? []).map((p) => [p.id, p.nickname]));
+  const avatarById = new Map((profiles ?? []).map((p) => [p.id, p.avatar_url]));
   const picksByMatch = new Map<string, PickRow[]>();
   for (const p of picks ?? []) {
     const arr = picksByMatch.get(p.match_id) ?? [];
@@ -174,6 +175,7 @@ export default async function SalaEnVivoPage() {
             : null,
           points,
           isSelf: p.user_id === myId,
+          avatarUrl: avatarById.get(p.user_id) ?? null,
           reactions: [
             ...(reByMatchUser.get(m.id)?.get(p.user_id)?.entries() ?? []),
           ].map(([emoji, v]) => ({ emoji, count: v.count, mine: v.mine })),

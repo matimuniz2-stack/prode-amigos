@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { PickReactions } from "@/components/pick-reactions";
+import { Avatar } from "@/components/avatar";
 import type { ReactionCount } from "@/lib/reactions";
 
 export interface MatchPickEntry {
@@ -15,10 +16,7 @@ export interface MatchPickEntry {
   isSelf: boolean;
   /** Reacciones con emoji a este pick (vacío si no se cargaron). */
   reactions?: ReactionCount[];
-}
-
-function initial(name: string) {
-  return name.trim().charAt(0).toUpperCase() || "?";
+  avatarUrl?: string | null;
 }
 
 export function MatchOthersPicks({
@@ -53,9 +51,11 @@ export function MatchOthersPicks({
           )}
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink/10 text-sm font-black text-ink/70">
-              {initial(e.nickname)}
-            </span>
+            <Avatar
+              src={e.avatarUrl}
+              name={e.nickname}
+              className="size-8 text-sm"
+            />
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-bold text-ink">
                 {e.nickname}

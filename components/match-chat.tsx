@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { sendChatMessage } from "@/app/(authed)/matches/[matchId]/actions";
+import { Avatar } from "@/components/avatar";
 import { cn } from "@/lib/utils";
 
 export interface ChatMessage {
@@ -12,10 +13,7 @@ export interface ChatMessage {
   content: string;
   time: string;
   isSelf: boolean;
-}
-
-function initial(name: string) {
-  return name.trim().charAt(0).toUpperCase() || "?";
+  avatarUrl?: string | null;
 }
 
 export function MatchChat({
@@ -53,9 +51,11 @@ export function MatchChat({
         <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto">
           {messages.map((m) => (
             <li key={m.id} className="flex items-start gap-2.5">
-              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-ink/10 text-xs font-black text-ink/70">
-                {initial(m.nickname)}
-              </span>
+              <Avatar
+                src={m.avatarUrl}
+                name={m.nickname}
+                className="size-7 text-xs"
+              />
               <div className="flex min-w-0 flex-col">
                 <span className="text-xs">
                   <span
