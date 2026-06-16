@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/utils";
-import { fetchLiveMatch, findEspnEventId, type LiveEvent } from "@/lib/espn-live";
+import {
+  fetchLiveMatch,
+  findEspnEventId,
+  type LiveEvent,
+  type LivePlay,
+} from "@/lib/espn-live";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +71,10 @@ export async function GET(
     ...e,
     side: sideOf(e.teamCode, homeCode, awayCode),
   });
+  const playWithSide = (p: LivePlay) => ({
+    ...p,
+    side: sideOf(p.teamCode, homeCode, awayCode),
+  });
 
   return Response.json(
     {
@@ -85,6 +94,7 @@ export async function GET(
         stats: (awayCode && live.statsByCode[awayCode]) || null,
       },
       events: live.events.map(withSide),
+      plays: live.plays.map(playWithSide),
       commentary: live.commentary,
     },
     {

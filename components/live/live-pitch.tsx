@@ -35,6 +35,16 @@ interface LiveEvent {
   y: number | null;
   goalY: number | null;
 }
+interface LivePlay {
+  minute: number;
+  clock: string;
+  rawType: string;
+  category: "goal" | "shot" | "corner" | "foul" | "card" | "other";
+  side: "home" | "away" | null;
+  x: number | null;
+  y: number | null;
+  text: string;
+}
 interface LiveData {
   found: boolean;
   state: "pre" | "in" | "post";
@@ -42,15 +52,27 @@ interface LiveData {
   home: LiveSide;
   away: LiveSide;
   events: LiveEvent[];
+  plays: LivePlay[];
   commentary: { minute: number; text: string }[];
 }
 
-/** Plotea un gol en la cancha (viewBox 100x64). Home ataca a la derecha. */
+/** Orienta una posición a la cancha fija (home ataca a la derecha).
+ *  Devuelve cx/cy en 0-100 (porcentaje del contenedor). */
+function orient(
+  x: number | null,
+  y: number | null,
+  side: "home" | "away" | null,
+): { cx: number; cy: number } | null {
+  if (x == null || y == null || !side) return null;
+  return side === "home"
+    ? { cx: x, cy: y }
+    : { cx: 100 - x, cy: 100 - y };
+}
+
+/** Plotea un gol en la cancha (viewBox 100x64). */
 function plotGoal(e: LiveEvent): { cx: number; cy: number } | null {
-  if (e.x == null || e.y == null || !e.side) return null;
-  const cx = e.side === "home" ? e.x : 100 - e.x;
-  const cy = e.side === "home" ? e.y : 100 - e.y;
-  return { cx, cy: (cy / 100) * 64 };
+  const p = orient(e.x, e.y, e.side);
+  return p ? { cx: p.cx, cy: (p.cy / 100) * 64 } : null;
 }
 
 function num(n: number | null | undefined): number {
@@ -129,6 +151,14 @@ export function LivePitch({ matchId }: { matchId: string }) {
 
   const goals = data.events.filter((e) => e.type === "goal");
 
+  // Tiros posicionados (del relato) para el mapa de la cancha.
+  const shotPlays = (data.plays ?? []).filter((p) => p.category === "shot");
+
+  // Pelota: posición REAL del último evento del relato con coordenadas.
+  const positioned = (data.plays ?? []).filter((p) => p.x != null && p.y != null);
+  const lastPlay = positioned[positioned.length - 1] ?? null;
+  const ball = lastPlay ? orient(lastPlay.x, lastPlay.y, lastPlay.side) : null;
+
   return (
     <div className="flex flex-col gap-3">
       {/* Marcador + reloj */}
@@ -173,13 +203,20 @@ export function LivePitch({ matchId }: { matchId: string }) {
             background: `linear-gradient(90deg, ${AWAY}${alpha(pressA)} 0%, transparent 42%, transparent 58%, ${HOME}${alpha(pressH)} 100%)`,
           }}
         />
-        {/* Pelota de momentum: siempre presente, se desliza con la presión. */}
-        <div
-          className="pointer-events-none absolute top-1/2 z-[12] -translate-x-1/2 -translate-y-1/2 text-xl transition-all duration-1000 ease-out"
-          style={{ left: `${pressH}%`, filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))" }}
-        >
-          ⚽
-        </div>
+        {/* Pelota: posición REAL del último evento del relato (no es tracking
+            continuo, pero salta a la zona donde fue la última jugada). */}
+        {ball && (
+          <div
+            className="pointer-events-none absolute z-[13] -translate-x-1/2 -translate-y-1/2 text-xl transition-all duration-1000 ease-out"
+            style={{
+              left: `${ball.cx}%`,
+              top: `${ball.cy}%`,
+              filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.6))",
+            }}
+          >
+            ⚽
+          </div>
+        )}
         {/* Tiros por equipo, en su arco de ataque (home ataca a la derecha) */}
         <div className="pointer-events-none absolute right-2 top-2 z-[12] flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 text-[10px] font-bold text-cream">
           <span style={{ color: HOME }}>●</span> {num(hs?.shots)} tiros · {num(hs?.shotsOnTarget)} 🎯
@@ -213,6 +250,26 @@ export function LivePitch({ matchId }: { matchId: string }) {
             <rect x={99} y={27} width={1.5} height={10} stroke="rgba(255,255,255,0.85)" />
           </g>
           <circle cx={50} cy={32} r={0.7} fill="rgba(255,255,255,0.7)" />
+
+          {/* Tiros ploteados en su posición real (del relato) */}
+          {shotPlays.map((p, i) => {
+            const pos = orient(p.x, p.y, p.side);
+            if (!pos) return null;
+            const col = p.side === "home" ? HOME : AWAY;
+            const onTarget = /on-target|saved|goal/i.test(p.rawType);
+            return (
+              <circle
+                key={`s${i}`}
+                cx={pos.cx}
+                cy={(pos.cy / 100) * 64}
+                r={1.1}
+                fill={onTarget ? col : "none"}
+                stroke={col}
+                strokeWidth={0.5}
+                opacity={0.85}
+              />
+            );
+          })}
 
           {/* Goles ploteados en su posición real */}
           {goals.map((e, i) => {
@@ -260,6 +317,13 @@ export function LivePitch({ matchId }: { matchId: string }) {
           </div>
         )}
       </div>
+
+      {/* Leyenda */}
+      <p className="-mt-1 text-center text-[10px] text-ink/45">
+        ⚽ última jugada · ● tiro al arco · ○ tiro afuera ·{" "}
+        <span style={{ color: HOME }}>▬</span> {data.home.name} ·{" "}
+        <span style={{ color: AWAY }}>▬</span> {data.away.name}
+      </p>
 
       {/* Goles listados con el arco */}
       {goals.length > 0 && (

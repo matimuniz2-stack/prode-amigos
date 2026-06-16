@@ -45,6 +45,27 @@ export interface LiveEvent {
   goalY: number | null;
 }
 
+export type PlayCategory =
+  | "goal"
+  | "shot"
+  | "corner"
+  | "foul"
+  | "card"
+  | "other";
+
+/** Jugada posicionada del relato: ESPN da coordenadas (0-100, perspectiva del
+ *  equipo que ataca) de casi todos los eventos, no solo de los goles. */
+export interface LivePlay {
+  minute: number;
+  clock: string;
+  rawType: string;
+  category: PlayCategory;
+  teamCode: string | null;
+  x: number | null;
+  y: number | null;
+  text: string;
+}
+
 export interface LiveMatch {
   found: boolean;
   state: "pre" | "in" | "post";
@@ -54,6 +75,8 @@ export interface LiveMatch {
   scoreByCode: Record<string, number>;
   statsByCode: Record<string, LiveStats>;
   events: LiveEvent[];
+  /** Jugadas posicionadas (tiros, córners, faltas, goles) en orden cronológico. */
+  plays: LivePlay[];
   commentary: { minute: number; text: string }[];
 }
 
@@ -79,6 +102,17 @@ function classifyEvent(typeType: string, typeText: string): LiveEventType {
   if (t.includes("substitution")) return "sub";
   if (t.includes("penalty")) return "penalty";
   if (t.includes("var") || t.includes("review")) return "var";
+  return "other";
+}
+
+function classifyPlay(rawType: string): PlayCategory {
+  const t = rawType.toLowerCase();
+  if (t.includes("goal")) return "goal";
+  if (t.includes("shot")) return "shot";
+  if (t.includes("corner")) return "corner";
+  if (t.includes("foul")) return "foul";
+  if (t.includes("card") || t.includes("yellow") || t.includes("red"))
+    return "card";
   return "other";
 }
 
@@ -162,7 +196,19 @@ export async function fetchLiveMatch(eventId: string): Promise<LiveMatch | null>
     };
     boxscore?: { teams?: SummaryTeam[] };
     keyEvents?: SummaryKeyEvent[];
-    commentary?: Array<{ time?: { displayValue?: string; value?: number }; text?: string }>;
+    commentary?: Array<{
+      time?: { displayValue?: string; value?: number };
+      text?: string;
+      play?: {
+        type?: { type?: string };
+        clock?: { value?: number; displayValue?: string };
+        team?: { id?: string; abbreviation?: string };
+        shortText?: string;
+        text?: string;
+        fieldPositionX?: number;
+        fieldPositionY?: number;
+      };
+    }>;
   };
 
   const comp = j.header?.competitions?.[0];
@@ -218,6 +264,26 @@ export async function fetchLiveMatch(eventId: string): Promise<LiveMatch | null>
     });
   }
 
+  // Jugadas posicionadas del relato (tiros, córners, faltas, goles con X/Y).
+  const plays: LivePlay[] = [];
+  for (const c of j.commentary ?? []) {
+    const pl = c.play;
+    if (!pl || pl.fieldPositionX == null || pl.fieldPositionY == null) continue;
+    const rawType = pl.type?.type ?? "";
+    plays.push({
+      minute: Math.round((pl.clock?.value ?? 0) / 60),
+      clock: pl.clock?.displayValue ?? "",
+      rawType,
+      category: classifyPlay(rawType),
+      teamCode: pl.team?.id
+        ? (codeById.get(pl.team.id) ?? pl.team.abbreviation ?? null)
+        : (pl.team?.abbreviation ?? null),
+      x: pl.fieldPositionX,
+      y: pl.fieldPositionY,
+      text: pl.shortText ?? pl.text ?? "",
+    });
+  }
+
   // Relato en castellano (respuesta es); si falla, usamos la default.
   let esJson: { commentary?: Array<{ time?: { value?: number }; text?: string }> } | null =
     null;
@@ -245,6 +311,7 @@ export async function fetchLiveMatch(eventId: string): Promise<LiveMatch | null>
     scoreByCode,
     statsByCode,
     events,
+    plays,
     commentary,
   };
 }
