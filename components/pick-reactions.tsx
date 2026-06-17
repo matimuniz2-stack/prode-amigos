@@ -41,25 +41,40 @@ export function PickReactions({
 
   return (
     <div className="flex flex-wrap items-center gap-1">
-      {active.map((r) => (
-        <button
-          key={r.emoji}
-          type="button"
-          disabled={disabled || pending}
-          onClick={() => react(r.emoji)}
-          className={cn(
-            "inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[11px] font-bold tabular-nums transition active:scale-95",
-            r.mine
-              ? "border-pitch/40 bg-pitch/10 text-pitch"
-              : "border-ink/10 bg-ink/[0.04] text-ink/70",
-            disabled && "cursor-default opacity-80",
-          )}
-          title={r.mine ? "Sacar reacción" : "Sumarte"}
-        >
-          <span>{r.emoji}</span>
-          <span>{r.count}</span>
-        </button>
-      ))}
+      {active.map((r) => {
+        // Cada sticker cae con una rotación fija (según el emoji) tipo sello.
+        const rot = ((r.emoji.codePointAt(0) ?? 0) % 3) * 9 - 9; // -9 / 0 / 9
+        return (
+          <button
+            key={r.emoji}
+            type="button"
+            disabled={disabled || pending}
+            onClick={() => react(r.emoji)}
+            title={
+              r.mine
+                ? "Sacar tu sticker"
+                : `${r.count} ${r.count === 1 ? "sticker" : "stickers"} · sumate`
+            }
+            style={{ transform: `rotate(${rot}deg)` }}
+            className={cn(
+              "relative -ml-1.5 transition first:ml-0 active:scale-90 disabled:cursor-default",
+              r.mine && "scale-110",
+            )}
+          >
+            <span
+              className="block text-xl leading-none"
+              style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,.35))" }}
+            >
+              {r.emoji}
+            </span>
+            {r.count > 1 && (
+              <span className="absolute -bottom-1 -right-1 grid min-w-[14px] place-items-center rounded-full bg-pitch px-0.5 text-[9px] font-black text-cream">
+                {r.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
 
       {!disabled && (
         <div className="relative">
