@@ -7,6 +7,7 @@ import { StatCard } from "@/components/home/stat-card";
 import {
   displayStatus,
   groupMatchesByDay,
+  matchDayKey,
   matchSelect,
   type MatchWithPick,
   type MatchWithRelations,
@@ -84,15 +85,39 @@ export default async function MatchesPage() {
       continue;
     }
     if (s === "void") continue;
+    if (s === "finished") counters.closed += 1; // ya jugados
     if (m.user_pick) counters.done += 1;
     else if (s === "upcoming" || s === "locking_soon") counters.pending += 1;
-    else counters.closed += 1;
   }
 
   const days = groupMatchesByDay(matchesWithPicks);
   const hasLive = matchesWithPicks.some(
     (m) => displayStatus(m, now) === "live",
   );
+
+  // Archivar las fechas viejas ya jugadas en "Cerrados". Quedan arriba: lo que
+  // viene, lo de hoy y la última fecha jugada; el resto se pliega.
+  const todayKey = matchDayKey(new Date(now).toISOString());
+  const playedPastKeys = days
+    .filter(
+      (d) =>
+        d.dayKey < todayKey && d.matches.some((m) => m.status === "finished"),
+    )
+    .map((d) => d.dayKey);
+  const lastPlayedKey =
+    playedPastKeys.length > 0 ? playedPastKeys[playedPastKeys.length - 1] : null;
+  const futureTodayDays = days.filter((d) => d.dayKey >= todayKey);
+  const lastPlayedDay = lastPlayedKey
+    ? (days.find((d) => d.dayKey === lastPlayedKey) ?? null)
+    : null;
+  const visibleDays = [
+    ...futureTodayDays,
+    ...(lastPlayedDay ? [lastPlayedDay] : []),
+  ];
+  const archivedDays = days
+    .filter((d) => d.dayKey < todayKey && d.dayKey !== lastPlayedKey)
+    .reverse(); // la fecha más reciente, primera dentro del archivo
+  const archivedCount = archivedDays.reduce((n, d) => n + d.matches.length, 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -132,7 +157,7 @@ export default async function MatchesPage() {
         </p>
       ) : (
         <div className="flex flex-col gap-6">
-          {days.map((day) => (
+          {visibleDays.map((day) => (
             <section key={day.dayKey} className="flex flex-col gap-2.5">
               <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-cream/70">
                 {day.dayLabel}
@@ -144,6 +169,36 @@ export default async function MatchesPage() {
               </div>
             </section>
           ))}
+
+          {archivedDays.length > 0 && (
+            <details className="group rounded-2xl bg-black/15 ring-1 ring-cream/10">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-bold text-cream/80 [&::-webkit-details-marker]:hidden">
+                <span>
+                  🔒 Cerrados{" "}
+                  <span className="font-semibold text-cream/50">
+                    ({archivedCount})
+                  </span>
+                </span>
+                <span className="text-cream/50 transition-transform group-open:rotate-180">
+                  ▾
+                </span>
+              </summary>
+              <div className="flex flex-col gap-6 px-3 pb-4 pt-1">
+                {archivedDays.map((day) => (
+                  <section key={day.dayKey} className="flex flex-col gap-2.5">
+                    <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-cream/60">
+                      {day.dayLabel}
+                    </h2>
+                    <div className="flex flex-col gap-2.5 md:grid md:grid-cols-2 md:items-start">
+                      {day.matches.map((m) => (
+                        <MatchRow key={m.id} match={m} />
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
       )}
     </div>
