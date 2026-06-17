@@ -5,10 +5,12 @@ import { cn, hasSupabaseEnv } from "@/lib/utils";
 import {
   displayStatus,
   matchSelect,
+  matchDayLabel,
   matchTimeLabel,
   stageLabels,
   type MatchWithRelations,
 } from "@/lib/matches";
+import { ArgentinaHype } from "@/components/home/argentina-hype";
 import { PrimaryButton } from "@/components/home/primary-button";
 import { StatCard } from "@/components/home/stat-card";
 import { SectionHeading } from "@/components/home/section-heading";
@@ -118,6 +120,45 @@ export default async function DashboardPage() {
   // Recap de la última fecha terminada (Fase 4).
   const recap = await computeRecap(supabase, matchesRes.data ?? []);
 
+  // 🇦🇷 Hype de Argentina: si hay partido en vivo o próximo (≤36h).
+  const ARG_WINDOW_MS = 36 * 60 * 60 * 1000;
+  const argMatch = (matchesRes.data ?? [])
+    .filter(
+      (m) =>
+        (m.home_team?.code === "ARG" || m.away_team?.code === "ARG") &&
+        m.home_team &&
+        m.away_team,
+    )
+    .map((m) => ({ m, s: displayStatus(m, now), k: new Date(m.kickoff_at).getTime() }))
+    .filter(
+      ({ s, k }) =>
+        s === "live" ||
+        s === "locking_soon" ||
+        (s === "upcoming" && k > now && k - now <= ARG_WINDOW_MS),
+    )
+    .sort((a, b) => a.k - b.k)[0];
+
+  let argHype: {
+    opponentName: string;
+    opponentFlag: string | null;
+    whenLabel: string;
+    live: boolean;
+    href: string;
+  } | null = null;
+  if (argMatch) {
+    const m = argMatch.m;
+    const argIsHome = m.home_team?.code === "ARG";
+    const opp = argIsHome ? m.away_team : m.home_team;
+    const live = argMatch.s === "live";
+    argHype = {
+      opponentName: opp?.name ?? "Rival",
+      opponentFlag: opp?.flag_emoji ?? null,
+      whenLabel: `${matchDayLabel(m.kickoff_at)} · ${matchTimeLabel(m.kickoff_at)}`,
+      live,
+      href: live ? "/sala-en-vivo" : `/matches/${m.id}`,
+    };
+  }
+
   return (
     <div className="flex animate-fade-up flex-col gap-6">
       <LiveRefresher enabled={liveMatches.length > 0} />
@@ -159,6 +200,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       </header>
+
+      {/* 🇦🇷 Banner de Argentina (en vivo o próximo) */}
+      {argHype && <ArgentinaHype {...argHype} />}
 
       {/* Main + Aside */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
