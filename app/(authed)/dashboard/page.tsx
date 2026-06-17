@@ -29,6 +29,10 @@ import { PreCierreReminder } from "@/components/home/pre-cierre-reminder";
 import { CountUp } from "@/components/effects/count-up";
 import { BadgeDrop } from "@/components/effects/badge-drop";
 import { TagDeLaFecha } from "@/components/home/tag-de-la-fecha";
+import {
+  ConferenciaPrensa,
+  type Speaker,
+} from "@/components/home/conferencia-prensa";
 
 export const dynamic = "force-dynamic";
 
@@ -177,6 +181,43 @@ export default async function DashboardPage() {
     },
   });
 
+  // 🎙️ Conferencia de prensa: crack + papelón de la fecha con sus declaraciones.
+  let conferencia: { crack: Speaker | null; papelon: Speaker | null } | null =
+    null;
+  if (recap && (recap.topUserIds.length > 0 || recap.bottomUserIds.length > 0)) {
+    const crackId = recap.topUserIds[0] ?? null;
+    const papelonId = recap.bottomUserIds[0] ?? null;
+    const declIds = [crackId, papelonId].filter((x): x is string => !!x);
+    const declByUser = new Map<string, string>();
+    if (declIds.length > 0) {
+      // Defensivo: si la tabla no existe aún (migración sin aplicar) no rompe.
+      const { data: declRows, error: declErr } = await supabase
+        .from("declarations")
+        .select("user_id, text")
+        .eq("day_key", recap.dayKey)
+        .in("user_id", declIds);
+      if (!declErr) {
+        for (const d of declRows ?? []) declByUser.set(d.user_id, d.text);
+      }
+    }
+    conferencia = {
+      crack: crackId
+        ? {
+            id: crackId,
+            nick: recap.topNicks[0] ?? "—",
+            declaration: declByUser.get(crackId) ?? null,
+          }
+        : null,
+      papelon: papelonId
+        ? {
+            id: papelonId,
+            nick: recap.bottomNicks[0] ?? "—",
+            declaration: declByUser.get(papelonId) ?? null,
+          }
+        : null,
+    };
+  }
+
   // 🇦🇷 Hype de Argentina: si hay partido en vivo o próximo (≤36h).
   const ARG_WINDOW_MS = 36 * 60 * 60 * 1000;
   const argMatch = (matchesRes.data ?? [])
@@ -299,6 +340,15 @@ export default async function DashboardPage() {
           {/* Recap de la última fecha + diario compartible (diario = todos los días) */}
           {recap && <RecapFecha recap={recap} />}
           {recap && <TagDeLaFecha recap={recap} />}
+          {recap && conferencia && (
+            <ConferenciaPrensa
+              dayLabel={recap.dayLabel}
+              dayKey={recap.dayKey}
+              crack={conferencia.crack}
+              papelon={conferencia.papelon}
+              myId={userId}
+            />
+          )}
           {diarioText && <DiarioProde text={diarioText} />}
 
           {/* Acceso a globales */}

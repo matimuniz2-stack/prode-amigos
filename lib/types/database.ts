@@ -661,6 +661,30 @@ export type Database = {
           },
         ]
       }
+      declarations: {
+        Row: {
+          id: string
+          user_id: string
+          day_key: string
+          text: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          day_key: string
+          text: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          day_key?: string
+          text?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

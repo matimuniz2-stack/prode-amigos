@@ -29,6 +29,11 @@ export interface Recap {
   totalGoals: number;
   /** La goleada de la fecha (diferencia ≥3), si hubo. */
   goleada: string | null;
+  /** Día (ART) de la fecha, ej "2026-06-16". Para la conferencia de prensa. */
+  dayKey: string;
+  /** User IDs del/los crack(s) y del/los papelón(es) de la fecha. */
+  topUserIds: string[];
+  bottomUserIds: string[];
 }
 
 const isResolved = (status: string) =>
@@ -93,12 +98,13 @@ export async function computeRecap(
   }
   let topPoints = 0;
   for (const v of totalByUser.values()) if (v > topPoints) topPoints = v;
-  const topNicks =
+  const topUserIds =
     topPoints > 0
       ? [...totalByUser.entries()]
           .filter(([, v]) => v === topPoints)
-          .map(([u]) => nameById.get(u) ?? "—")
+          .map(([u]) => u)
       : [];
+  const topNicks = topUserIds.map((u) => nameById.get(u) ?? "—");
 
   const labelOf = (id: string) => {
     const m = matchById.get(id);
@@ -131,12 +137,14 @@ export async function computeRecap(
   // La mufa: el/los que menos sumaron (solo con ≥3 jugadores y diferencia real).
   let bottomPoints = 0;
   let bottomNicks: string[] = [];
+  let bottomUserIds: string[] = [];
   if (totalByUser.size >= 3) {
     bottomPoints = Math.min(...totalByUser.values());
     if (bottomPoints < topPoints) {
-      bottomNicks = [...totalByUser.entries()]
+      bottomUserIds = [...totalByUser.entries()]
         .filter(([, v]) => v === bottomPoints)
-        .map(([u]) => nameById.get(u) ?? "—");
+        .map(([u]) => u);
+      bottomNicks = bottomUserIds.map((u) => nameById.get(u) ?? "—");
     }
   }
 
@@ -165,5 +173,8 @@ export async function computeRecap(
     bottomPoints,
     totalGoals,
     goleada,
+    dayKey: recapKey,
+    topUserIds,
+    bottomUserIds,
   };
 }
