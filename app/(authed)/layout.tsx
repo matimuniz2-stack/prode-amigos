@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { BottomNav } from "@/components/bottom-nav";
 import { Sidebar } from "@/components/sidebar";
 import { ArgentinaMode } from "@/components/argentina-mode";
+import { CommandPalette } from "@/components/command-palette";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/utils";
 import { getArgentinaMatch } from "@/lib/argentina";
@@ -36,9 +37,21 @@ export default async function AuthedLayout({
     }
   }
 
+  const navItems = [
+    { href: "/dashboard", label: "Inicio" },
+    { href: "/matches", label: "Pronósticos", hint: "cargar picks" },
+    { href: "/leaderboard", label: "Ranking" },
+    { href: "/sala-en-vivo", label: "En vivo" },
+    { href: "/globales", label: "Globales" },
+    { href: "/reglas", label: "Reglas" },
+    { href: "/mi-prode", label: "Mi prode" },
+    ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+  ];
+
   return (
     <>
       {argMode && <ArgentinaMode />}
+      <CommandPalette items={navItems} />
       <Sidebar playerCount={playerCount} isAdmin={isAdmin} />
       <div className="lg:pl-60">
         <AppShell>{children}</AppShell>

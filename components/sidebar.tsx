@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Home,
   Radio,
+  Search,
   Shield,
   Trophy,
   User,
@@ -46,6 +47,18 @@ export function Sidebar({
           PRODE
         </span>
       </Link>
+
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event("open-palette"))}
+        className="mb-1 flex items-center gap-2 rounded-xl border border-cream/15 bg-black/20 px-3 py-2 text-sm font-semibold text-cream/60 transition-colors hover:text-cream"
+      >
+        <Search className="size-4" />
+        Buscar
+        <span className="ml-auto rounded-md bg-cream/10 px-1.5 py-0.5 text-[10px] font-bold">
+          ⌘K
+        </span>
+      </button>
 
       <nav className="flex flex-col gap-1">
         {items.map(({ href, label, icon: Icon }) => {

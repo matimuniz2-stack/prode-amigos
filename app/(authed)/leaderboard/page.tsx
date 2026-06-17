@@ -9,6 +9,7 @@ import { computeAutoBadges } from "@/lib/badges";
 import { computeCareer } from "@/lib/career";
 import { CareerChart } from "@/components/leaderboard/career-chart";
 import { Avatar } from "@/components/avatar";
+import { CrownedAvatar } from "@/components/crowned-avatar";
 import { ShareButton } from "@/components/share-button";
 
 export const dynamic = "force-dynamic";
@@ -240,12 +241,8 @@ export default async function LeaderboardPage() {
                 href={`/jugador/${s.userId}`}
                 className="flex flex-1 flex-col items-center gap-1 transition-transform active:scale-95"
               >
-                {idx === 0 && (
-                  <span aria-hidden className="-mb-1 text-lg">
-                    👑
-                  </span>
-                )}
-                <Avatar
+                <CrownedAvatar
+                  crowned={idx === 0}
                   src={s.avatarUrl}
                   name={s.nickname}
                   className={cn("size-16 text-2xl ring-2", m.ring)}

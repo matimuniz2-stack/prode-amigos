@@ -1,5 +1,5 @@
 import type { Recap } from "@/lib/recap";
-import { Avatar } from "@/components/avatar";
+import { CrownedAvatar } from "@/components/crowned-avatar";
 import { TAG_TONE_CLASS } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +28,20 @@ export function TagDeLaFecha({ recap }: { recap: Recap }) {
     }
   }
 
-  const rows: { nick: string; pill: string; tone: keyof typeof TAG_TONE_CLASS; sub: string }[] = [];
+  const rows: {
+    nick: string;
+    pill: string;
+    tone: keyof typeof TAG_TONE_CLASS;
+    sub: string;
+    crowned?: boolean;
+  }[] = [];
   if (recap.topNicks.length > 0) {
     rows.push({
       nick: joinNicks(recap.topNicks),
-      pill: "🔥 El Crack",
+      pill: "👑 Rey de la fecha",
       tone: "gold",
       sub: `${recap.topPoints} pts en la fecha, intratable`,
+      crowned: true,
     });
   }
   if (franco) {
@@ -65,7 +72,7 @@ export function TagDeLaFecha({ recap }: { recap: Recap }) {
           key={i}
           className="flex items-center gap-3 rounded-xl bg-ink/[0.03] p-2"
         >
-          <Avatar name={r.nick} className="size-9 text-sm" />
+          <CrownedAvatar crowned={r.crowned} name={r.nick} className="size-9 text-sm" />
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{r.nick}</div>
             <div className="truncate text-[11px] text-ink/55">{r.sub}</div>
