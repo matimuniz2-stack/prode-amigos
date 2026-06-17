@@ -104,3 +104,21 @@
     opacity: 0;
   }
 }
+
+/* Banderitas/confeti que caen por toda la pantalla (modo argentino) */
+@keyframes arg-drift {
+  0% {
+    transform: translateY(-8vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--arg-op, 0.7);
+  }
+  90% {
+    opacity: var(--arg-op, 0.7);
+  }
+  100% {
+    transform: translateY(108vh) translateX(var(--arg-sway, 20px)) rotate(360deg);
+    opacity: 0;
+  }
+}
