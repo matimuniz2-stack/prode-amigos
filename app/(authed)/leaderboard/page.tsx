@@ -20,6 +20,7 @@ interface Standing {
   rank: number;
   prize: number;
   tags: string[];
+  featuredTag: string | null;
   avatarUrl: string | null;
 }
 
@@ -96,18 +97,34 @@ export default async function LeaderboardPage() {
   // (calculadas desde los resultados). Se muestran juntas como chips.
   const { data: tagRows } = await supabase
     .from("profiles")
-    .select("id, nickname, tags, avatar_url")
+    .select("id, nickname, tags, avatar_url, featured_tag")
     .order("nickname", { ascending: true })
     .returns<
-      { id: string; nickname: string; tags: string[]; avatar_url: string | null }[]
+      {
+        id: string;
+        nickname: string;
+        tags: string[];
+        avatar_url: string | null;
+        featured_tag: string | null;
+      }[]
     >();
   const avatarByUser = new Map(
     (tagRows ?? []).map((p) => [p.id, p.avatar_url]),
   );
+  const featuredByUser = new Map(
+    (tagRows ?? []).map((p) => [p.id, p.featured_tag]),
+  );
   const autoBadges = await computeAutoBadges(supabase);
-  const tagsFor = (userId: string, manual: string[]) => [
-    ...new Set([...(manual ?? []), ...(autoBadges.get(userId) ?? [])]),
-  ];
+  // La insignia destacada va primera en la lista de chips.
+  const tagsFor = (userId: string, manual: string[]) => {
+    const all = [
+      ...new Set([...(manual ?? []), ...(autoBadges.get(userId) ?? [])]),
+    ];
+    const feat = featuredByUser.get(userId);
+    return feat && all.includes(feat)
+      ? [feat, ...all.filter((t) => t !== feat)]
+      : all;
+  };
   const tagsByUser = new Map<string, string[]>(
     (tagRows ?? []).map((p) => [p.id, tagsFor(p.id, p.tags)]),
   );
@@ -121,6 +138,7 @@ export default async function LeaderboardPage() {
       rank: r.rank ?? 0,
       prize: r.projected_prize ?? 0,
       tags: tagsByUser.get(r.user_id ?? "") ?? [],
+      featuredTag: featuredByUser.get(r.user_id ?? "") ?? null,
       avatarUrl: r.avatar_url ?? null,
     }));
   } else {
@@ -132,6 +150,7 @@ export default async function LeaderboardPage() {
       rank: 1,
       prize: 0,
       tags: tagsByUser.get(p.id) ?? [],
+      featuredTag: p.featured_tag ?? null,
       avatarUrl: p.avatar_url ?? null,
     }));
   }
@@ -252,6 +271,7 @@ export default async function LeaderboardPage() {
                         className={cn(
                           "inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-bold",
                           TAG_TONE_CLASS[toneForTag(t)],
+                          t === s.featuredTag && "ring-2 ring-gold",
                         )}
                       >
                         {t}
@@ -366,6 +386,7 @@ export default async function LeaderboardPage() {
                           className={cn(
                             "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold",
                             TAG_TONE_CLASS[toneForTag(t)],
+                            t === s.featuredTag && "ring-2 ring-gold",
                           )}
                         >
                           {t}

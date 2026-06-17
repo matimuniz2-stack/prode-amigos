@@ -12,6 +12,9 @@ import type { Database } from "@/lib/types/database";
 import { NicknameEditor } from "@/components/nickname-editor";
 import { Flag } from "@/components/flag";
 import { CountUp } from "@/components/effects/count-up";
+import { computeAutoBadges } from "@/lib/badges";
+import { AvatarUploader } from "@/components/profile/avatar-uploader";
+import { FeaturedTagPicker } from "@/components/profile/featured-tag-picker";
 
 export const dynamic = "force-dynamic";
 
@@ -51,10 +54,22 @@ export default async function MiProdePage() {
 
   const { data: myProfile } = await supabase
     .from("profiles")
-    .select("role, nickname")
+    .select("role, nickname, avatar_url, tags, featured_tag")
     .eq("id", userId)
-    .maybeSingle();
+    .maybeSingle<{
+      role: string;
+      nickname: string;
+      avatar_url: string | null;
+      tags: string[] | null;
+      featured_tag: string | null;
+    }>();
   const isAdmin = myProfile?.role === "admin" || myProfile?.role === "owner";
+
+  // Insignias del usuario (manuales + automáticas) para elegir la destacada.
+  const autoBadges = await computeAutoBadges(supabase);
+  const myTags = [
+    ...new Set([...(myProfile?.tags ?? []), ...(autoBadges.get(userId) ?? [])]),
+  ];
 
   const { data: picks } = await supabase
     .from("match_predictions")
@@ -110,6 +125,17 @@ export default async function MiProdePage() {
       </header>
 
       <NicknameEditor initial={myProfile?.nickname ?? ""} />
+
+      <AvatarUploader
+        userId={userId}
+        initialUrl={myProfile?.avatar_url ?? null}
+        name={myProfile?.nickname ?? "vos"}
+      />
+
+      <FeaturedTagPicker
+        tags={myTags}
+        initial={myProfile?.featured_tag ?? null}
+      />
 
       {allPicks.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-cream/20 p-8 text-center">
