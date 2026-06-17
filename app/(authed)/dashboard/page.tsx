@@ -7,9 +7,12 @@ import {
   matchSelect,
   matchDayLabel,
   matchTimeLabel,
+  relativeDayLabel,
+  todayLabelAR,
   stageLabels,
   type MatchWithRelations,
 } from "@/lib/matches";
+import { computeAutoBadges, AUTO_BADGE_LABELS } from "@/lib/badges";
 import { ArgentinaHype } from "@/components/home/argentina-hype";
 import { PrimaryButton } from "@/components/home/primary-button";
 import { StatCard } from "@/components/home/stat-card";
@@ -49,29 +52,36 @@ export default async function DashboardPage() {
   const now = Date.now();
 
   // Consultas independientes en paralelo (antes iban una atrás de otra).
-  const [matchesRes, rankingRes, meRes, playerCountRes, globalsCountRes] =
-    await Promise.all([
-      supabase
-        .from("matches")
-        .select(matchSelect)
-        .order("kickoff_at", { ascending: true })
-        .order("match_number", { ascending: true })
-        .returns<MatchWithRelations[]>(),
-      supabase
-        .from("leaderboard_projection")
-        .select("user_id, nickname, total_points, rank")
-        .order("rank", { ascending: true }),
-      supabase
-        .from("profiles")
-        .select("nickname, avatar_url")
-        .eq("id", userId)
-        .maybeSingle(),
-      supabase.from("profiles").select("*", { count: "exact", head: true }),
-      supabase
-        .from("global_predictions")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId),
-    ]);
+  const [
+    matchesRes,
+    rankingRes,
+    meRes,
+    playerCountRes,
+    globalsCountRes,
+    autoBadges,
+  ] = await Promise.all([
+    supabase
+      .from("matches")
+      .select(matchSelect)
+      .order("kickoff_at", { ascending: true })
+      .order("match_number", { ascending: true })
+      .returns<MatchWithRelations[]>(),
+    supabase
+      .from("leaderboard_projection")
+      .select("user_id, nickname, total_points, rank")
+      .order("rank", { ascending: true }),
+    supabase
+      .from("profiles")
+      .select("nickname, avatar_url")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase
+      .from("global_predictions")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId),
+    computeAutoBadges(supabase),
+  ]);
 
   const upcoming = (matchesRes.data ?? []).filter((m) => {
     const s = displayStatus(m, now);
@@ -119,6 +129,45 @@ export default async function DashboardPage() {
 
   // Recap de la última fecha terminada (Fase 4).
   const recap = await computeRecap(supabase, matchesRes.data ?? []);
+
+  // 📰 El Diario del Prode: crónica diaria para copiar al grupo. Junta la
+  // tabla, el resumen de la última fecha, las insignias del momento y lo que
+  // se viene. Reusa data ya cargada (standings, badges, próximos partidos).
+  const nickByUser = new Map(
+    standings.map((r) => [r.user_id, r.nickname ?? "—"]),
+  );
+  const badgeHas = (uid: string | null | undefined, label: string) =>
+    Boolean(uid) && (autoBadges.get(uid as string) ?? []).includes(label);
+  const nickWithBadge = (label: string): string | null => {
+    for (const [uid, labels] of autoBadges) {
+      if (labels.includes(label)) return nickByUser.get(uid) ?? null;
+    }
+    return null;
+  };
+  const nowDate = new Date(now);
+  const nextLock = upcoming[0]?.lock_at ?? upcoming[0]?.kickoff_at ?? null;
+  const diarioText = buildDiario({
+    todayLabel: todayLabelAR(nowDate),
+    recap,
+    standings: standings.map((r) => ({
+      nickname: r.nickname ?? "—",
+      points: r.total_points ?? 0,
+      rank: r.rank ?? 0,
+      hot: badgeHas(r.user_id, AUTO_BADGE_LABELS.en_racha),
+      cold: badgeHas(r.user_id, AUTO_BADGE_LABELS.pecho_frio),
+    })),
+    fixtures: upcoming.slice(0, 3).map((m) => ({
+      label: `${m.home_team?.name} vs ${m.away_team?.name}`,
+      whenLabel: `${relativeDayLabel(m.kickoff_at, nowDate)} ${matchTimeLabel(m.kickoff_at)}`,
+    })),
+    closesLabel: nextLock
+      ? `${relativeDayLabel(nextLock, nowDate)} ${matchTimeLabel(nextLock)}`
+      : null,
+    extras: {
+      francotirador: nickWithBadge(AUTO_BADGE_LABELS.francotirador),
+      fantasma: nickWithBadge(AUTO_BADGE_LABELS.fantasma),
+    },
+  });
 
   // 🇦🇷 Hype de Argentina: si hay partido en vivo o próximo (≤36h).
   const ARG_WINDOW_MS = 36 * 60 * 60 * 1000;
@@ -232,9 +281,9 @@ export default async function DashboardPage() {
             </StatCard>
           </div>
 
-          {/* Recap de la última fecha + diario compartible */}
+          {/* Recap de la última fecha + diario compartible (diario = todos los días) */}
           {recap && <RecapFecha recap={recap} />}
-          {recap && <DiarioProde text={buildDiario(recap)} />}
+          {diarioText && <DiarioProde text={diarioText} />}
 
           {/* Acceso a globales */}
           <Link

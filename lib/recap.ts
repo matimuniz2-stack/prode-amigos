@@ -22,6 +22,13 @@ export interface Recap {
   exactos: RecapExacto[];
   /** Partidos donde nadie acertó ni el 1X2 (etiqueta con marcador). */
   plenos: string[];
+  /** El/los que menos sumaron la fecha (mufa), solo si hubo diferencia. */
+  bottomNicks: string[];
+  bottomPoints: number;
+  /** Goles totales de la fecha. */
+  totalGoals: number;
+  /** La goleada de la fecha (diferencia ≥3), si hubo. */
+  goleada: string | null;
 }
 
 const isResolved = (status: string) =>
@@ -121,11 +128,42 @@ export async function computeRecap(
         `${m.home_team?.name ?? "?"} ${m.score_home}-${m.score_away} ${m.away_team?.name ?? "?"}`,
     );
 
+  // La mufa: el/los que menos sumaron (solo con ≥3 jugadores y diferencia real).
+  let bottomPoints = 0;
+  let bottomNicks: string[] = [];
+  if (totalByUser.size >= 3) {
+    bottomPoints = Math.min(...totalByUser.values());
+    if (bottomPoints < topPoints) {
+      bottomNicks = [...totalByUser.entries()]
+        .filter(([, v]) => v === bottomPoints)
+        .map(([u]) => nameById.get(u) ?? "—");
+    }
+  }
+
+  // Dato de color: goles totales y la goleada (diferencia ≥3) de la fecha.
+  let totalGoals = 0;
+  let goleada: string | null = null;
+  let goleadaDiff = 0;
+  for (const m of dayMatches) {
+    const gh = m.score_home ?? 0;
+    const ga = m.score_away ?? 0;
+    totalGoals += gh + ga;
+    const diff = Math.abs(gh - ga);
+    if (diff >= 3 && diff > goleadaDiff) {
+      goleadaDiff = diff;
+      goleada = `${m.home_team?.name ?? "?"} ${gh}-${ga} ${m.away_team?.name ?? "?"}`;
+    }
+  }
+
   return {
     dayLabel: matchDayLabel(dayMatches[0].kickoff_at),
     topNicks,
     topPoints,
     exactos,
     plenos,
+    bottomNicks,
+    bottomPoints,
+    totalGoals,
+    goleada,
   };
 }

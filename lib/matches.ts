@@ -74,6 +74,22 @@ export function matchTimeLabel(kickoff: string): string {
   return timeFormatter.format(new Date(kickoff));
 }
 
+/** Etiqueta del día de hoy (ART), capitalizada. Para el encabezado del Diario. */
+export function todayLabelAR(now: Date = new Date()): string {
+  const label = dayLabelFormatter.format(now);
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/** "hoy" / "mañana" / "Sábado, 14 de junio" según el día ART del kickoff. */
+export function relativeDayLabel(kickoff: string, now: Date = new Date()): string {
+  const k = matchDayKey(kickoff);
+  if (k === dayKeyFormatter.format(now)) return "hoy";
+  if (k === dayKeyFormatter.format(new Date(now.getTime() + 86_400_000))) {
+    return "mañana";
+  }
+  return matchDayLabel(kickoff);
+}
+
 export function groupMatchesByDay<T extends { kickoff_at: string }>(matches: T[]) {
   const map = new Map<string, { dayKey: string; dayLabel: string; matches: T[] }>();
   for (const m of matches) {
