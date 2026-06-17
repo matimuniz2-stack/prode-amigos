@@ -53,3 +53,31 @@ export const TAG_TONE_CLASS: Record<TagTone, string> = {
 export function toneForTag(label: string): TagTone {
   return TONE_BY_LABEL[label] ?? "grass";
 }
+
+/** Qué significa cada insignia (para la ficha que se abre al tocarla). */
+const TAG_DESC_BY_LABEL: Record<string, string> = {
+  "🧠 El Maestro":
+    "Distinción del admin para el capo del prode. No se compra, se gana con clase.",
+  "🐐 El GOAT": "Vas 1° del ranking. El mejor del prode… por ahora. 🐐",
+  "🤡 Mufa": "Último puesto de la tabla. Alguien la tiene que sostener.",
+  "🎯 Francotirador":
+    "El que más resultados EXACTOS clavó del grupo. Puntería de francotirador.",
+  "🔥 En racha": "3 o más aciertos seguidos. Está que arde, no lo toques.",
+  "🧊 Pecho frío":
+    "No le pegó a quién ganaba en 3+ partidos seguidos. Frío, frío.",
+  "👻 El Fantasma":
+    "Se comió 2+ cierres seguidos sin cargar pick propio. Aparecé, maestro.",
+  "🐔 El Cagón":
+    "El que menos goles pronostica. Todo 1-0 y a dormir tranquilo.",
+  "💣 El Cebado": "El que más goles pone. Goleada en cada pick, sin miedo.",
+  "🏅 MVP de la Fecha":
+    "El que más puntos hizo en la última fecha jugada. Figura.",
+};
+
+/** Descripción de una etiqueta (fallback genérico si no la conocemos). */
+export function descForTag(label: string): string {
+  return (
+    TAG_DESC_BY_LABEL[label] ??
+    "Una insignia del prode. Te la ganaste en la cancha."
+  );
+}

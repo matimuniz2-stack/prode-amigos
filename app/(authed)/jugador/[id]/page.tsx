@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
-import { TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
+import { TagFicha } from "@/components/player/tag-ficha";
 import { computeAutoBadges } from "@/lib/badges";
 import { computeAdn } from "@/lib/adn";
 import { AdnFutbolero } from "@/components/player/adn-futbolero";
@@ -157,15 +157,7 @@ export default async function JugadorPage({
           {tags.length > 0 && (
             <span className="flex flex-wrap gap-1">
               {tags.map((t) => (
-                <span
-                  key={t}
-                  className={cn(
-                    "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold",
-                    TAG_TONE_CLASS[toneForTag(t)],
-                  )}
-                >
-                  {t}
-                </span>
+                <TagFicha key={t} label={t} />
               ))}
             </span>
           )}
