@@ -25,6 +25,8 @@ import { RecapFecha } from "@/components/home/recap-fecha";
 import { DiarioProde } from "@/components/home/diario-prode";
 import { computeRecap } from "@/lib/recap";
 import { buildDiario } from "@/lib/diario";
+import { PreCierreReminder } from "@/components/home/pre-cierre-reminder";
+import { CountUp } from "@/components/effects/count-up";
 
 export const dynamic = "force-dynamic";
 
@@ -115,6 +117,10 @@ export default async function DashboardPage() {
   const nextMatchLabel = nextMatch
     ? `${nextMatch.home_team?.name} vs ${nextMatch.away_team?.name}`
     : "Por definirse";
+
+  // Recordatorio pre-cierre: cuántos picks faltan y cuándo cierra el próximo.
+  const missingPicks = upcoming.filter((m) => !picksByMatch.has(m.id)).length;
+  const nextLockAt = nextMatch?.lock_at ?? null;
 
   const standings = rankingRes.data ?? [];
   const hasScores = standings.some((r) => (r.total_points ?? 0) > 0);
@@ -211,6 +217,9 @@ export default async function DashboardPage() {
   return (
     <div className="flex animate-fade-up flex-col gap-6">
       <LiveRefresher enabled={liveMatches.length > 0} />
+      {nextLockAt && (
+        <PreCierreReminder missingCount={missingPicks} nextLock={nextLockAt} />
+      )}
       {/* Header */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col items-center gap-1 text-center lg:items-start lg:text-left">
@@ -270,7 +279,10 @@ export default async function DashboardPage() {
               )}
             </StatCard>
             <StatCard emoji="⭐" label="Puntos">
-              <span className="text-lg text-pitch">{myPoints}</span> pts
+              <span className="text-lg text-pitch">
+                <CountUp value={myPoints} />
+              </span>{" "}
+              pts
             </StatCard>
             <StatCard emoji="⚽" label="Próximo partido">
               <span className="line-clamp-2">{nextMatchLabel}</span>

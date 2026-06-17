@@ -11,6 +11,7 @@ import {
 import type { Database } from "@/lib/types/database";
 import { NicknameEditor } from "@/components/nickname-editor";
 import { Flag } from "@/components/flag";
+import { CountUp } from "@/components/effects/count-up";
 
 export const dynamic = "force-dynamic";
 
@@ -95,7 +96,7 @@ export default async function MiProdePage() {
             {allPicks.length} pick{allPicks.length === 1 ? "" : "s"}
           </span>
           <span className="rounded-full bg-gold px-3 py-1 text-sm font-extrabold text-ink">
-            {totalPoints} pts
+            <CountUp value={totalPoints} /> pts
           </span>
         </div>
         {isAdmin && (

@@ -9,6 +9,7 @@ import {
 } from "@/components/match-others-picks";
 import { MatchGrieta } from "@/components/match-grieta";
 import { MatchChat, type ChatMessage } from "@/components/match-chat";
+import { PlenoCelebration } from "@/components/match/pleno-celebration";
 import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import {
@@ -83,6 +84,7 @@ export default async function MatchDetailPage({
   let otherPicks: MatchPickEntry[] = [];
   let myProjected: number | null = null;
   let chatMessages: ChatMessage[] = [];
+  let myMatchPoints: number | null = null;
   if (isLocked) {
     const [{ data: allPicks }, { data: matchPoints }, { data: ruleRows }] =
       await Promise.all([
@@ -120,6 +122,7 @@ export default async function MatchDetailPage({
     const pointsById = new Map(
       (matchPoints ?? []).map((r) => [r.user_id, r.points]),
     );
+    myMatchPoints = isFinished ? (pointsById.get(userId) ?? null) : null;
     const teamNameById = new Map(
       [match.home_team, match.away_team]
         .filter((t): t is NonNullable<typeof t> => t !== null)
@@ -221,9 +224,23 @@ export default async function MatchDetailPage({
     }));
   }
 
+  const isPleno =
+    isFinished &&
+    hasScore &&
+    pick !== null &&
+    pick.predicted_home === match.score_home &&
+    pick.predicted_away === match.score_away;
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 pt-1">
       <LiveRefresher enabled={isLive} />
+      {isPleno && (myMatchPoints ?? 0) > 0 && (
+        <PlenoCelebration
+          matchId={match.id}
+          points={myMatchPoints ?? 0}
+          scoreLabel={`${match.score_home}-${match.score_away}`}
+        />
+      )}
       <Link
         href="/matches"
         className="text-xs font-semibold text-cream/70 hover:text-cream"
