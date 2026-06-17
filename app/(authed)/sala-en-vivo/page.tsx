@@ -10,6 +10,7 @@ import {
 } from "@/components/match-others-picks";
 import { MatchGrieta } from "@/components/match-grieta";
 import { LivePitch } from "@/components/live/live-pitch";
+import { WhoIsWatching } from "@/components/live/who-is-watching";
 import { scorePrediction, type ScoringRule } from "@/lib/scoring";
 import {
   displayStatus,
@@ -209,6 +210,14 @@ export default async function SalaEnVivoPage() {
       <SectionHeading className="pt-1">
         🔴 Sala en vivo
       </SectionHeading>
+
+      <WhoIsWatching
+        me={{
+          id: myId,
+          nickname: nameById.get(myId) ?? "vos",
+          avatarUrl: avatarById.get(myId) ?? null,
+        }}
+      />
 
       {/* Tabla proyectada */}
       <section className="flex flex-col gap-2 rounded-2xl bg-cream p-4 text-ink shadow-card ring-1 ring-black/5">
