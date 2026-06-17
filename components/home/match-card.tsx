@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { submitPick } from "@/app/(authed)/matches/[matchId]/actions";
 import { Flag } from "@/components/flag";
+import { RelatorToast } from "@/components/effects/relator-toast";
+import { FechaCompleta } from "@/components/effects/fecha-completa";
 
 export type MatchCardVariant = "editable" | "locked" | "pending";
 
@@ -125,6 +127,10 @@ export function MatchCard({
   const [away, setAway] = useState(initialAway ?? 0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ title: string; sub?: string } | null>(
+    null,
+  );
+  const [fechaDone, setFechaDone] = useState<number | null>(null);
   const [lockedClient, setLockedClient] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -147,6 +153,11 @@ export function MatchCard({
       const res = await submitPick(matchId, form);
       if (res.ok) {
         setSuccess(hasPick ? "¡Pick actualizado!" : "¡Pick cargado!");
+        setToast({
+          title: hasPick ? "¡PICK ACTUALIZADO!" : "¡PICK CARGADO!",
+          sub: `${homeName} ${home}-${away} ${awayName}`,
+        });
+        if (res.fechaDone) setFechaDone(res.fechaTotal ?? 0);
       } else {
         setError(res.error);
         if (res.error.toLowerCase().includes("cerró")) setLockedClient(true);
@@ -234,6 +245,16 @@ export function MatchCard({
           </>
         )}
       </form>
+
+      <RelatorToast
+        show={toast !== null}
+        title={toast?.title ?? ""}
+        sub={toast?.sub}
+        onClose={() => setToast(null)}
+      />
+      {fechaDone !== null && (
+        <FechaCompleta total={fechaDone} onClose={() => setFechaDone(null)} />
+      )}
     </div>
   );
 }

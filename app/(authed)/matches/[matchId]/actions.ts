@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isReactionEmoji } from "@/lib/reactions";
 
-export type SubmitResult = { ok: true } | { ok: false; error: string };
+export type SubmitResult =
+  | { ok: true; fechaDone?: boolean; fechaTotal?: number }
+  | { ok: false; error: string };
 
 function clampScore(value: unknown): number | null {
   const n = Number(value);
@@ -98,7 +100,37 @@ export async function submitPick(
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/matches");
   revalidatePath("/mi-prode");
-  return { ok: true };
+  revalidatePath("/dashboard");
+
+  // ¿Quedó completa la fecha? = todos los partidos todavía abiertos (no
+  // cerrados ni terminados) tienen pick del usuario. Para el festejo "todo
+  // listo". La tabla matches es chica (~104 filas) así que filtramos en JS.
+  let fechaDone = false;
+  let fechaTotal = 0;
+  const { data: allMatches } = await supabase
+    .from("matches")
+    .select("id, status, lock_at");
+  const openIds = (allMatches ?? [])
+    .filter(
+      (m) =>
+        new Date(m.lock_at).getTime() > Date.now() &&
+        !["finished", "cancelled", "void", "pending_bracket"].includes(
+          m.status,
+        ),
+    )
+    .map((m) => m.id);
+  fechaTotal = openIds.length;
+  if (openIds.length > 0) {
+    const { data: myPicks } = await supabase
+      .from("match_predictions")
+      .select("match_id")
+      .eq("user_id", userId)
+      .in("match_id", openIds);
+    const have = new Set((myPicks ?? []).map((p) => p.match_id));
+    fechaDone = have.size >= openIds.length;
+  }
+
+  return { ok: true, fechaDone, fechaTotal };
 }
 
 export async function sendChatMessage(
