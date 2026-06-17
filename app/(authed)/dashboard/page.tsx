@@ -27,6 +27,7 @@ import { computeRecap } from "@/lib/recap";
 import { buildDiario } from "@/lib/diario";
 import { PreCierreReminder } from "@/components/home/pre-cierre-reminder";
 import { CountUp } from "@/components/effects/count-up";
+import { BadgeDrop } from "@/components/effects/badge-drop";
 
 export const dynamic = "force-dynamic";
 
@@ -220,6 +221,7 @@ export default async function DashboardPage() {
       {nextLockAt && (
         <PreCierreReminder missingCount={missingPicks} nextLock={nextLockAt} />
       )}
+      <BadgeDrop badges={autoBadges.get(userId) ?? []} />
       {/* Header */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col items-center gap-1 text-center lg:items-start lg:text-left">
