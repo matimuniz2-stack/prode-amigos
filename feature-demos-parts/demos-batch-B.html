@@ -1,0 +1,441 @@
+<article class="demo" data-cat="Ranking" id="d06">
+<style>
+#d06 .stage{position:relative;width:320px;margin:0 auto;}
+#d06 .card{background:#06281F;border-radius:14px;padding:14px;box-sizing:border-box;width:100%;overflow:hidden;}
+#d06 .ttl{font-family:Anton,sans-serif;font-size:14px;color:var(--gold);margin-bottom:14px;letter-spacing:.5px;}
+#d06 .row{display:flex;align-items:center;gap:14px;background:linear-gradient(90deg,rgba(255,210,63,.18),transparent);border:1px solid rgba(255,210,63,.45);border-radius:12px;padding:14px 12px;}
+#d06 .avwrap{position:relative;width:58px;height:58px;flex:0 0 58px;}
+#d06 .av{width:58px;height:58px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:26px;color:var(--ink);position:relative;z-index:2;}
+#d06 .aura{position:absolute;inset:0;border-radius:50%;z-index:1;opacity:0;transform:scale(.4);}
+#d06 .aura.lit{animation:d06-ignite .5s cubic-bezier(.2,1.4,.4,1) forwards, d06-pulse 1.8s ease-in-out .5s infinite;}
+#d06 .crown{position:absolute;left:50%;top:-18px;transform:translateX(-50%);font-size:22px;z-index:3;opacity:0;}
+#d06 .crown.on{opacity:1;animation:d06-drop .7s cubic-bezier(.3,1.5,.5,1) forwards;}
+#d06 .crown.on.bob{animation:d06-bob 2.4s ease-in-out infinite;}
+#d06 .meta{min-width:0;}
+#d06 .name{font-family:Anton,sans-serif;font-size:20px;color:#fff;line-height:1;}
+#d06 .rank{font-size:11px;color:var(--gold);font-weight:700;margin-top:3px;}
+#d06 .chic{font-size:11px;color:var(--cream);opacity:0;margin-top:4px;transition:opacity .5s ease .3s;}
+#d06 .chic.show{opacity:.85;}
+#d06 .cap{font-size:10px;color:#fff;opacity:.5;margin-top:10px;}
+@keyframes d06-ignite{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes d06-pulse{0%,100%{box-shadow:0 0 0 4px rgba(255,210,63,.55),0 0 0 0 rgba(255,210,63,.45),0 0 20px rgba(255,210,63,.5)}50%{box-shadow:0 0 0 5px rgba(255,210,63,.7),0 0 0 14px rgba(255,210,63,0),0 0 30px rgba(255,210,63,.65)}}
+@keyframes d06-drop{0%{opacity:0;transform:translateX(-50%) translateY(-46px) rotate(-18deg) scale(.7)}60%{opacity:1;transform:translateX(-50%) translateY(4px) rotate(6deg) scale(1.08)}80%{transform:translateX(-50%) translateY(-3px) rotate(-3deg) scale(1)}100%{opacity:1;transform:translateX(-50%) translateY(0) rotate(0) scale(1)}}
+@keyframes d06-bob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-4deg)}50%{transform:translateX(-50%) translateY(-5px) rotate(4deg)}}
+</style>
+  <div class="demo-head"><span class="dnum">06</span><h3>🏆 Coronación del líder</h3><span class="chip">Ranking</span></div>
+  <p class="desc">El primero del ranking lleva corona dorada animada y un aura que late sobre su avatar.</p>
+  <div class="stage">
+    <div class="card">
+      <div class="ttl">👑 EL REY DEL PRODE</div>
+      <div class="row">
+        <div class="avwrap">
+          <span class="crown">👑</span>
+          <div class="aura"></div>
+          <div class="av">M</div>
+        </div>
+        <div class="meta">
+          <div class="name">MATI</div>
+          <div class="rank">1° · 47 pts</div>
+          <div class="chic">"Bajen la cabeza, plebe" 😎</div>
+        </div>
+      </div>
+      <div class="cap">▸ el aura late y la corona flota suave</div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d06'); if(!root) return;
+  var crown=root.querySelector('.crown'), aura=root.querySelector('.aura'), chic=root.querySelector('.chic');
+  var bobT=null;
+  function play(){
+    reset();
+    crown.classList.add('on');
+    aura.classList.add('lit');
+    chic.classList.add('show');
+    bobT=setTimeout(function(){ crown.classList.add('bob'); },800);
+  }
+  function reset(){
+    if(bobT){clearTimeout(bobT);bobT=null;}
+    crown.classList.remove('on','bob');
+    aura.classList.remove('lit');
+    chic.classList.remove('show');
+    void crown.offsetWidth; void aura.offsetWidth;
+  }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="Tags" id="d07">
+<style>
+#d07 .stage{position:relative;width:320px;margin:0 auto;}
+#d07 .card{background:#06281F;border-radius:14px;padding:14px;box-sizing:border-box;width:100%;}
+#d07 .ttl{font-family:Anton,sans-serif;font-size:15px;color:var(--gold);margin-bottom:12px;letter-spacing:.5px;}
+#d07 .row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:10px;padding:9px 10px;margin-bottom:8px;opacity:0;transform:translateY(14px);}
+#d07 .row.in{animation:d07-rise .42s cubic-bezier(.2,.9,.3,1) forwards;}
+#d07 .av{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:#fff;}
+#d07 .av.s{background:var(--sky);color:var(--ink);}
+#d07 .av.r{background:var(--red);}
+#d07 .av.g{background:var(--grass);}
+#d07 .info{flex:1;min-width:0;}
+#d07 .nm{color:#fff;font-weight:800;font-size:13px;line-height:1.1;}
+#d07 .sub{color:var(--cream);opacity:.65;font-size:10px;margin-top:2px;}
+#d07 .pill{position:relative;overflow:hidden;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:800;white-space:nowrap;flex:0 0 auto;transform:scale(0);}
+#d07 .pill.gold{background:var(--gold);color:var(--ink);}
+#d07 .pill.red{background:var(--red);color:#fff;}
+#d07 .pill.grass{background:var(--grass);color:#fff;}
+#d07 .pill.stamp{animation:d07-stamp .42s cubic-bezier(.2,1.6,.4,1) forwards;}
+#d07 .pill.stamp .shine{animation:d07-shine .6s ease .2s 1;}
+#d07 .pill .shimmer{position:absolute;top:0;left:-60%;width:50%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent);}
+#d07 .pill.stamp .shimmer{animation:d07-shim 2.6s ease 0s infinite;animation-delay:.5s;}
+@keyframes d07-rise{to{opacity:1;transform:translateY(0)}}
+@keyframes d07-stamp{0%{transform:scale(0) rotate(-8deg)}60%{transform:scale(1.3) rotate(3deg)}80%{transform:scale(.94) rotate(-1deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes d07-shim{0%{left:-60%}55%{left:130%}100%{left:130%}}
+</style>
+  <div class="demo-head"><span class="dnum">07</span><h3>👑 Tag de la fecha</h3><span class="chip">Tags</span></div>
+  <p class="desc">Cada jornada el sistema reparte títulos temáticos: el cebado, el mufa, el clutch.</p>
+  <div class="stage">
+    <div class="card">
+      <div class="ttl">REPARTO FECHA 3 🎖️</div>
+      <div class="row" data-i="0">
+        <div class="av s">M</div>
+        <div class="info"><div class="nm">Mati</div><div class="sub">pegó 6 de 6, intratable</div></div>
+        <div class="pill gold"><span class="shimmer"></span>🔥 EL CEBADO</div>
+      </div>
+      <div class="row" data-i="1">
+        <div class="av r">G</div>
+        <div class="info"><div class="nm">Grego</div><div class="sub">0 aciertos, plantó la mufa</div></div>
+        <div class="pill red"><span class="shimmer"></span>🧿 EL MUFA</div>
+      </div>
+      <div class="row" data-i="2">
+        <div class="av g">L</div>
+        <div class="info"><div class="nm">Lucho</div><div class="sub">clavó el 2-2 sobre la hora</div></div>
+        <div class="pill grass"><span class="shimmer"></span>🎯 EL CLUTCH</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d07'); if(!root) return;
+  var rows=root.querySelectorAll('.row');
+  var timers=[];
+  function clear(){timers.forEach(clearTimeout);timers=[];}
+  function reset(){
+    clear();
+    rows.forEach(function(r){
+      r.classList.remove('in');
+      var p=r.querySelector('.pill'); p.classList.remove('stamp');
+      void r.offsetWidth; void p.offsetWidth;
+    });
+  }
+  function play(){
+    reset();
+    rows.forEach(function(r,i){
+      timers.push(setTimeout(function(){ r.classList.add('in'); },i*180));
+      timers.push(setTimeout(function(){ r.querySelector('.pill').classList.add('stamp'); },i*180+260));
+    });
+  }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="Ranking" id="d08">
+<style>
+#d08 .stage{position:relative;width:320px;margin:0 auto;}
+#d08 .card{position:relative;background:#06281F;border-radius:14px;padding:16px 14px;box-sizing:border-box;width:100%;text-align:center;overflow:hidden;}
+#d08 .ttl{font-family:Anton,sans-serif;font-size:16px;color:var(--gold);letter-spacing:.5px;position:relative;z-index:2;}
+#d08 .spot{position:absolute;left:50%;top:-40px;width:220px;height:200px;transform:translateX(-50%);background:radial-gradient(ellipse at 50% 0%,rgba(255,210,63,.3),transparent 65%);opacity:0;z-index:1;pointer-events:none;}
+#d08 .spot.sweep{animation:d08-spot 1.2s ease forwards;}
+#d08 .avwrap{position:relative;width:62px;height:62px;margin:18px auto 0;z-index:2;}
+#d08 .crown{position:absolute;left:50%;top:-20px;transform:translateX(-50%);font-size:24px;opacity:0;z-index:3;}
+#d08 .crown.on{opacity:1;animation:d08-drop .7s cubic-bezier(.3,1.5,.5,1) forwards;}
+#d08 .crown.on.bob{animation:d08-bob 2.4s ease-in-out infinite;}
+#d08 .av{width:62px;height:62px;border-radius:50%;background:var(--sky);border:3px solid var(--gold);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;color:var(--ink);}
+#d08 .av.glow{animation:d08-glow 1.6s ease-in-out infinite;}
+#d08 .name{font-family:Anton,sans-serif;font-size:20px;color:#fff;margin-top:8px;position:relative;z-index:2;}
+#d08 .pts{display:inline-block;margin-top:7px;background:var(--gold);color:var(--ink);font-weight:800;font-size:13px;padding:4px 12px;border-radius:999px;position:relative;z-index:2;}
+#d08 .runners{font-size:12px;color:var(--cream);margin-top:11px;opacity:0;transition:opacity .5s ease;position:relative;z-index:2;}
+#d08 .runners.show{opacity:.85;}
+#d08 .runners b{color:#fff;}
+#d08 .conf{position:absolute;top:-12px;width:7px;height:9px;border-radius:1px;opacity:0;z-index:4;pointer-events:none;}
+@keyframes d08-spot{0%{opacity:0}40%{opacity:1}100%{opacity:.35}}
+@keyframes d08-drop{0%{opacity:0;transform:translateX(-50%) translateY(-48px) rotate(-18deg) scale(.7)}60%{opacity:1;transform:translateX(-50%) translateY(4px) rotate(6deg) scale(1.08)}80%{transform:translateX(-50%) translateY(-3px) rotate(-3deg) scale(1)}100%{opacity:1;transform:translateX(-50%) translateY(0) rotate(0) scale(1)}}
+@keyframes d08-bob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-4deg)}50%{transform:translateX(-50%) translateY(-5px) rotate(4deg)}}
+@keyframes d08-glow{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.0),0 0 12px rgba(255,210,63,.4)}50%{box-shadow:0 0 0 5px rgba(255,210,63,.35),0 0 26px rgba(255,210,63,.75)}}
+@keyframes d08-fall{0%{opacity:0;transform:translateY(0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translateY(170px) rotate(420deg)}}
+</style>
+  <div class="demo-head"><span class="dnum">08</span><h3>👑 Rey de la fecha</h3><span class="chip">Ranking</span></div>
+  <p class="desc">Al cerrar la fecha coronamos al que más puntos clavó esa jornada. Corona en el avatar.</p>
+  <div class="stage">
+    <div class="card">
+      <div class="spot"></div>
+      <div class="ttl">REY DE LA FECHA 3</div>
+      <div class="avwrap">
+        <span class="crown">👑</span>
+        <div class="av">G</div>
+      </div>
+      <div class="name">GREGO</div>
+      <div class="pts">+<span class="num">0</span> pts esa fecha</div>
+      <div class="runners">🥈 <b>Mati</b> 29 &nbsp; 🥉 <b>Joaco</b> 27</div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d08'); if(!root) return;
+  var card=root.querySelector('.card'), spot=root.querySelector('.spot'), crown=root.querySelector('.crown');
+  var av=root.querySelector('.av'), numEl=root.querySelector('.pts .num'), runners=root.querySelector('.runners');
+  var timers=[], raf=null, confetti=[];
+  var COLORS=['#FFD23F','#FFE98A','#FFC107','#fff'];
+  function clearAll(){timers.forEach(clearTimeout);timers=[];if(raf){cancelAnimationFrame(raf);raf=null;}}
+  function reset(){
+    clearAll();
+    spot.classList.remove('sweep'); crown.classList.remove('on','bob'); av.classList.remove('glow');
+    runners.classList.remove('show'); numEl.textContent='0';
+    confetti.forEach(function(c){if(c.el&&c.el.parentNode)c.el.parentNode.removeChild(c.el);}); confetti=[];
+    void spot.offsetWidth; void crown.offsetWidth;
+  }
+  function countUp(to,dur){
+    var start=performance.now();
+    function step(now){
+      var t=Math.min(1,(now-start)/dur);
+      var e=1-Math.pow(1-t,3);
+      numEl.textContent=Math.round(to*e);
+      if(t<1) raf=requestAnimationFrame(step);
+    }
+    raf=requestAnimationFrame(step);
+  }
+  function sprinkle(){
+    for(var i=0;i<22;i++){
+      (function(i){
+        timers.push(setTimeout(function(){
+          var el=document.createElement('span');
+          el.className='conf';
+          el.style.background=COLORS[i%COLORS.length];
+          el.style.left=(12+Math.random()*76)+'%';
+          el.style.animation='d08-fall '+(1.1+Math.random()*0.7)+'s ease-in forwards';
+          card.appendChild(el);
+          confetti.push({el:el});
+          setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2200);
+        },i*45));
+      })(i);
+    }
+  }
+  function play(){
+    reset();
+    spot.classList.add('sweep');
+    timers.push(setTimeout(function(){ crown.classList.add('on'); },300));
+    timers.push(setTimeout(function(){ av.classList.add('glow'); crown.classList.add('bob'); },1000));
+    timers.push(setTimeout(function(){ countUp(34,900); },500));
+    timers.push(setTimeout(function(){ sprinkle(); },600));
+    timers.push(setTimeout(function(){ runners.classList.add('show'); },1400));
+  }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="Cierre" id="d09">
+<style>
+#d09 .stage{position:relative;width:320px;margin:0 auto;}
+#d09 .card{position:relative;background:radial-gradient(circle at 50% 0%,#0f7a4d,#06281F);border-radius:14px;padding:16px 14px 0;box-sizing:border-box;width:100%;text-align:center;overflow:hidden;height:248px;}
+#d09 .ttl{font-family:Anton,sans-serif;font-size:16px;color:var(--gold);letter-spacing:.5px;text-shadow:0 2px 0 rgba(0,0,0,.35);}
+#d09 .podium{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:center;gap:8px;padding:0 22px 0;}
+#d09 .col{display:flex;flex-direction:column;align-items:center;width:74px;}
+#d09 .pav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;margin-bottom:5px;position:relative;opacity:0;transform:scale(0);}
+#d09 .pav.pop{animation:d09-pop .4s cubic-bezier(.2,1.6,.4,1) forwards;}
+#d09 .pav.s{background:var(--sky);color:var(--ink);}
+#d09 .pav.g1{background:var(--gold);color:var(--ink);width:40px;height:40px;font-size:18px;}
+#d09 .pav.r{background:var(--red);}
+#d09 .crown{position:absolute;left:50%;top:-19px;transform:translateX(-50%);font-size:19px;opacity:0;}
+#d09 .crown.on{opacity:1;animation:d09-drop .7s cubic-bezier(.3,1.5,.5,1) forwards;}
+#d09 .crown.on.bob{animation:d09-bob 2.4s ease-in-out infinite;}
+#d09 .bar{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font-family:Anton,sans-serif;color:var(--ink);font-size:22px;height:0;transition:none;}
+#d09 .bar.b1{background:linear-gradient(180deg,var(--gold),#e6b800);box-shadow:0 0 18px rgba(255,210,63,.4);}
+#d09 .bar.b2{background:var(--cream);}
+#d09 .bar.b3{background:var(--cream);}
+#d09 .conf{position:absolute;top:-12px;width:7px;height:11px;border-radius:1px;z-index:5;pointer-events:none;}
+@keyframes d09-pop{0%{opacity:0;transform:scale(0)}70%{opacity:1;transform:scale(1.25)}100%{opacity:1;transform:scale(1)}}
+@keyframes d09-drop{0%{opacity:0;transform:translateX(-50%) translateY(-40px) rotate(-16deg) scale(.7)}60%{opacity:1;transform:translateX(-50%) translateY(3px) rotate(6deg) scale(1.08)}100%{opacity:1;transform:translateX(-50%) translateY(0) rotate(0) scale(1)}}
+@keyframes d09-bob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-4deg)}50%{transform:translateX(-50%) translateY(-4px) rotate(4deg)}}
+</style>
+  <div class="demo-head"><span class="dnum">09</span><h3>🏆 Ceremonia de premiación</h3><span class="chip">Cierre</span></div>
+  <p class="desc">El gran final: el podio se arma de a uno con confeti dorado y el campeón levanta la copa.</p>
+  <div class="stage">
+    <div class="card">
+      <div class="ttl">🎉 CAMPEÓN DEL PRODE 🎉</div>
+      <div class="podium">
+        <div class="col">
+          <div class="pav s">N</div>
+          <div class="bar b2" data-h="48">2</div>
+        </div>
+        <div class="col">
+          <div class="pav g1"><span class="crown">👑</span>M</div>
+          <div class="bar b1" data-h="74">1</div>
+        </div>
+        <div class="col">
+          <div class="pav r">G</div>
+          <div class="bar b3" data-h="32">3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d09'); if(!root) return;
+  var card=root.querySelector('.card');
+  var cols=root.querySelectorAll('.col');
+  var crown=root.querySelector('.crown');
+  var timers=[], confetti=[];
+  var COLORS=['#FFD23F','#FFE98A','#FFC107','#fff'];
+  // order: 3rd (index2), 2nd (index0), 1st (index1)
+  var seq=[{c:cols[2],over:0},{c:cols[0],over:0},{c:cols[1],over:1}];
+  function clearAll(){timers.forEach(clearTimeout);timers=[];}
+  function reset(){
+    clearAll();
+    cols.forEach(function(col){
+      col.querySelector('.bar').style.height='0px';
+      var pav=col.querySelector('.pav'); pav.classList.remove('pop'); void pav.offsetWidth;
+    });
+    crown.classList.remove('on','bob'); void crown.offsetWidth;
+    confetti.forEach(function(c){if(c.parentNode)c.parentNode.removeChild(c);}); confetti=[];
+  }
+  function rain(){
+    for(var i=0;i<50;i++){
+      (function(i){
+        timers.push(setTimeout(function(){
+          var el=document.createElement('span');
+          el.className='conf';
+          el.style.background=COLORS[i%COLORS.length];
+          el.style.left=(Math.random()*100)+'%';
+          var dur=1.3+Math.random()*1.1, rot=(Math.random()*720-360);
+          el.style.transform='rotate(0)';
+          el.style.transition='transform '+dur+'s linear, top '+dur+'s cubic-bezier(.3,.1,.7,1), opacity '+dur+'s ease';
+          el.style.top='-12px'; el.style.opacity='1';
+          card.appendChild(el); confetti.push(el);
+          requestAnimationFrame(function(){requestAnimationFrame(function(){
+            el.style.top='260px'; el.style.transform='translateX('+(Math.random()*40-20)+'px) rotate('+rot+'deg)'; el.style.opacity='0';
+          });});
+          setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},(dur*1000)+200);
+        },i*30));
+      })(i);
+    }
+  }
+  function play(){
+    reset();
+    var d=0;
+    seq.forEach(function(s,idx){
+      var bar=s.c.querySelector('.bar'), pav=s.c.querySelector('.pav');
+      var h=parseInt(bar.getAttribute('data-h'),10);
+      timers.push(setTimeout(function(){
+        var over=s.over?(h+10):h;
+        bar.style.transition='height .42s cubic-bezier(.2,1.3,.4,1)';
+        bar.style.height=over+'px';
+        if(s.over){ setTimeout(function(){ bar.style.transition='height .2s ease'; bar.style.height=h+'px'; },420); }
+        pav.classList.add('pop');
+      },d));
+      d+=480;
+    });
+    timers.push(setTimeout(function(){ crown.classList.add('on'); },d-120));
+    timers.push(setTimeout(function(){ crown.classList.add('bob'); rain(); },d+500));
+  }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="Tags" id="d10">
+<style>
+#d10 .stage{position:relative;width:320px;margin:0 auto;}
+#d10 .card{background:#06281F;border-radius:14px;padding:18px 14px;box-sizing:border-box;width:100%;text-align:center;}
+#d10 .avwrap{position:relative;width:70px;height:70px;margin:0 auto;}
+#d10 .av{width:70px;height:70px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:30px;color:var(--ink);}
+#d10 .badge{position:absolute;right:-4px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--gold);border:3px solid var(--pitch);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:15px;}
+#d10 .badge.swap{animation:d10-badge .5s ease;}
+#d10 .nrow{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;}
+#d10 .nm{font-family:Anton,sans-serif;font-size:20px;color:#fff;}
+#d10 .npill{background:var(--gold);color:var(--ink);font-weight:800;font-size:12px;padding:4px 11px;border-radius:999px;display:inline-block;}
+#d10 .npill.swap{animation:d10-npill .5s ease;}
+#d10 .div{height:1px;background:rgba(255,255,255,.12);margin:14px 0 11px;}
+#d10 .lbl{font-size:11px;color:var(--cream);opacity:.7;margin-bottom:9px;}
+#d10 .opts{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
+#d10 .opt{cursor:pointer;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;background:rgba(255,255,255,.08);color:var(--cream);border:1.5px solid transparent;opacity:.55;transition:opacity .25s ease, background .25s ease, transform .15s ease;user-select:none;}
+#d10 .opt:hover{opacity:.85;}
+#d10 .opt.active{background:var(--gold);color:var(--ink);border-color:#fff;opacity:1;transform:translateY(-1px);}
+@keyframes d10-badge{0%{transform:scale(1) rotate(0)}40%{transform:scale(0) rotate(180deg)}41%{transform:scale(0) rotate(-180deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes d10-npill{0%{transform:scale(1)}40%{transform:scale(.2);opacity:.2}100%{transform:scale(1);opacity:1}}
+</style>
+  <div class="demo-head"><span class="dnum">10</span><h3>🎖️ Insignia destacada en el perfil</h3><span class="chip">Tags</span></div>
+  <p class="desc">Elegís UN tag para chapear junto a tu nombre en todo el prode. Tu sello a la vista de todos.</p>
+  <div class="stage">
+    <div class="card">
+      <div class="avwrap">
+        <div class="av">M</div>
+        <div class="badge">🐐</div>
+      </div>
+      <div class="nrow">
+        <span class="nm">MATI</span>
+        <span class="npill"><span class="pemoji">🐐</span> <span class="ptext">El Cabra</span></span>
+      </div>
+      <div class="div"></div>
+      <div class="lbl">Elegí el que querés mostrar:</div>
+      <div class="opts">
+        <span class="opt active" data-emoji="🐐" data-text="El Cabra">🐐 El Cabra</span>
+        <span class="opt" data-emoji="🎯" data-text="Killer">🎯 Killer</span>
+        <span class="opt" data-emoji="⚡" data-text="Clutch">⚡ Clutch</span>
+        <span class="opt" data-emoji="🔮" data-text="El Vidente">🔮 El Vidente</span>
+      </div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d10'); if(!root) return;
+  var opts=root.querySelectorAll('.opt');
+  var badge=root.querySelector('.badge'), npill=root.querySelector('.npill');
+  var pemoji=root.querySelector('.pemoji'), ptext=root.querySelector('.ptext');
+  var timers=[];
+  function clearAll(){timers.forEach(clearTimeout);timers=[];}
+  function select(opt){
+    var em=opt.getAttribute('data-emoji'), tx=opt.getAttribute('data-text');
+    opts.forEach(function(o){o.classList.toggle('active',o===opt);});
+    badge.classList.remove('swap'); npill.classList.remove('swap');
+    void badge.offsetWidth; void npill.offsetWidth;
+    badge.classList.add('swap'); npill.classList.add('swap');
+    // swap text at the mid-point of the animation (when scaled down)
+    timers.push(setTimeout(function(){
+      badge.textContent=em; pemoji.textContent=em; ptext.textContent=tx;
+    },210));
+  }
+  opts.forEach(function(o){ o.addEventListener('click',function(){ clearAll(); select(o); }); });
+  function play(){
+    clearAll();
+    // auto-cycle through the four
+    [0,1,2,3].forEach(function(i,k){
+      timers.push(setTimeout(function(){ select(opts[i]); },k*850));
+    });
+  }
+  function reset(){ clearAll(); select(opts[0]); }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>

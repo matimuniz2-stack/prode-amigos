@@ -1,0 +1,519 @@
+<article class="demo" data-cat="Joda" id="d16">
+<style>
+#d16 .stage{min-height:248px;background:linear-gradient(180deg,#06281F,#0B3D2E);align-items:stretch}
+#d16 .wrap{position:relative;width:300px;margin:0 auto;align-self:center;background:#0B3D2E;border-radius:14px;padding:14px;box-shadow:0 8px 26px rgba(0,0,0,.4)}
+#d16 .spot{position:absolute;inset:0;border-radius:14px;background:radial-gradient(120px 90px at 50% 38%,rgba(255,210,63,.18),transparent 70%);opacity:0;pointer-events:none;transition:opacity .5s}
+#d16 .wrap.on .spot{opacity:1;animation:d16-flick 2.4s ease-in-out .4s 1}
+@keyframes d16-flick{0%,18%{opacity:.25}9%{opacity:.9}22%{opacity:1}100%{opacity:1}}
+#d16 .ttl{position:relative;text-align:center;color:var(--red);font-family:Anton,sans-serif;font-size:17px;letter-spacing:1px;margin-bottom:11px;text-shadow:0 2px 8px rgba(230,57,70,.4)}
+#d16 .row{position:relative;background:var(--cream);border-radius:12px;padding:12px;display:flex;align-items:center;gap:11px}
+#d16 .wrap.shake .row{animation:d16-shake .55s ease-in-out .55s 1}
+@keyframes d16-shake{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-6px) rotate(-1.5deg)}30%{transform:translateX(6px) rotate(1.5deg)}45%{transform:translateX(-5px) rotate(-1deg)}60%{transform:translateX(5px) rotate(1deg)}80%{transform:translateX(-2px)}}
+#d16 .ava{position:relative;flex-shrink:0}
+#d16 .av{width:48px;height:48px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:21px;font-family:Inter,sans-serif}
+#d16 .clown{position:absolute;bottom:-6px;right:-8px;font-size:21px;opacity:0;transform:translateY(-34px) rotate(-220deg) scale(.4)}
+#d16 .wrap.on .clown{animation:d16-drop .7s cubic-bezier(.34,1.56,.64,1) .65s forwards}
+@keyframes d16-drop{0%{opacity:0;transform:translateY(-40px) rotate(-260deg) scale(.3)}60%{opacity:1}100%{opacity:1;transform:translateY(0) rotate(12deg) scale(1)}}
+#d16 .nm{font-weight:800;color:var(--ink);font-size:15px;font-family:Inter,sans-serif}
+#d16 .why{color:#6b7280;font-size:11.5px;font-family:Inter,sans-serif;margin-top:1px}
+#d16 .pill{margin-top:6px;display:inline-block;background:var(--red);color:#fff;border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:800;font-family:Inter,sans-serif;opacity:0;transform:scale(.2)}
+#d16 .wrap.on .pill{animation:d16-stamp .5s cubic-bezier(.34,1.7,.5,1) 1.15s forwards}
+@keyframes d16-stamp{0%{opacity:0;transform:scale(2.4) rotate(-8deg)}55%{opacity:1;transform:scale(.85) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+#d16 .cap{position:relative;text-align:center;color:#9fc7b4;font-size:10.5px;font-family:Inter,sans-serif;margin-top:10px}
+#d16 .share{margin-top:11px;display:flex;justify-content:center}
+#d16 .sbtn{background:#25D366;color:#06281F;border:none;border-radius:10px;padding:7px 14px;font-size:11.5px;font-weight:800;font-family:Inter,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+#d16 .sbtn:active{transform:translateY(1px)}
+#d16 .toast{position:absolute;left:50%;bottom:14px;transform:translate(-50%,12px);background:#0e1116;color:#cdeede;border:1px solid #25D366;border-radius:10px;padding:8px 12px;font-size:11px;font-family:Inter,sans-serif;font-weight:700;opacity:0;pointer-events:none;display:flex;align-items:center;gap:7px;z-index:5}
+#d16 .toast.show{animation:d16-toast 2s ease forwards}
+@keyframes d16-toast{0%{opacity:0;transform:translate(-50%,12px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
+#d16 .wa{width:18px;height:18px;border-radius:50%;background:#25D366;color:#06281F;font-size:11px;display:inline-flex;align-items:center;justify-content:center;font-weight:900}
+</style>
+  <div class="demo-head"><span class="dnum">16</span><h3>💀 El papelón de la fecha</h3><span class="chip">Joda</span></div>
+  <p class="desc">Cada fecha el algoritmo corona al que más feo cagó. Trofeo de la vergüenza con foto.</p>
+  <div class="stage">
+    <div class="wrap" id="d16-wrap">
+      <div class="spot"></div>
+      <div class="ttl">💀 PAPELÓN DE LA FECHA</div>
+      <div class="row">
+        <div class="ava"><div class="av" id="d16-av">N</div><div class="clown">🤡</div></div>
+        <div style="flex:1">
+          <div class="nm" id="d16-nm">Nico</div>
+          <div class="why" id="d16-why">erró los 4 picks de la fecha</div>
+          <span class="pill" id="d16-pill">0/4 · récord histórico</span>
+        </div>
+      </div>
+      <div class="cap">se va al Diario y al grupo de WhatsApp 📲</div>
+      <div class="share"><button class="sbtn">📲 Compartir papelón</button></div>
+      <div class="toast"><span class="wa">✓</span>Enviado al grupo 😈</div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d16'); if(!root) return;
+  var wrap=root.querySelector('#d16-wrap');
+  var av=root.querySelector('#d16-av'), nm=root.querySelector('#d16-nm'),
+      why=root.querySelector('#d16-why'), pill=root.querySelector('#d16-pill');
+  var toast=root.querySelector('.toast');
+  var cases=[
+    {av:'N',nm:'Nico',why:'erró los 4 picks de la fecha',pill:'0/4 · récord histórico'},
+    {av:'L',nm:'Lucho',why:'cargó los picks 2′ tarde, todo en cero',pill:'tarde · 0 pts'},
+    {av:'J',nm:'Juani',why:'puso Brasil 7-0 y salió 0-0',pill:'pibe del verso 🤥'}
+  ];
+  var idx=0;
+  function paint(c){ av.textContent=c.av; nm.textContent=c.nm; why.textContent=c.why; pill.textContent=c.pill; }
+  function reset(){
+    wrap.classList.remove('on','shake'); toast.classList.remove('show');
+    paint(cases[idx%cases.length]);
+  }
+  function play(){
+    reset();
+    void wrap.offsetWidth; // reflow so anims restart
+    wrap.classList.add('on','shake');
+  }
+  root.querySelector('.sbtn').onclick=function(){
+    toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
+    idx++;
+    setTimeout(function(){ play(); }, 700);
+  };
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=function(){ idx=0; reset(); };
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="Joda" id="d17">
+<style>
+#d17 .stage{min-height:262px;background:linear-gradient(180deg,#06281F,#0B3D2E);align-items:stretch}
+#d17 .wrap{width:300px;margin:0 auto;align-self:center}
+#d17 .pick{position:relative;background:var(--cream);border-radius:12px;padding:13px 13px 16px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;min-height:104px}
+#d17 .pick.armed{cursor:crosshair;box-shadow:0 0 0 2px var(--gold),0 0 14px rgba(255,210,63,.5)}
+#d17 .pk-m{font-size:10px;color:#6b7280;font-family:Inter,sans-serif}
+#d17 .pk-s{font-weight:800;color:var(--ink);font-size:21px;font-family:Anton,sans-serif;letter-spacing:.5px;margin-top:3px}
+#d17 .stamp{position:absolute;font-size:30px;cursor:pointer;transform:translate(-50%,-50%) scale(0);z-index:2;will-change:transform;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));line-height:1}
+#d17 .stamp.in{animation:d17-thunk .42s cubic-bezier(.3,1.7,.5,1) forwards}
+#d17 .stamp.out{animation:d17-poof .3s ease forwards}
+@keyframes d17-thunk{0%{opacity:0;transform:translate(-50%,-50%) scale(2.6) rotate(var(--r))}55%{opacity:1;transform:translate(-50%,-50%) scale(.82) rotate(var(--r))}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(var(--r))}}
+@keyframes d17-poof{0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(var(--r))}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(var(--r))}}
+#d17 .hint{font-size:9.5px;color:#9fc7b4;font-family:Inter,sans-serif;text-align:center;margin:9px 0 7px;min-height:13px;transition:color .2s}
+#d17 .hint b{color:var(--gold)}
+#d17 .tray{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
+#d17 .sk{background:#0f7a4d;border:2px solid transparent;border-radius:10px;padding:5px 9px;font-size:18px;cursor:grab;line-height:1;transition:.12s;touch-action:none}
+#d17 .sk:hover{background:#13955f}
+#d17 .sk.pick-up{border-color:var(--gold);background:#13955f;transform:translateY(-2px) scale(1.08);box-shadow:0 4px 10px rgba(0,0,0,.35)}
+#d17 .sk.drag{opacity:.4}
+#d17 .memes{background:var(--gold);color:var(--ink);border-radius:10px;padding:6px 9px;font-size:11px;font-weight:800;font-family:Inter,sans-serif;cursor:pointer;border:2px solid transparent}
+#d17 .memes.pick-up{border-color:#fff;transform:translateY(-2px)}
+#d17 .clr{background:rgba(255,255,255,.1);color:var(--cream);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:6px 10px;font-size:11px;font-weight:800;font-family:Inter,sans-serif;cursor:pointer}
+#d17 .ghostdrag{position:fixed;font-size:30px;pointer-events:none;z-index:99;transform:translate(-50%,-50%);opacity:.9;display:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+</style>
+  <div class="demo-head"><span class="dnum">17</span><h3>😂 Stickers y memes al pick</h3><span class="chip">Joda</span></div>
+  <p class="desc">Pegás stickers de cancha sobre el pick del otro. Cae como sello de goma encima de su pronóstico.</p>
+  <div class="stage">
+    <div class="wrap">
+      <div class="pick" id="d17-pick">
+        <div class="pk-m">pick de Nico · BRA vs CRO</div>
+        <div class="pk-s">BRASIL 4 - 0</div>
+      </div>
+      <div class="hint" id="d17-hint">Tocá un sticker y después el pick para sellarlo 👇</div>
+      <div class="tray" id="d17-tray">
+        <button class="sk" data-s="🤡">🤡</button>
+        <button class="sk" data-s="💀">💀</button>
+        <button class="sk" data-s="🐔">🐔</button>
+        <button class="sk" data-s="🧢">🧢</button>
+        <button class="memes" data-s="FANTASÍA">+ memes</button>
+        <button class="clr" id="d17-clr">Limpiar</button>
+      </div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d17'); if(!root) return;
+  var pick=root.querySelector('#d17-pick'), tray=root.querySelector('#d17-tray');
+  var hint=root.querySelector('#d17-hint'), clr=root.querySelector('#d17-clr');
+  var armed=null, armedEl=null;
+  var ghost=document.createElement('div'); ghost.className='ghostdrag'; root.appendChild(ghost);
+
+  function disarm(){ if(armedEl) armedEl.classList.remove('pick-up'); armed=null; armedEl=null; pick.classList.remove('armed'); }
+  function arm(el){
+    if(armedEl===el){ disarm(); hint.textContent='Tocá un sticker y después el pick para sellarlo 👇'; return; }
+    disarm();
+    armed=el.getAttribute('data-s'); armedEl=el; el.classList.add('pick-up'); pick.classList.add('armed');
+    hint.innerHTML='Cargado '+ (armed==='FANTASÍA'?'<b>FANTASÍA</b>':armed) +' — tocá el pick para clavarlo';
+  }
+  function placeStamp(s,x,y){
+    var w=pick.clientWidth, h=pick.clientHeight;
+    var pad=18; x=Math.max(pad,Math.min(w-pad,x)); y=Math.max(pad,Math.min(h-pad,y));
+    var el;
+    if(s==='FANTASÍA'){
+      el=document.createElement('span'); el.className='stamp'; el.textContent='FANTASÍA';
+      el.style.fontFamily='Inter,sans-serif'; el.style.fontWeight='900'; el.style.fontSize='13px';
+      el.style.color='#fff'; el.style.background='var(--red)'; el.style.padding='3px 7px';
+      el.style.borderRadius='6px'; el.style.whiteSpace='nowrap';
+    }else{
+      el=document.createElement('span'); el.className='stamp'; el.textContent=s;
+    }
+    var r=(Math.random()*30-15)|0; el.style.setProperty('--r',r+'deg');
+    el.style.left=x+'px'; el.style.top=y+'px';
+    el.title='tocá para sacar';
+    el.addEventListener('click',function(ev){ ev.stopPropagation(); el.classList.remove('in'); el.classList.add('out'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },300); });
+    pick.appendChild(el); void el.offsetWidth; el.classList.add('in');
+    return el;
+  }
+  // tap-to-pick then tap pick
+  [].forEach.call(tray.querySelectorAll('[data-s]'),function(b){
+    b.addEventListener('click',function(e){ e.preventDefault(); arm(b); });
+    // drag from tray
+    b.addEventListener('pointerdown',function(e){
+      if(e.pointerType==='mouse' && e.button!==0) return;
+      var s=b.getAttribute('data-s'); var moved=false; var startX=e.clientX, startY=e.clientY;
+      b.classList.add('drag'); ghost.textContent=(s==='FANTASÍA'?'🃏':s); ghost.style.display='block';
+      ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px';
+      function mv(ev){ if(Math.abs(ev.clientX-startX)>4||Math.abs(ev.clientY-startY)>4) moved=true; ghost.style.left=ev.clientX+'px'; ghost.style.top=ev.clientY+'px'; }
+      function up(ev){
+        document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up);
+        b.classList.remove('drag'); ghost.style.display='none';
+        if(moved){
+          var rc=pick.getBoundingClientRect();
+          if(ev.clientX>=rc.left&&ev.clientX<=rc.right&&ev.clientY>=rc.top&&ev.clientY<=rc.bottom){
+            placeStamp(s,ev.clientX-rc.left,ev.clientY-rc.top);
+          }
+          disarm(); hint.textContent='¡Buenísimo! Seguí pegando 😂';
+        }
+      }
+      document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+    });
+  });
+  pick.addEventListener('click',function(e){
+    if(!armed) return;
+    var rc=pick.getBoundingClientRect();
+    placeStamp(armed,e.clientX-rc.left,e.clientY-rc.top);
+    // keep armed for rapid multi-stamp, but update hint
+    hint.innerHTML='Otra más '+(armed==='FANTASÍA'?'🃏':armed)+' o cambiá de sticker';
+  });
+  function clear(){ [].forEach.call(pick.querySelectorAll('.stamp'),function(s){ if(s.parentNode) s.parentNode.removeChild(s); }); }
+  clr.onclick=function(){ clear(); disarm(); hint.textContent='Limpio. Tocá un sticker para empezar 👇'; };
+  function reset(){ clear(); disarm(); hint.textContent='Tocá un sticker y después el pick para sellarlo 👇'; }
+  function play(){
+    clear(); disarm();
+    var w=pick.clientWidth||280, h=pick.clientHeight||104;
+    var spots=[['🤡',w*0.74,h*0.30],['💀',w*0.5,h*0.72],['FANTASÍA',w*0.72,h*0.78],['🧢',w*0.2,h*0.4]];
+    spots.forEach(function(sp,i){ setTimeout(function(){ placeStamp(sp[0],sp[1],sp[2]); },260*i+150); });
+    hint.textContent='Mirá cómo caen los sellos 😈';
+  }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="Joda" id="d18">
+<style>
+#d18 .stage{min-height:236px;background:linear-gradient(180deg,#0B3D2E,#06281F);align-items:stretch}
+#d18 .wrap{width:300px;margin:0 auto;align-self:center;background:var(--cream);border-radius:14px;padding:14px}
+#d18 .hd{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+#d18 .hd b{font-family:Anton,sans-serif;color:var(--pitch);font-size:15px;letter-spacing:.5px}
+#d18 .panel{background:var(--pitch);border-radius:12px;padding:11px;margin-bottom:10px}
+#d18 .who{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+#d18 .av{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--ink);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;font-family:Inter,sans-serif}
+#d18 .who span{color:var(--gold);font-size:11px;font-weight:800;font-family:Inter,sans-serif}
+#d18 .player{display:flex;align-items:center;gap:9px;background:#0f7a4d;border-radius:20px;padding:7px 11px}
+#d18 .pp{font-size:15px;cursor:pointer;border:none;background:none;line-height:1;width:20px;text-align:center}
+#d18 .bars{flex:1;display:flex;gap:3px;align-items:center;height:22px;justify-content:center}
+#d18 .bars i{width:3px;height:7px;background:var(--gold);border-radius:2px;display:block;transform-origin:center}
+#d18 .player.playing .bars i{animation:d18-eq .7s ease-in-out infinite}
+#d18 .player.playing .bars i:nth-child(2){animation-delay:.1s}
+#d18 .player.playing .bars i:nth-child(3){animation-delay:.25s}
+#d18 .player.playing .bars i:nth-child(4){animation-delay:.05s}
+#d18 .player.playing .bars i:nth-child(5){animation-delay:.3s}
+#d18 .player.playing .bars i:nth-child(6){animation-delay:.15s}
+#d18 .player.playing .bars i:nth-child(7){animation-delay:.35s}
+#d18 .player.playing .bars i:nth-child(8){animation-delay:.2s}
+#d18 .player.playing .bars i:nth-child(9){animation-delay:.4s}
+#d18 .player.playing .bars i:nth-child(10){animation-delay:.08s}
+@keyframes d18-eq{0%,100%{height:6px}50%{height:19px}}
+#d18 .player.rec .bars i{background:var(--red);animation:d18-jit .25s ease-in-out infinite}
+#d18 .player.rec .bars i:nth-child(odd){animation-delay:.08s}
+@keyframes d18-jit{0%,100%{height:5px}50%{height:17px}}
+#d18 .tm{color:#cdeede;font-size:10px;font-family:Inter,sans-serif;min-width:26px;text-align:right}
+#d18 .ft{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#d18 .ft .resp{font-size:10px;color:#6b7280;font-family:Inter,sans-serif}
+#d18 .recbtn{background:var(--red);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:800;font-family:Inter,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+#d18 .recbtn .dot{width:7px;height:7px;border-radius:50%;background:#fff}
+#d18 .recbtn.live{background:#b3242f}
+#d18 .recbtn.live .dot{animation:d18-pulse .8s ease-in-out infinite}
+@keyframes d18-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+#d18 .gold{background:var(--gold);color:var(--ink);border-radius:8px;padding:5px 11px;font-size:10px;font-weight:800;font-family:Inter,sans-serif;cursor:pointer;border:none}
+#d18 .newaudio{margin-top:9px;background:#0f7a4d;border:1px dashed var(--gold);border-radius:10px;padding:7px 10px;color:var(--gold);font-size:10.5px;font-family:Inter,sans-serif;font-weight:700;display:none;align-items:center;gap:7px}
+#d18 .newaudio.show{display:flex;animation:d18-pop .4s ease}
+@keyframes d18-pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+  <div class="demo-head"><span class="dnum">18</span><h3>🎙️ Conferencia de prensa</h3><span class="chip">Joda</span></div>
+  <p class="desc">Después de cada fecha, el líder y el papelón dan declaraciones tipo DT. Queda en el Diario.</p>
+  <div class="stage">
+    <div class="wrap">
+      <div class="hd"><span style="font-size:18px">🎙️</span><b>CONFERENCIA POST-FECHA</b></div>
+      <div class="panel">
+        <div class="who"><div class="av">M</div><span>Mati 🥇 líder declara:</span></div>
+        <div class="player" id="d18-player">
+          <button class="pp" id="d18-pp">▶️</button>
+          <div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="tm" id="d18-tm">0:14</div>
+        </div>
+        <div class="newaudio" id="d18-new">🎤 0:09 nuevo audio listo para mandar</div>
+      </div>
+      <div class="ft">
+        <span class="resp">💬 7 respuestas del grupo</span>
+        <span style="display:flex;gap:6px">
+          <button class="recbtn" id="d18-rec"><span class="dot"></span>Grabar</button>
+          <button class="gold">Responder</button>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d18'); if(!root) return;
+  var player=root.querySelector('#d18-player'), pp=root.querySelector('#d18-pp'),
+      tm=root.querySelector('#d18-tm'), recBtn=root.querySelector('#d18-rec'),
+      newAudio=root.querySelector('#d18-new');
+  var TOTAL=14, t=0, playing=false, recording=false, recT=0, timer=null;
+  function fmt(s){ s=Math.max(0,Math.round(s)); return '0:'+(s<10?'0'+s:s); }
+  function stopAll(){ if(timer){clearInterval(timer);timer=null;} }
+  function stopPlay(){ stopAll(); playing=false; player.classList.remove('playing'); pp.textContent='▶️'; }
+  function startPlay(){
+    if(recording) stopRec();
+    stopAll(); playing=true; t=0; player.classList.add('playing'); pp.textContent='⏸️'; tm.textContent=fmt(0);
+    timer=setInterval(function(){ t+=0.2; if(t>=TOTAL){ tm.textContent=fmt(TOTAL); stopPlay(); t=0; setTimeout(function(){tm.textContent='0:14';},400); return; } tm.textContent=fmt(t); },120);
+  }
+  pp.onclick=function(){ if(playing) stopPlay(); else startPlay(); };
+  function startRec(){
+    if(playing) stopPlay();
+    stopAll(); recording=true; recT=0; newAudio.classList.remove('show');
+    player.classList.add('rec'); recBtn.classList.add('live');
+    recBtn.innerHTML='<span class="dot"></span>grabando…';
+    tm.textContent=fmt(0);
+    timer=setInterval(function(){ recT+=0.2; tm.textContent=fmt(recT); if(recT>=30){ stopRec(); } },120);
+  }
+  function stopRec(){
+    stopAll(); if(!recording) return; recording=false;
+    player.classList.remove('rec'); recBtn.classList.remove('live');
+    recBtn.innerHTML='<span class="dot"></span>Grabar';
+    tm.textContent='0:14';
+    newAudio.classList.remove('show'); void newAudio.offsetWidth; newAudio.classList.add('show');
+  }
+  recBtn.onclick=function(){ if(recording) stopRec(); else startRec(); };
+  function reset(){ stopPlay(); recording=false; player.classList.remove('rec'); recBtn.classList.remove('live'); recBtn.innerHTML='<span class="dot"></span>Grabar'; newAudio.classList.remove('show'); t=0; tm.textContent='0:14'; }
+  function play(){ reset(); startPlay(); }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="Tags" id="d19">
+<style>
+#d19 .stage{min-height:240px;background:linear-gradient(180deg,#0B3D2E,#06281F);align-items:stretch}
+#d19 .wrap{width:300px;margin:0 auto;align-self:center;background:var(--cream);border-radius:14px;padding:14px;color:var(--ink)}
+#d19 .top{display:flex;align-items:center;gap:11px;cursor:pointer}
+#d19 .medal{width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bf,#FFD23F 45%,#c9961a);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:0 4px 12px rgba(201,150,26,.5);transition:transform .25s}
+#d19 .top:hover .medal{transform:scale(1.06) rotate(-4deg)}
+#d19 .medal.win{animation:d19-medalpop .6s ease}
+@keyframes d19-medalpop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-8deg)}100%{transform:scale(1)}}
+#d19 .tn{font-family:Anton,sans-serif;font-size:16px;letter-spacing:.5px;color:var(--pitch);line-height:1.05}
+#d19 .td{font-size:10.5px;color:#6b7280;font-family:Inter,sans-serif;margin-top:2px}
+#d19 .caret{margin-left:auto;color:#9aa3af;font-size:13px;transition:transform .3s}
+#d19 .wrap.open .caret{transform:rotate(180deg)}
+#d19 .tl{position:relative;margin:0;padding:0 0 0 20px;overflow:hidden;max-height:0;transition:max-height .5s ease,margin-top .3s,opacity .3s;opacity:0}
+#d19 .wrap.open .tl{max-height:260px;margin-top:13px;opacity:1}
+#d19 .line{position:absolute;left:5px;top:4px;bottom:6px;width:2px;background:var(--pitch);transform:scaleY(0);transform-origin:top}
+#d19 .wrap.open .line{animation:d19-grow .55s ease .05s forwards}
+@keyframes d19-grow{to{transform:scaleY(1)}}
+#d19 .node{position:relative;margin-bottom:11px;font-size:11.5px;font-family:Inter,sans-serif;opacity:0;transform:translateX(8px)}
+#d19 .wrap.open .node{animation:d19-rev .4s ease forwards}
+#d19 .wrap.open .node:nth-child(2){animation-delay:.2s}
+#d19 .wrap.open .node:nth-child(3){animation-delay:.38s}
+#d19 .wrap.open .node:nth-child(4){animation-delay:.56s}
+@keyframes d19-rev{to{opacity:1;transform:none}}
+#d19 .node .dot{position:absolute;left:-20px;top:1px;width:13px;height:13px;border-radius:50%;background:var(--pitch);border:2px solid var(--cream)}
+#d19 .node .dt{font-weight:800;color:var(--pitch)}
+#d19 .node.gold{background:var(--gold);border-radius:9px;padding:6px 9px;margin-left:-6px;font-weight:800}
+#d19 .node.gold .dot{left:-14px;background:var(--gold);border-color:#c9961a}
+#d19 .wrap.open .node.gold.land{animation:d19-rev .4s ease .56s forwards,d19-pulse 1.1s ease .96s 2}
+@keyframes d19-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.7)}50%{box-shadow:0 0 0 7px rgba(255,210,63,0)}}
+</style>
+  <div class="demo-head"><span class="dnum">19</span><h3>📜 Historial de un tag</h3><span class="chip">Tags</span></div>
+  <p class="desc">Tocás la medalla y se abre su ficha: qué significa, cuándo te la ganaste y la jugada que la disparó.</p>
+  <div class="stage">
+    <div class="wrap" id="d19-wrap">
+      <div class="top" id="d19-top">
+        <div class="medal" id="d19-medal">🧊</div>
+        <div>
+          <div class="tn">CAGÓN CALCULADOR</div>
+          <div class="td">Jugás siempre al 1-0 y al empate seguro</div>
+        </div>
+        <span class="caret">▾</span>
+      </div>
+      <div class="tl">
+        <div class="line"></div>
+        <div class="node"><span class="dot"></span><span class="dt">Fecha 1 · 11 jun</span> — Pusiste 0-0 en 3 de 4 partidos 😶</div>
+        <div class="node"><span class="dot"></span><span class="dt">Fecha 2 · 14 jun</span> — Otra vez el 1-0 calculador</div>
+        <div class="node gold land"><span class="dot"></span>🏅 Tag desbloqueado</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d19'); if(!root) return;
+  var wrap=root.querySelector('#d19-wrap'), top=root.querySelector('#d19-top'),
+      medal=root.querySelector('#d19-medal');
+  function open(){
+    if(wrap.classList.contains('open')) return;
+    wrap.classList.remove('open'); void wrap.offsetWidth;
+    wrap.classList.add('open');
+    medal.classList.remove('win'); void medal.offsetWidth; medal.classList.add('win');
+  }
+  function close(){ wrap.classList.remove('open'); }
+  function toggle(){ if(wrap.classList.contains('open')) close(); else open(); }
+  top.onclick=toggle;
+  function play(){ open(); }
+  function reset(){ close(); }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
+
+<article class="demo" data-cat="En vivo" id="d20">
+<style>
+#d20 .stage{min-height:212px;background:linear-gradient(180deg,#0B3D2E,#06281F);align-items:stretch}
+#d20 .wrap{width:300px;margin:0 auto;align-self:center;background:var(--pitch);border-radius:14px;padding:13px;box-sizing:border-box}
+#d20 .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+#d20 .hd .lbl{color:#fff;font-size:12px;font-weight:600;font-family:Inter,sans-serif;display:flex;align-items:center;gap:6px}
+#d20 .live-dot{width:9px;height:9px;border-radius:50%;background:var(--grass);box-shadow:0 0 0 0 rgba(22,163,74,.7);animation:d20-beat 1.4s ease-in-out infinite}
+@keyframes d20-beat{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.6)}50%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
+#d20 .cnt{background:var(--grass);color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:12px;font-family:Inter,sans-serif;transition:transform .2s}
+#d20 .cnt.bump{animation:d20-bump .35s ease}
+@keyframes d20-bump{0%,100%{transform:scale(1)}45%{transform:scale(1.28)}}
+#d20 .avrow{display:flex;align-items:center;min-height:42px;padding-left:2px}
+#d20 .av{position:relative;width:36px;height:36px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;font-family:Inter,sans-serif;border:2px solid var(--pitch);margin-left:-10px;flex-shrink:0;transform:scale(0)}
+#d20 .av:first-child{margin-left:0}
+#d20 .av.in{animation:d20-pop .45s cubic-bezier(.34,1.6,.5,1) forwards}
+#d20 .av.out{animation:d20-leave .4s ease forwards}
+@keyframes d20-pop{0%{transform:scale(0) translateX(14px);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1) translateX(0);opacity:1}}
+@keyframes d20-leave{from{transform:scale(1);opacity:1}to{transform:scale(0);opacity:0}}
+#d20 .av .ring{position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--grass);opacity:0}
+#d20 .av.on .ring{opacity:1;animation:d20-ring 1.8s ease-out infinite}
+@keyframes d20-ring{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.45);opacity:0}}
+#d20 .cap{margin-top:13px;background:var(--deep);border-radius:10px;padding:9px 11px;color:var(--gold);font-size:11px;font-family:Inter,sans-serif;line-height:1.35;min-height:38px;display:flex;align-items:center}
+</style>
+  <div class="demo-head"><span class="dnum">20</span><h3>👀 Quién está mirando ahora</h3><span class="chip">En vivo</span></div>
+  <p class="desc">Barra de presentes: ves en tiempo real los avatares de los que entraron a ver el partido en vivo.</p>
+  <div class="stage">
+    <div class="wrap">
+      <div class="hd">
+        <span class="lbl"><span class="live-dot"></span>Mirando en vivo</span>
+        <span class="cnt" id="d20-cnt">0 online</span>
+      </div>
+      <div class="avrow" id="d20-row"></div>
+      <div class="cap" id="d20-cap">Esperando que entren los pibes…</div>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" data-act="play">▶ Probar</button> <button class="btn ghost" data-act="reset">↻ Reset</button></div>
+<script>
+(function(){
+  var root=document.getElementById('d20'); if(!root) return;
+  var row=root.querySelector('#d20-row'), cnt=root.querySelector('#d20-cnt'), cap=root.querySelector('#d20-cap');
+  var POOL=[
+    {n:'Mati',c:'#75AADB',t:'#fff'},{n:'Grego',c:'#E63946',t:'#fff'},
+    {n:'Tincho',c:'#16A34A',t:'#fff'},{n:'Juani',c:'#FFD23F',t:'#111827'},
+    {n:'Nico',c:'#9b59b6',t:'#fff'},{n:'Lucho',c:'#e67e22',t:'#fff'},
+    {n:'Marian',c:'#1abc9c',t:'#06281F'}
+  ];
+  var live=[]; // {p, el}
+  var heartbeat=null, MAXV=6;
+  function setCount(){
+    cnt.textContent=live.length+' online';
+    cnt.classList.remove('bump'); void cnt.offsetWidth; cnt.classList.add('bump');
+  }
+  function renderCap(){
+    if(live.length===0){ cap.textContent='No hay nadie mirando… ¿sos vos solo? 🦗'; return; }
+    var names=live.map(function(x){return x.p.n;});
+    if(names.length===1){ cap.innerHTML='😎 <b style="color:#fff">'+names[0]+'</b> está solo clavado al partido'; return; }
+    if(names.length===2){ cap.innerHTML='😎 <b style="color:#fff">'+names[0]+'</b> y <b style="color:#fff">'+names[1]+'</b> están clavados al partido'; return; }
+    var extra=names.length-2;
+    cap.innerHTML='😎 <b style="color:#fff">'+names[0]+'</b>, <b style="color:#fff">'+names[1]+'</b> y '+extra+' más están clavados al partido';
+  }
+  function makeEl(p){
+    var el=document.createElement('span'); el.className='av';
+    el.style.background=p.c; el.style.color=p.t; el.textContent=p.n.charAt(0);
+    var ring=document.createElement('span'); ring.className='ring'; el.appendChild(ring);
+    return el;
+  }
+  function freeName(){
+    var used=live.map(function(x){return x.p.n;});
+    var pool=POOL.filter(function(p){return used.indexOf(p.n)<0;});
+    if(!pool.length) return null;
+    return pool[(Math.random()*pool.length)|0];
+  }
+  function join(p,delay){
+    if(!p) return;
+    var el=makeEl(p); row.appendChild(el);
+    var rec={p:p,el:el}; live.push(rec);
+    setTimeout(function(){ el.classList.add('in'); setTimeout(function(){ el.classList.add('on'); },420); },delay||0);
+    setCount(); renderCap();
+  }
+  function leave(){
+    if(live.length<=2) return;
+    var i=1+((Math.random()*(live.length-1))|0); // never drop the first slot
+    var rec=live.splice(i,1)[0];
+    rec.el.classList.remove('on'); rec.el.classList.add('out');
+    setTimeout(function(){ if(rec.el.parentNode) rec.el.parentNode.removeChild(rec.el); },400);
+    setCount(); renderCap();
+  }
+  function clearRow(){ live.forEach(function(x){ if(x.el.parentNode) x.el.parentNode.removeChild(x.el); }); live=[]; }
+  function startHeartbeat(){
+    if(heartbeat) clearInterval(heartbeat);
+    heartbeat=setInterval(function(){
+      var canJoin=live.length<MAXV && freeName();
+      if(live.length>=MAXV){ leave(); }
+      else if(!canJoin){ leave(); }
+      else if(Math.random()<0.6){ join(freeName()); }
+      else { leave(); }
+    },2200);
+  }
+  function baseline(n){
+    clearRow();
+    for(var i=0;i<n;i++){ (function(k){ join(POOL[k], k*230); })(i); }
+  }
+  function reset(){
+    if(heartbeat){clearInterval(heartbeat);heartbeat=null;}
+    baseline(5);
+    startHeartbeat();
+  }
+  function play(){
+    if(heartbeat){clearInterval(heartbeat);heartbeat=null;}
+    clearRow(); cap.textContent='Entrando los pibes…';
+    // burst of joins one-by-one
+    var order=[0,1,2,3,4,5];
+    order.forEach(function(k,i){ setTimeout(function(){ join(POOL[k]); },i*280+150); });
+    setTimeout(startHeartbeat, order.length*280+900);
+  }
+  root.querySelector('[data-act=play]').onclick=play;
+  var rb=root.querySelector('[data-act=reset]'); if(rb) rb.onclick=reset;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){play();io.disconnect();}});},{threshold:.4});
+  io.observe(root);
+})();
+</script>
+</article>
