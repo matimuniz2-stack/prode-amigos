@@ -283,7 +283,11 @@ export default async function SalaEnVivoPage() {
           </div>
 
           {/* Cancha en vivo (datos de ESPN: stats, goles posicionados, relato) */}
-          <LivePitch matchId={match.id} />
+          <LivePitch
+            matchId={match.id}
+            myHome={entries.find((e) => e.isSelf)?.predictedHome ?? null}
+            myAway={entries.find((e) => e.isSelf)?.predictedAway ?? null}
+          />
 
           {entries.length > 0 ? (
             <>

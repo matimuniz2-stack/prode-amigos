@@ -86,7 +86,15 @@ function alpha(press: number): string {
     .padStart(2, "0");
 }
 
-export function LivePitch({ matchId }: { matchId: string }) {
+export function LivePitch({
+  matchId,
+  myHome = null,
+  myAway = null,
+}: {
+  matchId: string;
+  myHome?: number | null;
+  myAway?: number | null;
+}) {
   const [data, setData] = useState<LiveData | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [flash, setFlash] = useState<LiveEvent | null>(null);
@@ -159,6 +167,54 @@ export function LivePitch({ matchId }: { matchId: string }) {
   const lastPlay = positioned[positioned.length - 1] ?? null;
   const ball = lastPlay ? orient(lastPlay.x, lastPlay.y, lastPlay.side) : null;
 
+  // Minuto actual (del reloj "66'" o del último evento) para la win-prob.
+  const minute =
+    data.state === "post"
+      ? 90
+      : parseInt(data.clock, 10) ||
+        Math.max(0, ...data.events.map((e) => e.minute), 0);
+  const wp = winProb(data.home.score, data.away.score, minute, pressH);
+
+  // Timeline de eventos en orden cronológico.
+  const timeline = [...data.events].sort((a, b) => a.minute - b.minute);
+
+  // ¿El marcador en vivo es EXACTAMENTE tu pick? → "gol en mi pick".
+  const pickLoaded = myHome != null && myAway != null;
+  const pickIsLive =
+    pickLoaded &&
+    data.state === "in" &&
+    data.home.score === myHome &&
+    data.away.score === myAway;
+
+  // Nota para tu pick según la win-prob.
+  let pickNote: string | null = null;
+  if (pickLoaded) {
+    const mySide =
+      (myHome as number) > (myAway as number)
+        ? "home"
+        : (myHome as number) < (myAway as number)
+          ? "away"
+          : "draw";
+    const myProb =
+      mySide === "home" ? wp.home : mySide === "away" ? wp.away : wp.draw;
+    pickNote =
+      myProb >= 55
+        ? "✅ Tu pick viene cómodo. Aguantá el resultado."
+        : myProb >= 35
+          ? "🤔 Tu pick está peleado, no aflojes."
+          : "😬 Se te está complicando el pick…";
+  }
+
+  const sharePick = async () => {
+    const txt = `¡Lo dije! Tengo clavado ${data.home.name} ${data.home.score}-${data.away.score} ${data.away.name} en el prode 😎\nprodelospibes.com`;
+    try {
+      if (navigator.share) await navigator.share({ text: txt });
+      else await navigator.clipboard.writeText(txt);
+    } catch {
+      /* cancelado */
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3">
       {/* Marcador + reloj */}
@@ -182,6 +238,28 @@ export function LivePitch({ matchId }: { matchId: string }) {
         </span>
       </div>
 
+      {/* Gol en mi pick: el marcador en vivo es exactamente tu pronóstico */}
+      {pickIsLive && (
+        <div className="flex items-center justify-between gap-2 rounded-xl bg-pitch p-3 text-cream ring-1 ring-gold/40">
+          <div className="min-w-0">
+            <div className="text-display text-base leading-none text-gold">
+              ⚽ ¡VA TU PICK!
+            </div>
+            <div className="mt-0.5 truncate text-[11px] text-cream/80">
+              {data.home.name} {data.home.score}-{data.away.score} — si termina
+              así, pleno 🎯
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={sharePick}
+            className="shrink-0 rounded-full bg-[#25D366] px-3 py-1.5 text-xs font-bold text-white transition active:scale-95"
+          >
+            Compartir 💬
+          </button>
+        </div>
+      )}
+
       {/* Presión / dominio */}
       <div>
         <div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wide text-ink/45">
@@ -193,6 +271,35 @@ export function LivePitch({ matchId }: { matchId: string }) {
           <div style={{ width: `${pressA}%`, background: AWAY }} className="transition-all duration-700" />
         </div>
       </div>
+
+      {/* Win-probability casera (estimación según marcador, minuto y tiros) */}
+      {data.state === "in" && (
+        <div>
+          <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wide text-ink/45">
+            <span>📊 ¿Quién la gana?</span>
+            <span>{minute}&apos;</span>
+          </div>
+          <div className="mb-1 flex items-center justify-between gap-2 text-[11px] font-bold text-ink">
+            <span className="min-w-0 truncate">
+              {data.home.name} {wp.home}%
+            </span>
+            <span className="shrink-0 text-ink/45">Empate {wp.draw}%</span>
+            <span className="min-w-0 truncate text-right">
+              {wp.away}% {data.away.name}
+            </span>
+          </div>
+          <div className="flex h-3 overflow-hidden rounded-full bg-ink/10">
+            <div style={{ width: `${wp.home}%`, background: HOME }} className="transition-all duration-700" />
+            <div style={{ width: `${wp.draw}%`, background: "#9ca3af" }} className="transition-all duration-700" />
+            <div style={{ width: `${wp.away}%`, background: AWAY }} className="transition-all duration-700" />
+          </div>
+          {pickNote && (
+            <div className="mt-2 rounded-lg bg-pitch-deep px-2.5 py-1.5 text-[11px] font-semibold text-gold">
+              {pickNote}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* La cancha */}
       <div className="relative w-full overflow-hidden rounded-2xl ring-1 ring-black/10">
@@ -325,20 +432,37 @@ export function LivePitch({ matchId }: { matchId: string }) {
         <span style={{ color: AWAY }}>▬</span> {data.away.name}
       </p>
 
-      {/* Goles listados con el arco */}
-      {goals.length > 0 && (
-        <div className="flex flex-col gap-1.5 rounded-xl bg-ink/[0.04] p-3">
-          {goals.map((e, i) => (
+      {/* Timeline de eventos del partido (goles, tarjetas, cambios) */}
+      {timeline.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-xl bg-ink/[0.04] p-3">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-ink/45">
+            📜 Timeline del partido
+          </span>
+          {timeline.map((e, i) => (
             <div key={i} className="flex items-center gap-2 text-xs">
-              <span className="font-black tabular-nums text-ink/50">{e.clock}</span>
-              <span
-                className="size-2 rounded-full"
-                style={{ background: e.side === "home" ? HOME : AWAY }}
-              />
-              <span className="font-bold text-ink">{e.player ?? "Gol"}</span>
-              <span className="truncate text-ink/55">
-                {e.side === "home" ? data.home.name : data.away.name}
+              <span className="w-9 shrink-0 text-right font-black tabular-nums text-ink/50">
+                {e.clock || `${e.minute}'`}
               </span>
+              <span aria-hidden className="shrink-0 text-sm">
+                {eventEmoji(e.type)}
+              </span>
+              <span className="min-w-0 flex-1 truncate">
+                <span className="font-bold text-ink">
+                  {e.player ?? eventLabel(e.type)}
+                </span>
+                {e.side && (
+                  <span className="text-ink/50">
+                    {" · "}
+                    {e.side === "home" ? data.home.name : data.away.name}
+                  </span>
+                )}
+              </span>
+              {e.type === "goal" && (
+                <span
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ background: e.side === "home" ? HOME : AWAY }}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -406,4 +530,66 @@ function StatRow({
       </span>
     </>
   );
+}
+
+/** Win-probability casera: heurística simple según ventaja, minuto y dominio
+ *  de tiros/posesión. No es un modelo serio (de ahí "casera"). Devuelve % que
+ *  suman 100. */
+function winProb(home: number, away: number, minute: number, pressH: number) {
+  const lead = home - away;
+  const t = Math.min(1, minute / 95);
+  const edge = (pressH - 50) / 50; // -1..1 (dominio de tiros/posesión)
+  const m = lead * (1.1 + t * 1.7) + edge * 0.8 * (1 - t * 0.4);
+  const pHomeRaw = 1 / (1 + Math.exp(-m));
+  let draw =
+    Math.max(4, 30 * (1 - t) * (1 - Math.min(1, Math.abs(lead) * 0.5))) +
+    (lead === 0 ? 14 * t : 0);
+  draw = Math.min(60, draw);
+  let h = Math.round((100 - draw) * pHomeRaw);
+  let a = Math.round((100 - draw) * (1 - pHomeRaw));
+  let d = 100 - h - a;
+  if (d < 0) {
+    if (h >= a) h += d;
+    else a += d;
+    d = 0;
+  }
+  return { home: h, draw: d, away: a };
+}
+
+function eventEmoji(type: LiveEvent["type"]): string {
+  switch (type) {
+    case "goal":
+      return "⚽";
+    case "yellow":
+      return "🟨";
+    case "red":
+      return "🟥";
+    case "sub":
+      return "🔁";
+    case "penalty":
+      return "🎯";
+    case "var":
+      return "📺";
+    default:
+      return "•";
+  }
+}
+
+function eventLabel(type: LiveEvent["type"]): string {
+  switch (type) {
+    case "goal":
+      return "Gol";
+    case "yellow":
+      return "Amarilla";
+    case "red":
+      return "Roja";
+    case "sub":
+      return "Cambio";
+    case "penalty":
+      return "Penal";
+    case "var":
+      return "VAR";
+    default:
+      return "Evento";
+  }
 }
