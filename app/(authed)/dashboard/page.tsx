@@ -28,6 +28,7 @@ import { buildDiario } from "@/lib/diario";
 import { PreCierreReminder } from "@/components/home/pre-cierre-reminder";
 import { CountUp } from "@/components/effects/count-up";
 import { BadgeDrop } from "@/components/effects/badge-drop";
+import { TagDeLaFecha } from "@/components/home/tag-de-la-fecha";
 
 export const dynamic = "force-dynamic";
 
@@ -297,6 +298,7 @@ export default async function DashboardPage() {
 
           {/* Recap de la última fecha + diario compartible (diario = todos los días) */}
           {recap && <RecapFecha recap={recap} />}
+          {recap && <TagDeLaFecha recap={recap} />}
           {diarioText && <DiarioProde text={diarioText} />}
 
           {/* Acceso a globales */}
