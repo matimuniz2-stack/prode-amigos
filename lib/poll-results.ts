@@ -5,6 +5,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchEspnScoreboard, type EspnEvent } from "@/lib/espn";
+import { detectGoals, sendGoalPushes, type GoalCandidate } from "@/lib/push";
 
 type Candidate = {
   id: string;
@@ -71,6 +72,7 @@ export async function runPollResults(
   );
 
   const updates: PollUpdate[] = [];
+  const goalCands: GoalCandidate[] = [];
   for (const c of live) {
     const ev = findEvent(events, c);
     if (!ev || ev.state === "pre") continue;
@@ -80,6 +82,14 @@ export async function runPollResults(
     const swapped = ev.homeCode === c.away_code;
     const scoreHome = swapped ? ev.awayScore : ev.homeScore;
     const scoreAway = swapped ? ev.homeScore : ev.awayScore;
+
+    goalCands.push({
+      matchId: c.id,
+      homeCode: c.home_code,
+      awayCode: c.away_code,
+      newHome: scoreHome,
+      newAway: scoreAway,
+    });
 
     let finalize = ev.state === "post" && ev.completed;
     let koWinnerCode: string | null = null;
@@ -109,11 +119,30 @@ export async function runPollResults(
     return { live: live.length, updated: 0, finalized: 0 };
   }
 
+  // Detectar goles ANTES de aplicar (comparar el score nuevo vs el actual en
+  // la DB). Best-effort: si falla o no hay service-role, seguimos normal.
+  let goals: GoalCandidate[] = [];
+  try {
+    goals = await detectGoals(goalCands);
+  } catch {
+    goals = [];
+  }
+
   const { data: applied, error: applyError } = await supabase.rpc(
     "poll_results_apply",
     { p_secret: secret, p_updates: updates },
   );
   if (applyError) throw new Error(applyError.message);
+
+  // Avisar de los goles a los pick-holders (después de aplicar; no rompe el
+  // polling si falla el envío).
+  if (goals.length > 0) {
+    try {
+      await sendGoalPushes(goals);
+    } catch {
+      /* el scoring ya se aplicó; el aviso es secundario */
+    }
+  }
 
   return {
     live: live.length,

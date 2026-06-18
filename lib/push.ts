@@ -78,3 +78,64 @@ export async function sendPushToUsers(
 
   return { sent, removed };
 }
+
+/** Manda un push a TODOS los que tienen pick en un partido (usa service-role
+ *  para leer los pick-holders, así no depende del RLS del cliente del cron). */
+export async function sendPushToMatchPickers(
+  matchId: string,
+  payload: PushPayload,
+): Promise<{ sent: number; removed: number; skipped?: string }> {
+  const sb = adminClient();
+  if (!sb) return { sent: 0, removed: 0, skipped: "no-service-role" };
+  const { data: picks } = await sb
+    .from("match_predictions")
+    .select("user_id")
+    .eq("match_id", matchId);
+  const userIds = [...new Set((picks ?? []).map((p) => p.user_id))];
+  return sendPushToUsers(userIds, payload);
+}
+
+export interface GoalCandidate {
+  matchId: string;
+  homeCode: string;
+  awayCode: string;
+  newHome: number;
+  newAway: number;
+}
+
+/** Compara el score nuevo (de ESPN) contra el actual en la DB y devuelve los
+ *  partidos donde subió el total de goles. OJO: hay que llamarla ANTES de
+ *  aplicar el update (si no, la DB ya tiene el score nuevo y no detecta nada). */
+export async function detectGoals(
+  cands: GoalCandidate[],
+): Promise<GoalCandidate[]> {
+  if (cands.length === 0) return [];
+  const sb = adminClient();
+  if (!sb) return [];
+  const ids = cands.map((c) => c.matchId);
+  const { data } = await sb
+    .from("matches")
+    .select("id, score_home, score_away")
+    .in("id", ids);
+  const prevTotal = new Map<string, number>();
+  for (const r of data ?? []) {
+    prevTotal.set(r.id, (r.score_home ?? 0) + (r.score_away ?? 0));
+  }
+  return cands.filter((c) => {
+    const prev = prevTotal.get(c.matchId);
+    if (prev === undefined) return false;
+    return c.newHome + c.newAway > prev;
+  });
+}
+
+/** Avisa de los goles a los pick-holders de cada partido. Best-effort. */
+export async function sendGoalPushes(goals: GoalCandidate[]): Promise<void> {
+  for (const g of goals) {
+    await sendPushToMatchPickers(g.matchId, {
+      title: "⚽ ¡Gol!",
+      body: `${g.homeCode} ${g.newHome}-${g.newAway} ${g.awayCode} · tenés pick acá 👀`,
+      url: `/matches/${g.matchId}`,
+      tag: `gol-${g.matchId}`,
+    });
+  }
+}
