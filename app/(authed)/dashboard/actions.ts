@@ -28,7 +28,22 @@ export async function postDeclaration(
       { user_id: userId, day_key: dayKey, text: clean },
       { onConflict: "user_id,day_key" },
     );
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    const m = error.message.toLowerCase();
+    if (
+      error.code === "PGRST205" ||
+      m.includes("schema cache") ||
+      m.includes("does not exist") ||
+      m.includes("relation")
+    ) {
+      return {
+        ok: false,
+        error:
+          "Todavía no está lista la tabla de declaraciones (falta la migración en Supabase). Avisale al admin.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
 
   revalidatePath("/dashboard");
   return { ok: true };

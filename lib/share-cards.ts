@@ -49,14 +49,14 @@ function money(n: number, currency: string): string {
   }
 }
 
-/** Tabla de posiciones: pozo + top 8 con avatar. */
+/** Tabla de posiciones: pozo + ranking con avatar (entran todos, hasta 16). */
 export async function getRankingCard(supabase: ServerClient): Promise<RankingCard> {
   const [{ data: rows }, { data: pool }] = await Promise.all([
     supabase
       .from("leaderboard_projection")
       .select("nickname, total_points, rank, avatar_url")
       .order("rank", { ascending: true })
-      .limit(8),
+      .limit(16),
     supabase.from("pools").select("total_amount, currency").maybeSingle(),
   ]);
 
