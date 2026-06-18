@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { computeAutoBadges } from "@/lib/badges";
+import { sendPushToUsers } from "@/lib/push";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -154,6 +155,29 @@ export async function removePushSubscription(endpoint: string): Promise<Result> 
     .eq("endpoint", endpoint)
     .eq("user_id", claims.claims.sub as string);
   if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** Manda un push de prueba al propio usuario (para verificar que llega). */
+export async function sendTestPush(): Promise<Result> {
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims) {
+    return { ok: false, error: "Sesión vencida, recargá la página." };
+  }
+  const userId = claims.claims.sub as string;
+  const res = await sendPushToUsers([userId], {
+    title: "🔔 ¡Funciona!",
+    body: "Tenés las notis del Prode activadas. Acá te van a llegar los avisos.",
+    url: "/mi-prode",
+    tag: "test",
+  });
+  if (res.sent === 0) {
+    if (res.skipped) {
+      return { ok: false, error: "Falta terminar de configurar el server." };
+    }
+    return { ok: false, error: "No se pudo enviar (revisá el permiso del navegador)." };
+  }
   return { ok: true };
 }
 

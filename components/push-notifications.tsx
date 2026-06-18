@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   savePushSubscription,
   removePushSubscription,
+  sendTestPush,
 } from "@/app/(authed)/mi-prode/actions";
 import { cn } from "@/lib/utils";
 
@@ -152,6 +153,21 @@ export function PushNotifications() {
     }
   }
 
+  async function test() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await sendTestPush();
+      setMsg(
+        res.ok
+          ? { type: "ok", text: "Te mandamos uno de prueba 🔔" }
+          : { type: "err", text: res.error },
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   // Sin configurar (falta la VAPID key) o cargando: no mostramos nada.
   if (state === "loading" || state === "not-configured") return null;
 
@@ -197,14 +213,24 @@ export function PushNotifications() {
         </button>
       )}
       {state === "on" && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={disable}
-          className="shrink-0 rounded-full bg-ink/10 px-4 py-2 text-sm font-bold text-ink transition-transform active:scale-95 disabled:opacity-50"
-        >
-          {busy ? "…" : "Desactivar"}
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={test}
+            className="rounded-full bg-pitch px-3.5 py-2 text-sm font-bold text-cream transition-transform active:scale-95 disabled:opacity-50"
+          >
+            Probar
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={disable}
+            className="rounded-full bg-ink/10 px-3.5 py-2 text-sm font-bold text-ink transition-transform active:scale-95 disabled:opacity-50"
+          >
+            Desactivar
+          </button>
+        </div>
       )}
     </div>
   );
