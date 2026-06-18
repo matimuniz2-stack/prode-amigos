@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Botón para copiar la crónica de la fecha y pegarla en WhatsApp.
@@ -8,12 +8,20 @@ import { useState } from "react";
  */
 export function DiarioProde({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const resetT = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (resetT.current) clearTimeout(resetT.current);
+    },
+    [],
+  );
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (resetT.current) clearTimeout(resetT.current);
+      resetT.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback: seleccionar el texto para copiar a mano.
       setCopied(false);

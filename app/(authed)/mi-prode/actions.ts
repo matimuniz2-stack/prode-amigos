@@ -89,10 +89,16 @@ export async function setAvatarUrl(url: string): Promise<Result> {
   if (!claims?.claims) {
     return { ok: false, error: "Sesión vencida, recargá la página." };
   }
+  const userId = claims.claims.sub as string;
+  // La foto tiene que vivir en NUESTRO bucket, en la carpeta del propio usuario
+  // (evita setear una URL externa arbitraria).
+  if (!url.includes(`/storage/v1/object/public/avatars/${userId}/`)) {
+    return { ok: false, error: "La foto tiene que subirse desde el prode." };
+  }
   const { error } = await supabase
     .from("profiles")
     .update({ avatar_url: url })
-    .eq("id", claims.claims.sub as string);
+    .eq("id", userId);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/mi-prode");

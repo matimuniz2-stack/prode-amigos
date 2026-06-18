@@ -99,6 +99,7 @@ export function LivePitch({
   const [loaded, setLoaded] = useState(false);
   const [flash, setFlash] = useState<LiveEvent | null>(null);
   const prevGoals = useRef<number | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -115,7 +116,10 @@ export function LivePitch({
         if (prevGoals.current !== null && goals.length > prevGoals.current) {
           const last = goals[goals.length - 1];
           setFlash(last);
-          setTimeout(() => setFlash(null), 6000);
+          if (flashTimer.current) clearTimeout(flashTimer.current);
+          flashTimer.current = setTimeout(() => {
+            if (alive) setFlash(null);
+          }, 6000);
         }
         prevGoals.current = goals.length;
         setData(json);
@@ -128,6 +132,7 @@ export function LivePitch({
     return () => {
       alive = false;
       clearInterval(id);
+      if (flashTimer.current) clearTimeout(flashTimer.current);
     };
   }, [matchId]);
 

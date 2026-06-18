@@ -1,17 +1,34 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 const CONFETTI = ["#75AADB", "#ffffff", "#FFD23F"];
+
+interface Piece {
+  id: number;
+  flag: boolean;
+  left: number;
+  delay: number;
+  dur: number;
+  size: number;
+  color: string;
+  sway: string;
+  op: number;
+  round: boolean;
+}
 
 /**
  * "Modo argentino" site-wide: una cintita celeste/blanca arriba y banderitas
  * 🇦🇷 + confeti cayendo suave por toda la pantalla. Fijo, sutil y sin bloquear
  * clicks. Se monta solo cuando hay partido de Argentina cerca o en vivo.
+ * Las piezas se generan en el cliente (useEffect) para no romper la hidratación
+ * con Math.random (el server renderiba valores distintos a los del cliente).
  */
 export function ArgentinaMode() {
-  const pieces = useMemo(
-    () =>
+  const [pieces, setPieces] = useState<Piece[]>([]);
+
+  useEffect(() => {
+    setPieces(
       Array.from({ length: 22 }).map((_, i) => {
         const isFlag = i % 3 === 0;
         return {
@@ -27,8 +44,8 @@ export function ArgentinaMode() {
           round: Math.random() > 0.5,
         };
       }),
-    [],
-  );
+    );
+  }, []);
 
   return (
     <>

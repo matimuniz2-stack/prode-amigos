@@ -86,27 +86,41 @@ export default async function MatchDetailPage({
   let chatMessages: ChatMessage[] = [];
   let myMatchPoints: number | null = null;
   if (isLocked) {
-    const [{ data: allPicks }, { data: matchPoints }, { data: ruleRows }] =
-      await Promise.all([
-        supabase
-          .from("match_predictions")
-          .select(
-            "user_id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random",
-          )
-          .eq("match_id", match.id),
-        supabase
-          .from("points_log")
-          .select("user_id, points")
-          .eq("source_kind", "match")
-          .eq("source_id", match.id),
-        projectLive
-          ? supabase
-              .from("scoring_rules")
-              .select("rule_key, scope_stage, points")
-              .eq("tournament_id", match.tournament_id)
-              .is("active_to", null)
-          : Promise.resolve({ data: [] as ScoringRule[] }),
-      ]);
+    const [
+      { data: allPicks },
+      { data: matchPoints },
+      { data: ruleRows },
+      { data: reactRows },
+      { data: chatRows },
+    ] = await Promise.all([
+      supabase
+        .from("match_predictions")
+        .select(
+          "user_id, predicted_winner, predicted_home, predicted_away, predicted_ko_winner_team_id, is_auto_random",
+        )
+        .eq("match_id", match.id),
+      supabase
+        .from("points_log")
+        .select("user_id, points")
+        .eq("source_kind", "match")
+        .eq("source_id", match.id),
+      projectLive
+        ? supabase
+            .from("scoring_rules")
+            .select("rule_key, scope_stage, points")
+            .eq("tournament_id", match.tournament_id)
+            .is("active_to", null)
+        : Promise.resolve({ data: [] as ScoringRule[] }),
+      supabase
+        .from("pick_reactions")
+        .select("target_user_id, emoji, reactor_user_id")
+        .eq("match_id", match.id),
+      supabase
+        .from("match_chat_messages")
+        .select("id, content, created_at, user_id")
+        .eq("match_id", match.id)
+        .order("created_at", { ascending: true }),
+    ]);
 
     const rules = (ruleRows ?? []) as ScoringRule[];
 
@@ -174,11 +188,8 @@ export default async function MatchDetailPage({
         return a.nickname.localeCompare(b.nickname, "es");
       });
 
-    // Reacciones con emoji a cada pick (chicana post-lock).
-    const { data: reactRows } = await supabase
-      .from("pick_reactions")
-      .select("target_user_id, emoji, reactor_user_id")
-      .eq("match_id", match.id);
+    // Reacciones con emoji a cada pick (chicana post-lock). Ya vienen del
+    // Promise.all de arriba (reactRows).
     const reByUser = new Map<string, Map<string, { count: number; mine: boolean }>>();
     for (const r of reactRows ?? []) {
       const m = reByUser.get(r.target_user_id) ?? new Map();
@@ -195,12 +206,7 @@ export default async function MatchDetailPage({
       ),
     }));
 
-    // Chat del partido (post-lock).
-    const { data: chatRows } = await supabase
-      .from("match_chat_messages")
-      .select("id, content, created_at, user_id")
-      .eq("match_id", match.id)
-      .order("created_at", { ascending: true });
+    // Chat del partido (post-lock). chatRows ya viene del Promise.all de arriba.
     const missing = [
       ...new Set((chatRows ?? []).map((m) => m.user_id)),
     ].filter((uid) => !nameById.has(uid));

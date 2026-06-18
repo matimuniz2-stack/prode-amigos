@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 const CONFETTI_COLORS = ["#75AADB", "#ffffff", "#FFD23F", "#5b8fc7"];
 
@@ -19,9 +19,21 @@ export function ArgentinaHype({
   live: boolean;
   href: string;
 }) {
-  // Piezas de confeti con valores aleatorios fijados al montar.
-  const pieces = useMemo(
-    () =>
+  // Piezas de confeti: se generan en el cliente (useEffect) para no romper la
+  // hidratación con Math.random (en SSR el server las calculaba distinto).
+  const [pieces, setPieces] = useState<
+    {
+      id: number;
+      left: number;
+      delay: number;
+      dur: number;
+      size: number;
+      color: string;
+      round: boolean;
+    }[]
+  >([]);
+  useEffect(() => {
+    setPieces(
       Array.from({ length: 34 }).map((_, i) => ({
         id: i,
         left: Math.random() * 100,
@@ -31,8 +43,8 @@ export function ArgentinaHype({
         color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
         round: Math.random() > 0.6,
       })),
-    [],
-  );
+    );
+  }, []);
 
   return (
     <Link
