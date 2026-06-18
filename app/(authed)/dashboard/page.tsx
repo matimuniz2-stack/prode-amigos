@@ -102,21 +102,30 @@ export default async function DashboardPage() {
     (m) => displayStatus(m, now) === "live" && m.home_team && m.away_team,
   );
 
-  // Los picks dependen de qué partidos están "próximos" → va después.
-  const picksByMatch = new Map<
-    string,
-    { predicted_home: number; predicted_away: number; is_auto_random: boolean }
-  >();
-  if (upcoming.length > 0) {
-    const { data: picks } = await supabase
-      .from("match_predictions")
-      .select("match_id, predicted_home, predicted_away, is_auto_random")
-      .eq("user_id", userId)
-      .in(
-        "match_id",
-        upcoming.map((m) => m.id),
-      );
-    for (const p of picks ?? []) picksByMatch.set(p.match_id, p);
+  // Picks de los próximos + recap de la última fecha: independientes (ambos
+  // sobre los partidos ya cargados) → en paralelo.
+  type MiniPick = {
+    match_id: string;
+    predicted_home: number;
+    predicted_away: number;
+    is_auto_random: boolean;
+  };
+  const [picksRes, recap] = await Promise.all([
+    upcoming.length > 0
+      ? supabase
+          .from("match_predictions")
+          .select("match_id, predicted_home, predicted_away, is_auto_random")
+          .eq("user_id", userId)
+          .in(
+            "match_id",
+            upcoming.map((m) => m.id),
+          )
+      : Promise.resolve({ data: [] as MiniPick[] }),
+    computeRecap(supabase, matchesRes.data ?? []),
+  ]);
+  const picksByMatch = new Map<string, MiniPick>();
+  for (const p of (picksRes.data ?? []) as MiniPick[]) {
+    picksByMatch.set(p.match_id, p);
   }
   const nextMatches = upcoming.slice(0, 3);
   const nextMatch = upcoming[0] ?? null;
@@ -138,9 +147,6 @@ export default async function DashboardPage() {
   const myPoints = myRow?.total_points ?? 0;
   const myRank = myRow?.rank ?? null;
   const myNick = me?.nickname ?? "vos";
-
-  // Recap de la última fecha terminada (Fase 4).
-  const recap = await computeRecap(supabase, matchesRes.data ?? []);
 
   // 📰 El Diario del Prode: crónica diaria para copiar al grupo. Junta la
   // tabla, el resumen de la última fecha, las insignias del momento y lo que

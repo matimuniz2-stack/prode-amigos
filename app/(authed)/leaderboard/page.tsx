@@ -76,17 +76,31 @@ export default async function LeaderboardPage() {
   }
   const myId = claims.claims.sub as string;
 
-  const { data: rows } = await supabase
-    .from("leaderboard_projection")
-    .select(
-      "user_id, nickname, total_points, rank, projected_prize, pool_total, currency, avatar_url",
-    )
-    .order("rank", { ascending: true });
-
-  const { data: pool } = await supabase
-    .from("pools")
-    .select("total_amount, currency")
-    .maybeSingle();
+  // Las 4 lecturas son independientes → en paralelo (antes iban en cadena).
+  const [{ data: rows }, { data: pool }, { data: tagRows }, autoBadges] =
+    await Promise.all([
+      supabase
+        .from("leaderboard_projection")
+        .select(
+          "user_id, nickname, total_points, rank, projected_prize, pool_total, currency, avatar_url",
+        )
+        .order("rank", { ascending: true }),
+      supabase.from("pools").select("total_amount, currency").maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("id, nickname, tags, avatar_url, featured_tag")
+        .order("nickname", { ascending: true })
+        .returns<
+          {
+            id: string;
+            nickname: string;
+            tags: string[];
+            avatar_url: string | null;
+            featured_tag: string | null;
+          }[]
+        >(),
+      computeAutoBadges(supabase),
+    ]);
 
   const projection = rows ?? [];
   const hasScores = projection.some((r) => (r.total_points ?? 0) > 0);
@@ -94,28 +108,14 @@ export default async function LeaderboardPage() {
   const currency = pool?.currency ?? projection[0]?.currency ?? "ARS";
   const poolTotal = pool?.total_amount ?? projection[0]?.pool_total ?? 0;
 
-  // Etiquetas manuales (las pone el admin) + insignias automáticas
-  // (calculadas desde los resultados). Se muestran juntas como chips.
-  const { data: tagRows } = await supabase
-    .from("profiles")
-    .select("id, nickname, tags, avatar_url, featured_tag")
-    .order("nickname", { ascending: true })
-    .returns<
-      {
-        id: string;
-        nickname: string;
-        tags: string[];
-        avatar_url: string | null;
-        featured_tag: string | null;
-      }[]
-    >();
+  // Etiquetas manuales (admin) + insignias automáticas: ya vienen del
+  // Promise.all de arriba (tagRows + autoBadges).
   const avatarByUser = new Map(
     (tagRows ?? []).map((p) => [p.id, p.avatar_url]),
   );
   const featuredByUser = new Map(
     (tagRows ?? []).map((p) => [p.id, p.featured_tag]),
   );
-  const autoBadges = await computeAutoBadges(supabase);
   // La insignia destacada va primera en la lista de chips.
   const tagsFor = (userId: string, manual: string[]) => {
     const all = [

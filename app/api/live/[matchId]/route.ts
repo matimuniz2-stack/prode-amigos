@@ -31,6 +31,24 @@ function sideOf(
   return null;
 }
 
+// Cache en memoria del proceso: comparte el fetch a ESPN entre los viewers
+// (9 amigos polleando cada 22s = 9 llamadas idénticas; con esto comparten una).
+// Cada instancia warm tiene su propio cache; el TTL (15s) es menor al poll (22s).
+const LIVE_TTL = 15_000;
+const liveCache = new Map<
+  string,
+  { at: number; data: Awaited<ReturnType<typeof fetchLiveMatch>> }
+>();
+const eventIdCache = new Map<string, string>();
+
+async function cachedFetchLiveMatch(eventId: string) {
+  const hit = liveCache.get(eventId);
+  if (hit && Date.now() - hit.at < LIVE_TTL) return hit.data;
+  const data = await fetchLiveMatch(eventId);
+  liveCache.set(eventId, { at: Date.now(), data });
+  return data;
+}
+
 export async function GET(
   _req: Request,
   ctx: { params: Promise<{ matchId: string }> },
@@ -54,17 +72,18 @@ export async function GET(
   const homeCode = m.home_team?.code ?? null;
   const awayCode = m.away_team?.code ?? null;
 
-  let eventId = m.espn_event_id;
+  let eventId = m.espn_event_id ?? eventIdCache.get(matchId) ?? null;
   if (!eventId && homeCode && awayCode) {
     eventId = await findEspnEventId(
       homeCode,
       awayCode,
       new Date(m.kickoff_at).getTime(),
     );
+    if (eventId) eventIdCache.set(matchId, eventId);
   }
   if (!eventId) return Response.json({ found: false }, { status: 200 });
 
-  const live = await fetchLiveMatch(eventId);
+  const live = await cachedFetchLiveMatch(eventId);
   if (!live) return Response.json({ found: false }, { status: 200 });
 
   const withSide = (e: LiveEvent) => ({
