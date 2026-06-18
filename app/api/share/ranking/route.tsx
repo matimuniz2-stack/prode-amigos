@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   // SIEMPRE entren todos en los 1080px (antes se cortaban los últimos puestos).
   const n = Math.max(top.length, 1);
   const gap = n > 9 ? 7 : 10;
-  const budget = 748; // alto disponible para las filas (después del título)
+  const budget = 700; // alto disponible para las filas (deja aire para el footer)
   const rowH = Math.max(38, Math.min(98, Math.floor((budget - (n - 1) * gap) / n)));
   const avatar = Math.round(rowH * 0.7);
   const padV = Math.max(4, Math.round((rowH - avatar) / 2));
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     (
       <CardShell>
         <div style={{ display: "flex", alignItems: "baseline", gap: 24 }}>
-          <div style={{ display: "flex", fontSize: 64, fontWeight: 900, color: C.cream }}>
+          <div style={{ display: "flex", fontSize: 56, fontWeight: 900, color: C.cream }}>
             La tabla
           </div>
           {poolLabel && (
@@ -46,7 +46,7 @@ export async function GET(req: Request) {
           )}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", marginTop: 20, gap }}>
+        <div style={{ display: "flex", flexDirection: "column", marginTop: 16, gap }}>
           {top.map((p, i) => {
             const podium = i < 3;
             return (
