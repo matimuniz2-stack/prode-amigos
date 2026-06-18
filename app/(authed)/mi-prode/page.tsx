@@ -15,6 +15,7 @@ import { CountUp } from "@/components/effects/count-up";
 import { computeAutoBadges } from "@/lib/badges";
 import { AvatarUploader } from "@/components/profile/avatar-uploader";
 import { FeaturedTagPicker } from "@/components/profile/featured-tag-picker";
+import { PushNotifications } from "@/components/push-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -136,6 +137,8 @@ export default async function MiProdePage() {
         tags={myTags}
         initial={myProfile?.featured_tag ?? null}
       />
+
+      <PushNotifications />
 
       {allPicks.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-cream/20 p-8 text-center">

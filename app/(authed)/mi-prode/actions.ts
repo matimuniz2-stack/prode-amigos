@@ -79,6 +79,84 @@ export async function setFeaturedTag(tag: string | null): Promise<Result> {
   return { ok: true };
 }
 
+/** Guarda (o refresca) la suscripción de push de ESTE dispositivo. */
+export async function savePushSubscription(sub: {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  userAgent?: string;
+}): Promise<Result> {
+  const endpoint = sub?.endpoint?.trim() ?? "";
+  if (!endpoint || !sub?.p256dh || !sub?.auth) {
+    return { ok: false, error: "Suscripción incompleta." };
+  }
+  // Formato esperado de Web Push (evita basura/abuso). El endpoint es una URL
+  // https del push service; las claves son base64url cortas.
+  if (
+    endpoint.length > 1000 ||
+    !/^https:\/\//.test(endpoint) ||
+    sub.p256dh.length > 200 ||
+    sub.auth.length > 200
+  ) {
+    return { ok: false, error: "Suscripción inválida." };
+  }
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims) {
+    return { ok: false, error: "Sesión vencida, recargá la página." };
+  }
+  const userId = claims.claims.sub as string;
+
+  // Tope de dispositivos por usuario (backstop anti-abuso; nadie real llega).
+  const { count } = await supabase
+    .from("push_subscriptions")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  if ((count ?? 0) >= 20) {
+    return { ok: false, error: "Demasiados dispositivos registrados." };
+  }
+
+  const { error } = await supabase.from("push_subscriptions").upsert(
+    {
+      user_id: userId,
+      endpoint,
+      p256dh: sub.p256dh,
+      auth: sub.auth,
+      user_agent: sub.userAgent ?? null,
+    },
+    { onConflict: "endpoint" },
+  );
+  if (error) {
+    const m = error.message.toLowerCase();
+    if (
+      error.code === "PGRST205" ||
+      m.includes("does not exist") ||
+      m.includes("schema cache")
+    ) {
+      return { ok: false, error: "Faltan las notis del lado del server (avisale al admin)." };
+    }
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/** Borra la suscripción de este dispositivo (al desactivar las notis). */
+export async function removePushSubscription(endpoint: string): Promise<Result> {
+  if (!endpoint) return { ok: true };
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims) {
+    return { ok: false, error: "Sesión vencida, recargá la página." };
+  }
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .delete()
+    .eq("endpoint", endpoint)
+    .eq("user_id", claims.claims.sub as string);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 /** Setea la URL del avatar (la foto ya se subió al bucket desde el cliente). */
 export async function setAvatarUrl(url: string): Promise<Result> {
   if (!url || url.length > 600 || !/^https?:\/\//.test(url)) {
