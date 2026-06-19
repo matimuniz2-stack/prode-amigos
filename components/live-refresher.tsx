@@ -18,8 +18,32 @@ export function LiveRefresher({
 
   useEffect(() => {
     if (!enabled) return;
-    const id = setInterval(() => router.refresh(), intervalMs);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (id === null) id = setInterval(() => router.refresh(), intervalMs);
+    };
+    const stop = () => {
+      if (id !== null) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+    // Pausamos el refresco mientras la pestaña está oculta (no tiene sentido
+    // recalcular la sala en vivo si nadie la está mirando). Al volver, refresca.
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        router.refresh();
+        start();
+      } else {
+        stop();
+      }
+    };
+    if (document.visibilityState === "visible") start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [enabled, intervalMs, router]);
 
   return null;

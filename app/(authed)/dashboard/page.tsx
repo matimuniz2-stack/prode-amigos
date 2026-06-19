@@ -12,7 +12,7 @@ import {
   stageLabels,
   type MatchWithRelations,
 } from "@/lib/matches";
-import { computeAutoBadges, AUTO_BADGE_LABELS } from "@/lib/badges";
+import { getAutoBadges, AUTO_BADGE_LABELS } from "@/lib/badges";
 import { ArgentinaHype } from "@/components/home/argentina-hype";
 import { PrimaryButton } from "@/components/home/primary-button";
 import { StatCard } from "@/components/home/stat-card";
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
       .from("global_predictions")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId),
-    computeAutoBadges(supabase),
+    getAutoBadges(supabase),
   ]);
 
   const upcoming = (matchesRes.data ?? []).filter((m) => {

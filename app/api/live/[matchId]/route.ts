@@ -117,7 +117,13 @@ export async function GET(
       commentary: live.commentary,
     },
     {
-      headers: { "Cache-Control": "no-store" },
+      // La data del live es igual para todos los viewers y no es sensible, así
+      // que dejamos que el CDN de Vercel la comparta: una sola respuesta sirve
+      // a los 9 amigos durante 15s (en vez de 9 fetches a ESPN). El SWR sirve la
+      // copia vieja mientras revalida en background, sin frenar a nadie.
+      headers: {
+        "Cache-Control": "public, s-maxage=15, stale-while-revalidate=30",
+      },
     },
   );
 }

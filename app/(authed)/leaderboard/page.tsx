@@ -5,8 +5,8 @@ import { cn, hasSupabaseEnv } from "@/lib/utils";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SectionHeading } from "@/components/home/section-heading";
 import { TAG_TONE_CLASS, toneForTag } from "@/lib/tags";
-import { computeAutoBadges } from "@/lib/badges";
-import { computeCareer } from "@/lib/career";
+import { getAutoBadges } from "@/lib/badges";
+import { getCareer } from "@/lib/career";
 import { CareerChart } from "@/components/leaderboard/career-chart";
 import { Avatar } from "@/components/avatar";
 import { CrownedAvatar } from "@/components/crowned-avatar";
@@ -99,7 +99,7 @@ export default async function LeaderboardPage() {
             featured_tag: string | null;
           }[]
         >(),
-      computeAutoBadges(supabase),
+      getAutoBadges(supabase),
     ]);
 
   const projection = rows ?? [];
@@ -110,9 +110,6 @@ export default async function LeaderboardPage() {
 
   // Etiquetas manuales (admin) + insignias automáticas: ya vienen del
   // Promise.all de arriba (tagRows + autoBadges).
-  const avatarByUser = new Map(
-    (tagRows ?? []).map((p) => [p.id, p.avatar_url]),
-  );
   const featuredByUser = new Map(
     (tagRows ?? []).map((p) => [p.id, p.featured_tag]),
   );
@@ -194,7 +191,7 @@ export default async function LeaderboardPage() {
   const myMove = me ? moveOf(me.userId, me.rank) : null;
 
   // Gráfico de la carrera: acumulado por fecha (solo si ya se jugó algo).
-  const career = hasScores ? await computeCareer(supabase) : null;
+  const career = hasScores ? await getCareer(supabase) : null;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">

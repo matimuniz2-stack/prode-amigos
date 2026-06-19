@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { revalidateScoring } from "@/lib/supabase/cached";
 import { runPollResults, type PollSummary } from "@/lib/poll-results";
 
 type Result = { ok: true } | { ok: false; error: string };
@@ -45,6 +46,7 @@ export async function setMatchResult(input: {
   revalidatePath("/leaderboard");
   revalidatePath("/mi-prode");
   revalidatePath("/matches");
+  revalidateScoring();
   return { ok: true };
 }
 
@@ -66,6 +68,7 @@ export async function pollEspnNow(): Promise<
     revalidatePath("/mi-prode");
     revalidatePath("/matches");
     revalidatePath("/dashboard");
+    revalidateScoring();
     return { ok: true, summary };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
@@ -87,5 +90,6 @@ export async function recalcMatch(
 
   revalidatePath("/leaderboard");
   revalidatePath("/mi-prode");
+  revalidateScoring();
   return { ok: true };
 }

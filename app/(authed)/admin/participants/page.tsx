@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SectionHeading } from "@/components/home/section-heading";
 import { ParticipantRow } from "@/components/admin/participant-row";
-import { computeAutoBadges } from "@/lib/badges";
+import { getAutoBadges } from "@/lib/badges";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export default async function AdminParticipantsPage() {
       { id: string; nickname: string; email: string; role: string; tags: string[] }[]
     >();
 
-  const autoBadges = await computeAutoBadges(supabase);
+  const autoBadges = await getAutoBadges(supabase);
 
   return (
     <div className="flex flex-col gap-4">

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { cn, hasSupabaseEnv } from "@/lib/utils";
 import { TagFicha } from "@/components/player/tag-ficha";
-import { computeAutoBadges } from "@/lib/badges";
+import { getAutoBadges } from "@/lib/badges";
 import { computeAdn } from "@/lib/adn";
 import { AdnFutbolero } from "@/components/player/adn-futbolero";
 import { Avatar } from "@/components/avatar";
@@ -68,7 +68,7 @@ export default async function JugadorPage({
       .eq("source_kind", "match")
       .in("user_id", isMe ? [id] : [id, myId])
       .returns<LogRow[]>(),
-    computeAutoBadges(supabase),
+    getAutoBadges(supabase),
     computeAdn(supabase, id),
   ]);
 

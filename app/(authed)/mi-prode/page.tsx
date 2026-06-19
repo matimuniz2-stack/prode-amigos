@@ -12,7 +12,7 @@ import type { Database } from "@/lib/types/database";
 import { NicknameEditor } from "@/components/nickname-editor";
 import { Flag } from "@/components/flag";
 import { CountUp } from "@/components/effects/count-up";
-import { computeAutoBadges } from "@/lib/badges";
+import { getAutoBadges } from "@/lib/badges";
 import { AvatarUploader } from "@/components/profile/avatar-uploader";
 import { FeaturedTagPicker } from "@/components/profile/featured-tag-picker";
 import { PushNotifications } from "@/components/push-notifications";
@@ -67,7 +67,7 @@ export default async function MiProdePage() {
   const isAdmin = myProfile?.role === "admin" || myProfile?.role === "owner";
 
   // Insignias del usuario (manuales + automáticas) para elegir la destacada.
-  const autoBadges = await computeAutoBadges(supabase);
+  const autoBadges = await getAutoBadges(supabase);
   const myTags = [
     ...new Set([...(myProfile?.tags ?? []), ...(autoBadges.get(userId) ?? [])]),
   ];

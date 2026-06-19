@@ -1,5 +1,7 @@
+import { unstable_cache } from "next/cache";
 import type { createClient } from "@/lib/supabase/server";
 import { matchDayKey, matchDayLabel } from "@/lib/matches";
+import { cachedReadClient, SCORING_TAG } from "@/lib/supabase/cached";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -88,4 +90,26 @@ export async function computeCareer(
     days: dayKeys.map((k) => ({ key: k, label: labelByKey.get(k)! })),
     series,
   };
+}
+
+/**
+ * Versión cacheada de computeCareer: el gráfico es igual para todos, así que se
+ * calcula una vez y se reusa hasta que cambian resultados (revalidateScoring) o
+ * pasan 60s. Si no hay service-role, cae al cómputo normal por-request.
+ */
+const cachedCareer = unstable_cache(
+  async (): Promise<Career | null> => {
+    const admin = cachedReadClient();
+    if (!admin) return null;
+    return computeCareer(admin);
+  },
+  ["career-v1"],
+  { tags: [SCORING_TAG], revalidate: 60 },
+);
+
+export async function getCareer(
+  supabase: ServerClient,
+): Promise<Career | null> {
+  if (!cachedReadClient()) return computeCareer(supabase);
+  return cachedCareer();
 }

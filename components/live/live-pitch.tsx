@@ -127,11 +127,33 @@ export function LivePitch({
         /* reintenta en el próximo tick */
       }
     }
+    let id: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (id === null) id = setInterval(load, 22000);
+    };
+    const stop = () => {
+      if (id !== null) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+    // Mientras la pestaña esté oculta cortamos el polling a ESPN; al volver
+    // pedimos los datos al toque y retomamos el intervalo.
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        load();
+        start();
+      } else {
+        stop();
+      }
+    };
     load();
-    const id = setInterval(load, 22000);
+    if (document.visibilityState === "visible") start();
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       alive = false;
-      clearInterval(id);
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
       if (flashTimer.current) clearTimeout(flashTimer.current);
     };
   }, [matchId]);

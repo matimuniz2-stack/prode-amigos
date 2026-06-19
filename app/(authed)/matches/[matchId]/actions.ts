@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { revalidateScoring } from "@/lib/supabase/cached";
 import { isReactionEmoji } from "@/lib/reactions";
 
 export type SubmitResult =
@@ -101,6 +102,7 @@ export async function submitPick(
   revalidatePath("/matches");
   revalidatePath("/mi-prode");
   revalidatePath("/dashboard");
+  revalidateScoring();
 
   // ¿Quedó completa la fecha? = todos los partidos todavía abiertos (no
   // cerrados ni terminados) tienen pick del usuario. Para el festejo "todo

@@ -20,8 +20,10 @@
    - 🏅 MVP de la Fecha: mejor puntaje de la última fecha jugada.
    ============================================================ */
 
+import { unstable_cache } from "next/cache";
 import type { createClient } from "@/lib/supabase/server";
 import { matchDayKey } from "@/lib/matches";
+import { cachedReadClient, SCORING_TAG } from "@/lib/supabase/cached";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -291,4 +293,30 @@ export async function computeAutoBadges(
   }
 
   return badges;
+}
+
+/**
+ * Versión cacheada de computeAutoBadges. El resultado es el MISMO para todos
+ * los jugadores, así que se calcula una sola vez y se reusa entre páginas,
+ * entre jugadores y entre refrescos, hasta que cambian resultados/picks
+ * (revalidateScoring) o pasan 60s. Map no es serializable → se guarda como
+ * lista de pares. Si no hay service-role configurado, cae al cómputo normal
+ * por-request (mismo comportamiento de siempre, sin caché).
+ */
+const cachedAutoBadges = unstable_cache(
+  async (): Promise<[string, string[]][]> => {
+    const admin = cachedReadClient();
+    if (!admin) return [];
+    const m = await computeAutoBadges(admin);
+    return [...m.entries()];
+  },
+  ["auto-badges-v1"],
+  { tags: [SCORING_TAG], revalidate: 60 },
+);
+
+export async function getAutoBadges(
+  supabase: ServerClient,
+): Promise<Map<string, string[]>> {
+  if (!cachedReadClient()) return computeAutoBadges(supabase);
+  return new Map(await cachedAutoBadges());
 }

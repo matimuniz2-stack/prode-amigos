@@ -25,6 +25,7 @@ export function Avatar({
         src={src}
         alt={name}
         loading="lazy"
+        decoding="async"
         className={cn(base, "bg-ink/10 object-cover", className)}
       />
     );

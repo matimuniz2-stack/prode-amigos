@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { runPollResults } from "@/lib/poll-results";
+import { revalidateScoring } from "@/lib/supabase/cached";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,9 @@ export async function GET(request: Request) {
 
   try {
     const summary = await runPollResults(supabase, secret);
+    // Si ESPN trajo marcadores nuevos, invalidamos el ranking/insignias
+    // cacheados para que todos lo vean al toque (no solo a los 60s).
+    if (summary.updated > 0) revalidateScoring();
     return NextResponse.json({ ok: true, ...summary });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
