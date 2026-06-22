@@ -24,7 +24,7 @@ function StatusBadge({ status }: { status: ReturnType<typeof displayStatus> }) {
     case "finished":
       return <span className={cn(base, "bg-ink/10 text-ink/70")}>Final</span>;
     case "void":
-      return <span className={cn(base, "bg-ink/10 text-ink/50")}>Anulado</span>;
+      return <span className={cn(base, "bg-ink/10 text-ink/50")}>Suspendido</span>;
     case "locking_soon":
       return (
         <span className={cn(base, "bg-amber-400/25 text-amber-700")}>

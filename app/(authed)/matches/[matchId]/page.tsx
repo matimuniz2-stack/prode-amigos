@@ -299,7 +299,7 @@ export default async function MatchDetailPage({
 
       {isVoid && (
         <div className="rounded-2xl border-2 border-dashed border-cream/20 p-6 text-center text-sm text-cream/70">
-          Este partido fue anulado.
+          Este partido fue suspendido — no suma para nadie.
         </div>
       )}
 
