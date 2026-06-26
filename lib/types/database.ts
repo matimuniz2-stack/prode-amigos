@@ -699,6 +699,8 @@ export type Database = {
           text: string | null
           kind: string
           media_url: string | null
+          audio_url: string | null
+          photo_url: string | null
           created_at: string
         }
         Insert: {
@@ -708,6 +710,8 @@ export type Database = {
           text?: string | null
           kind?: string
           media_url?: string | null
+          audio_url?: string | null
+          photo_url?: string | null
           created_at?: string
         }
         Update: {
@@ -717,6 +721,8 @@ export type Database = {
           text?: string | null
           kind?: string
           media_url?: string | null
+          audio_url?: string | null
+          photo_url?: string | null
           created_at?: string
         }
         Relationships: []

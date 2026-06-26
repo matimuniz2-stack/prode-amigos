@@ -199,15 +199,15 @@ export default async function DashboardPage() {
       // Defensivo: si la tabla no existe aún (migración sin aplicar) no rompe.
       const { data: declRows, error: declErr } = await supabase
         .from("declarations")
-        .select("user_id, text, kind, media_url")
+        .select("user_id, text, audio_url, photo_url")
         .eq("day_key", recap.dayKey)
         .in("user_id", declIds);
       if (!declErr) {
         for (const d of declRows ?? [])
           declByUser.set(d.user_id, {
-            kind: (d.kind as "text" | "audio" | "photo") ?? "text",
             text: d.text ?? null,
-            mediaUrl: d.media_url ?? null,
+            audioUrl: d.audio_url ?? null,
+            photoUrl: d.photo_url ?? null,
           });
       }
     }
