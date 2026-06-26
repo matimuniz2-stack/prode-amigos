@@ -156,6 +156,14 @@ export default async function LeaderboardPage() {
   const top3 = hasScores ? standings.slice(0, 3) : [];
   const rest = hasScores ? standings.slice(3) : standings;
 
+  // Zona de descenso: los dos últimos del ranking (solo con puntos en juego y
+  // si hay suficientes jugadores como para no pisar el podio).
+  const descensoIds = new Set(
+    hasScores && standings.length > 4
+      ? standings.slice(-2).map((s) => s.userId)
+      : [],
+  );
+
   // "Tu pelea": rival de arriba (al que persigo) y de abajo (el que me persigue).
   const myIdx = standings.findIndex((s) => s.userId === myId);
   const me = myIdx >= 0 ? standings[myIdx] : null;
@@ -376,9 +384,19 @@ export default async function LeaderboardPage() {
                   className="size-12 text-base"
                 />
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="truncate font-semibold text-ink">
-                    {s.nickname}
-                    {isMe && <span className="text-ink/50"> (vos)</span>}
+                  <span className="flex items-center gap-1.5">
+                    <span className="truncate font-semibold text-ink">
+                      {s.nickname}
+                      {isMe && <span className="text-ink/50"> (vos)</span>}
+                    </span>
+                    {descensoIds.has(s.userId) && (
+                      <span
+                        className="shrink-0 rounded-full bg-cardred/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-cardred"
+                        title="Zona de descenso: anteúltimo y último"
+                      >
+                        🔻 Descenso
+                      </span>
+                    )}
                   </span>
                   {s.tags.length > 0 && (
                     <span className="flex flex-wrap gap-1">
