@@ -199,14 +199,22 @@ export default async function LeaderboardPage() {
 
       <div className="flex items-center justify-between gap-3 pt-1">
         <SectionHeading>Ranking</SectionHeading>
-        {hasScores && (
-          <ShareButton
-            endpoint="/api/share/ranking"
-            filename="tabla-prode.png"
-            label="Compartir tabla"
-            text="La tabla del prode 🏆⚽"
-          />
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/globales/todos"
+            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-gold to-amber-500 px-3 py-1.5 text-xs font-bold text-ink shadow-sm ring-1 ring-black/10 transition active:scale-95"
+          >
+            🔮 Ver globales
+          </Link>
+          {hasScores && (
+            <ShareButton
+              endpoint="/api/share/ranking"
+              filename="tabla-prode.png"
+              label="Compartir tabla"
+              text="La tabla del prode 🏆⚽"
+            />
+          )}
+        </div>
       </div>
 
       {/* Pozo */}
