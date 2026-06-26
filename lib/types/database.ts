@@ -696,21 +696,27 @@ export type Database = {
           id: string
           user_id: string
           day_key: string
-          text: string
+          text: string | null
+          kind: string
+          media_url: string | null
           created_at: string
         }
         Insert: {
           id?: string
           user_id: string
           day_key: string
-          text: string
+          text?: string | null
+          kind?: string
+          media_url?: string | null
           created_at?: string
         }
         Update: {
           id?: string
           user_id?: string
           day_key?: string
-          text?: string
+          text?: string | null
+          kind?: string
+          media_url?: string | null
           created_at?: string
         }
         Relationships: []

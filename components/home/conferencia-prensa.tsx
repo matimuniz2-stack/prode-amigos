@@ -5,12 +5,17 @@ import { DeclarationInput } from "@/components/home/declaration-input";
 export interface Speaker {
   id: string;
   nick: string;
-  declaration: string | null;
+  declaration: {
+    kind: "text" | "audio" | "photo";
+    text: string | null;
+    mediaUrl: string | null;
+  } | null;
 }
 
 /**
  * "Conferencia de prensa": después de la fecha, el crack 🥇 y el papelón 💀
- * dan declaraciones. Si sos uno de ellos, podés escribir/editar la tuya.
+ * dan declaraciones (texto, audio o foto). Si sos uno de ellos, podés
+ * escribir/grabar/subir la tuya.
  */
 export function ConferenciaPrensa({
   dayLabel,
@@ -29,6 +34,7 @@ export function ConferenciaPrensa({
 
   const row = (sp: Speaker, role: "crack" | "papelon") => {
     const isMe = sp.id === myId;
+    const decl = sp.declaration;
     return (
       <div key={role} className="flex gap-3 rounded-xl bg-ink/[0.03] p-2.5">
         {role === "crack" ? (
@@ -43,10 +49,8 @@ export function ConferenciaPrensa({
               {role === "crack" ? "🥇 el crack declara" : "💀 el papelón declara"}
             </span>
           </div>
-          {sp.declaration ? (
-            <p className="mt-0.5 text-xs italic text-ink/70">
-              “{sp.declaration}”
-            </p>
+          {decl ? (
+            <DeclarationView decl={decl} />
           ) : (
             !isMe && (
               <p className="mt-0.5 text-[11px] text-ink/40">
@@ -54,7 +58,9 @@ export function ConferenciaPrensa({
               </p>
             )
           )}
-          {isMe && <DeclarationInput dayKey={dayKey} initial={sp.declaration} />}
+          {isMe && (
+            <DeclarationInput dayKey={dayKey} userId={myId} initial={decl} />
+          )}
         </div>
       </div>
     );
@@ -69,4 +75,46 @@ export function ConferenciaPrensa({
       {papelon && papelon.id !== crack?.id && row(papelon, "papelon")}
     </div>
   );
+}
+
+/** Render de la declaración ya guardada, según el tipo. */
+function DeclarationView({
+  decl,
+}: {
+  decl: NonNullable<Speaker["declaration"]>;
+}) {
+  if (decl.kind === "audio" && decl.mediaUrl) {
+    return (
+      <div className="mt-1 flex flex-col gap-1">
+        <audio
+          controls
+          preload="none"
+          src={decl.mediaUrl}
+          className="h-9 w-full max-w-[260px]"
+        />
+        {decl.text && (
+          <p className="text-xs italic text-ink/70">“{decl.text}”</p>
+        )}
+      </div>
+    );
+  }
+  if (decl.kind === "photo" && decl.mediaUrl) {
+    return (
+      <div className="mt-1 flex flex-col gap-1">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={decl.mediaUrl}
+          alt="Declaración"
+          className="max-h-60 w-auto max-w-full rounded-lg object-contain"
+        />
+        {decl.text && (
+          <p className="text-xs italic text-ink/70">“{decl.text}”</p>
+        )}
+      </div>
+    );
+  }
+  // texto (o fallback si faltara el media)
+  return decl.text ? (
+    <p className="mt-0.5 text-xs italic text-ink/70">“{decl.text}”</p>
+  ) : null;
 }

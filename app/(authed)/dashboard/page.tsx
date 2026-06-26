@@ -194,16 +194,21 @@ export default async function DashboardPage() {
     const crackId = recap.topUserIds[0] ?? null;
     const papelonId = recap.bottomUserIds[0] ?? null;
     const declIds = [crackId, papelonId].filter((x): x is string => !!x);
-    const declByUser = new Map<string, string>();
+    const declByUser = new Map<string, Speaker["declaration"]>();
     if (declIds.length > 0) {
       // Defensivo: si la tabla no existe aún (migración sin aplicar) no rompe.
       const { data: declRows, error: declErr } = await supabase
         .from("declarations")
-        .select("user_id, text")
+        .select("user_id, text, kind, media_url")
         .eq("day_key", recap.dayKey)
         .in("user_id", declIds);
       if (!declErr) {
-        for (const d of declRows ?? []) declByUser.set(d.user_id, d.text);
+        for (const d of declRows ?? [])
+          declByUser.set(d.user_id, {
+            kind: (d.kind as "text" | "audio" | "photo") ?? "text",
+            text: d.text ?? null,
+            mediaUrl: d.media_url ?? null,
+          });
       }
     }
     conferencia = {
