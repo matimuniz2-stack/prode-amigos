@@ -362,6 +362,7 @@ export default async function LeaderboardPage() {
         <div className="overflow-hidden rounded-2xl bg-cream shadow-card ring-1 ring-black/5">
           {rest.map((s, i) => {
             const isMe = s.userId === myId;
+            const descenso = descensoIds.has(s.userId);
             return (
               <Link
                 key={s.userId}
@@ -369,7 +370,8 @@ export default async function LeaderboardPage() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 transition active:bg-ink/[0.03]",
                   i > 0 && "border-t border-ink/10",
-                  isMe && "bg-gold/20",
+                  descenso && "bg-cardred/10",
+                  isMe && !descenso && "bg-gold/20",
                 )}
               >
                 <span className="flex w-9 flex-col items-center leading-tight">
@@ -389,7 +391,7 @@ export default async function LeaderboardPage() {
                       {s.nickname}
                       {isMe && <span className="text-ink/50"> (vos)</span>}
                     </span>
-                    {descensoIds.has(s.userId) && (
+                    {descenso && (
                       <span
                         className="shrink-0 rounded-full bg-cardred/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-cardred"
                         title="Zona de descenso: anteúltimo y último"
