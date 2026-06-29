@@ -9,8 +9,6 @@ export interface MatchPickEntry {
   predictedHome: number;
   predictedAway: number;
   isAutoRandom: boolean;
-  /** Nombre del equipo que el jugador eligió que avance (solo KO). */
-  koWinnerName: string | null;
   /** Puntos sacados en este partido (null si todavía no se puntuó). */
   points: number | null;
   isSelf: boolean;
@@ -61,11 +59,6 @@ export function MatchOthersPicks({
                 {e.nickname}
                 {e.isSelf && <span className="text-ink/50"> (vos)</span>}
               </span>
-              {e.koWinnerName && (
-                <span className="truncate text-[11px] text-ink/55">
-                  avanza {e.koWinnerName}
-                </span>
-              )}
             </div>
             <div className="ml-auto flex items-center gap-2">
               <span className="text-base font-black tabular-nums text-ink">

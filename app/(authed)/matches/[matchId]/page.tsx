@@ -137,11 +137,6 @@ export default async function MatchDetailPage({
       (matchPoints ?? []).map((r) => [r.user_id, r.points]),
     );
     myMatchPoints = isFinished ? (pointsById.get(userId) ?? null) : null;
-    const teamNameById = new Map(
-      [match.home_team, match.away_team]
-        .filter((t): t is NonNullable<typeof t> => t !== null)
-        .map((t) => [t.id, t.name]),
-    );
 
     // Puntos: si terminó, los reales (points_log); si está en juego, los
     // proyectados sobre el marcador actual.
@@ -169,9 +164,6 @@ export default async function MatchDetailPage({
           predictedHome: p.predicted_home,
           predictedAway: p.predicted_away,
           isAutoRandom: p.is_auto_random,
-          koWinnerName: p.predicted_ko_winner_team_id
-            ? (teamNameById.get(p.predicted_ko_winner_team_id) ?? null)
-            : null,
           points,
           isSelf: p.user_id === userId,
           avatarUrl: avatarById.get(p.user_id) ?? null,
@@ -406,9 +398,6 @@ export default async function MatchDetailPage({
                   hasPick={pick !== null}
                   isAutoRandom={pick?.is_auto_random ?? false}
                   isKO={match.stage?.code !== "group"}
-                  homeTeamId={match.home_team.id}
-                  awayTeamId={match.away_team.id}
-                  initialKoWinner={pick?.predicted_ko_winner_team_id ?? null}
                 />
               )}
             </div>

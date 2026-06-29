@@ -83,7 +83,10 @@ export default async function ReglasPage() {
           <b>Acierto</b>: le pegaste al ganador (o al empate).{" "}
           <b>Exacto</b>: clavaste el resultado (suma además del acierto).
           {goalDiff != null &&
-            ` Si no clavás el resultado pero sí la diferencia de gol: +${goalDiff}.`}
+            ` Si no clavás el resultado pero sí la diferencia de gol: +${goalDiff}.`}{" "}
+          En <b>eliminación</b> (16avos en adelante) se puntúa por el resultado de
+          los <b>120&apos;</b>: si empatan y se define por penales, vale el empate.
+          No importa quién pasa.
         </p>
       </section>
 

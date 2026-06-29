@@ -147,11 +147,6 @@ export default async function SalaEnVivoPage() {
   const matchBlocks = live.map((m) => {
     const stageCode = m.stage?.code ?? "group";
     const hasScore = m.score_home !== null && m.score_away !== null;
-    const teamNameById = new Map(
-      [m.home_team, m.away_team]
-        .filter((t): t is NonNullable<typeof t> => t !== null)
-        .map((t) => [t.id, t.name]),
-    );
     const entries: MatchPickEntry[] = (picksByMatch.get(m.id) ?? [])
       .map((p) => {
         const points = hasScore
@@ -172,9 +167,6 @@ export default async function SalaEnVivoPage() {
           predictedHome: p.predicted_home,
           predictedAway: p.predicted_away,
           isAutoRandom: p.is_auto_random,
-          koWinnerName: p.predicted_ko_winner_team_id
-            ? (teamNameById.get(p.predicted_ko_winner_team_id) ?? null)
-            : null,
           points,
           isSelf: p.user_id === myId,
           avatarUrl: avatarById.get(p.user_id) ?? null,

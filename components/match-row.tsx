@@ -257,9 +257,6 @@ export function MatchRow({ match }: { match: MatchWithPick }) {
                 hasPick={hasPick}
                 isAutoRandom={match.user_pick?.is_auto_random ?? false}
                 isKO={match.stage?.code !== "group"}
-                homeTeamId={match.home_team.id}
-                awayTeamId={match.away_team.id}
-                initialKoWinner={match.user_pick?.predicted_ko_winner_team_id ?? null}
               />
             )
           )}

@@ -38,7 +38,7 @@ export async function submitPick(
 
   const { data: match, error: matchErr } = await supabase
     .from("matches")
-    .select("id, status, lock_at, home_team_id, away_team_id, stage:stages(code)")
+    .select("id, status, lock_at")
     .eq("id", matchId)
     .maybeSingle();
   if (matchErr || !match) {
@@ -51,41 +51,15 @@ export async function submitPick(
     return { ok: false, error: "Ya cerró el deadline de este partido." };
   }
 
-  // La relación stage puede venir como objeto o array; la normalizamos.
-  const stageRel = match.stage as unknown;
-  const stageCode = Array.isArray(stageRel)
-    ? (stageRel[0] as { code?: string } | undefined)?.code
-    : (stageRel as { code?: string } | null)?.code;
-  const isKO = !!stageCode && stageCode !== "group";
-
-  // En eliminación guardamos quién pasa: si no es empate, el del marcador;
-  // si empataron en los 90', el que eligió el usuario.
-  let koWinnerId: string | null = null;
-  if (isKO) {
-    if (home > away) {
-      koWinnerId = match.home_team_id;
-    } else if (away > home) {
-      koWinnerId = match.away_team_id;
-    } else {
-      const k = formData.get("koWinner");
-      if (
-        typeof k === "string" &&
-        (k === match.home_team_id || k === match.away_team_id)
-      ) {
-        koWinnerId = k;
-      } else {
-        return { ok: false, error: "Es eliminación y empataron: elegí quién pasa." };
-      }
-    }
-  }
-
+  // En eliminación el puntaje sale del resultado de los 120' (igual que grupos);
+  // no guardamos quién pasa por penales — no afecta el puntaje.
   const payload = {
     user_id: userId,
     match_id: matchId,
     predicted_winner: winner,
     predicted_home: home,
     predicted_away: away,
-    predicted_ko_winner_team_id: koWinnerId,
+    predicted_ko_winner_team_id: null,
     is_auto_random: false,
     state: "open",
   };
