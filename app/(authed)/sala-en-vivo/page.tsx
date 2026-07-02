@@ -11,10 +11,12 @@ import {
 import { MatchGrieta } from "@/components/match-grieta";
 import { LivePitch } from "@/components/live/live-pitch";
 import { WhoIsWatching } from "@/components/live/who-is-watching";
+import { MatchChat, type ChatMessage } from "@/components/match-chat";
 import { scorePrediction, type ScoringRule } from "@/lib/scoring";
 import {
   displayStatus,
   matchSelect,
+  matchTimeLabel,
   type MatchWithRelations,
 } from "@/lib/matches";
 
@@ -79,6 +81,7 @@ export default async function SalaEnVivoPage() {
     { data: profiles },
     { data: proj },
     { data: reactRows },
+    { data: chatRows },
   ] = await Promise.all([
     supabase
       .from("match_predictions")
@@ -112,6 +115,20 @@ export default async function SalaEnVivoPage() {
           reactor_user_id: string;
         }[]
       >(),
+    supabase
+      .from("match_chat_messages")
+      .select("id, match_id, content, created_at, user_id")
+      .in("match_id", liveIds)
+      .order("created_at", { ascending: true })
+      .returns<
+        {
+          id: string;
+          match_id: string;
+          content: string;
+          created_at: string;
+          user_id: string;
+        }[]
+      >(),
   ]);
 
   const rules = (ruleRows ?? []) as ScoringRule[];
@@ -122,6 +139,21 @@ export default async function SalaEnVivoPage() {
     const arr = picksByMatch.get(p.match_id) ?? [];
     arr.push(p);
     picksByMatch.set(p.match_id, arr);
+  }
+
+  // Chat de cada partido en vivo (mismo chat que en el detalle del partido).
+  const chatByMatch = new Map<string, ChatMessage[]>();
+  for (const m of chatRows ?? []) {
+    const arr = chatByMatch.get(m.match_id) ?? [];
+    arr.push({
+      id: m.id,
+      nickname: nameById.get(m.user_id) ?? "Jugador",
+      content: m.content,
+      time: matchTimeLabel(m.created_at),
+      isSelf: m.user_id === myId,
+      avatarUrl: avatarById.get(m.user_id) ?? null,
+    });
+    chatByMatch.set(m.match_id, arr);
   }
 
   // Reacciones: matchId -> targetUserId -> emoji -> {count, mine}
@@ -307,6 +339,11 @@ export default async function SalaEnVivoPage() {
           ) : (
             <p className="text-sm text-ink/60">Nadie cargó pick para este partido.</p>
           )}
+
+          <MatchChat
+            matchId={match.id}
+            messages={chatByMatch.get(match.id) ?? []}
+          />
         </section>
       ))}
     </div>
