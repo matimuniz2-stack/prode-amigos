@@ -24,12 +24,20 @@ export async function submitGlobals(input: GlobalsInput): Promise<Result> {
   }
   const userId = claims.claims.sub as string;
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("id, globals_lock_at")
-    .order("starts_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  // Torneo y rol propio en paralelo. La RLS ya bloquea al espectador
+  // (not is_spectator()); acá solo damos un error amigable.
+  const [{ data: tournament }, { data: me }] = await Promise.all([
+    supabase
+      .from("tournaments")
+      .select("id, globals_lock_at")
+      .order("starts_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("profiles").select("role").eq("id", userId).maybeSingle(),
+  ]);
+  if (me?.role === "spectator") {
+    return { ok: false, error: "Sos espectador: mirás, pero no jugás 👀" };
+  }
 
   if (!tournament) {
     return { ok: false, error: "No hay torneo configurado." };

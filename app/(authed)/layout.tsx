@@ -20,7 +20,10 @@ export default async function AuthedLayout({
     const supabase = await createClient();
     // count, getClaims y el partido de Argentina son independientes → en paralelo.
     const [countRes, { data: claims }, argMatch] = await Promise.all([
-      supabase.from("profiles").select("*", { count: "exact", head: true }),
+      supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .neq("role", "spectator"),
       supabase.auth.getClaims(),
       getArgentinaMatch(supabase, Date.now()),
     ]);

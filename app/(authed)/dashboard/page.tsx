@@ -83,7 +83,10 @@ export default async function DashboardPage() {
       .select("nickname, avatar_url")
       .eq("id", userId)
       .maybeSingle(),
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .neq("role", "spectator"),
     supabase
       .from("global_predictions")
       .select("*", { count: "exact", head: true })

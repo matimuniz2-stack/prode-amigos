@@ -36,11 +36,19 @@ export async function submitPick(
   }
   const userId = claims.claims.sub as string;
 
-  const { data: match, error: matchErr } = await supabase
-    .from("matches")
-    .select("id, status, lock_at")
-    .eq("id", matchId)
-    .maybeSingle();
+  // Partido y rol propio: independientes → en paralelo. La RLS ya bloquea al
+  // espectador (not is_spectator()); acá solo damos un error amigable.
+  const [{ data: match, error: matchErr }, { data: me }] = await Promise.all([
+    supabase
+      .from("matches")
+      .select("id, status, lock_at")
+      .eq("id", matchId)
+      .maybeSingle(),
+    supabase.from("profiles").select("role").eq("id", userId).maybeSingle(),
+  ]);
+  if (me?.role === "spectator") {
+    return { ok: false, error: "Sos espectador: mirás, pero no jugás 👀" };
+  }
   if (matchErr || !match) {
     return { ok: false, error: "No encontré el partido." };
   }
