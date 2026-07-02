@@ -39,6 +39,16 @@ export interface DiarioInput {
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
+/** Semilla estable por día: las frases picantes rotan con la fecha pero no
+ *  cambian entre refrescos del mismo día. */
+function daySeed(label: string): number {
+  let h = 0;
+  for (let i = 0; i < label.length; i++) {
+    h = (h * 31 + label.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
 /**
  * "El Diario del Prode": crónica diaria en texto plano (con emojis) lista para
  * copiar y pegar en el grupo de WhatsApp. Junta la tabla, el resumen de la
@@ -67,23 +77,104 @@ export function buildDiario(input: DiarioInput): string | null {
       const fuego = s.hot ? " 🔥" : s.cold ? " 🧊" : "";
       L.push(`${pos} ${s.nickname} — ${s.points} pts${fuego}`);
     }
-    // El líder en soledad (si hay empate en la punta, abajo va "igualados").
-    if (ranked.length > 0 && ranked[1]?.rank !== 1) {
-      L.push(
-        `😎 Bien tranquilo sentado en la puntita está *${ranked[0].nickname}*, gozando rico! 🔥🔥`,
-      );
-    }
+    // Comentarios picantes del día: se elige según la situación de la tabla
+    // y la variante rota con la fecha. Máximo 3 para no empastar el diario.
     if (ranked.length >= 2) {
-      const gap = ranked[0].points - ranked[1].points;
+      const seed = daySeed(input.todayLabel);
+      const pick = (arr: string[], salt: number) =>
+        arr[(seed + salt) % arr.length];
       const lider = ranked[0].nickname;
       const segundo = ranked[1].nickname;
-      if (gap === 0) {
-        L.push(`🤝 ${lider} y ${segundo} igualados en la punta, mano a mano.`);
-      } else if (gap <= 4) {
-        L.push(`👀 ${lider} le saca apenas ${gap} a ${segundo}. Picante arriba.`);
-      } else if (gap >= 15) {
-        L.push(`🚀 ${lider} se escapó: le saca ${gap} al segundo.`);
+      const gap = ranked[0].points - ranked[1].points;
+      const punteroSolo = ranked[1].rank !== 1;
+      const picantes: string[] = [];
+
+      if (punteroSolo) {
+        picantes.push(
+          pick(
+            [
+              `😎 Bien tranquilo sentado en la puntita está *${lider}*, gozando rico! 🔥🔥`,
+              `🍑 *${lider}* sigue sentado en la puntita y le gusta, eh. No se quiere bajar más.`,
+              `👑 *${lider}* arriba de todos una vez más. Y abajo haciendo fila, pidiendo turno.`,
+            ],
+            1,
+          ),
+        );
+      } else {
+        picantes.push(
+          pick(
+            [
+              `🤝 ${lider} y ${segundo} igualados en la punta, mano a mano.`,
+              `🔥 ${lider} y ${segundo} comparten la punta hace rato... eso ya no es amistad, es otra cosa.`,
+              `🛏️ ${lider} y ${segundo} duermen en la misma punta. Apretaditos.`,
+            ],
+            2,
+          ),
+        );
       }
+
+      if (punteroSolo && gap === 0) {
+        picantes.push(
+          `😬 ${segundo} tiene los mismos puntos y ${lider} zafa por el desempate: están piel con piel.`,
+        );
+      } else if (punteroSolo && gap <= 4) {
+        picantes.push(
+          pick(
+            [
+              `👉 Ojo ${lider}: ${segundo} se la está apoyando. Está a ${gap} y empujando fuerte.`,
+              `🥵 ${segundo} está tan pegado que ${lider} ya le siente la respiración en la nuca... y ni se corre.`,
+              `😳 ${segundo} a ${gap} puntito${gap === 1 ? "" : "s"}: una fecha buena y se la pone a ${lider}.`,
+            ],
+            3,
+          ),
+        );
+      } else if (punteroSolo && gap >= 15) {
+        picantes.push(
+          pick(
+            [
+              `🚀 ${lider} se escapó: le saca ${gap} al segundo.`,
+              `💨 ${lider} se fue tan lejos que al resto solo le queda mirarle la espalda. Y admirarla.`,
+            ],
+            4,
+          ),
+        );
+      }
+
+      // Pelotón respirándole al puntero: 3+ a 6 puntos o menos.
+      const encima = ranked.filter(
+        (s) => s.rank > 1 && ranked[0].points - s.points <= 6,
+      ).length;
+      if (punteroSolo && encima >= 3) {
+        picantes.push(
+          pick(
+            [
+              `🫂 A ${lider} le gusta tener ${encima} tipos encima: los tiene a todos a menos de 6.`,
+              `🧗 Hay ${encima} tipos trepándole por la espalda a ${lider}. Y el loco tranquilo, disfrutando.`,
+            ],
+            5,
+          ),
+        );
+      }
+
+      // El último, solo si está último en serio (sin empate con el anteúltimo).
+      const ultimo = ranked[ranked.length - 1];
+      if (
+        ranked.length >= 4 &&
+        ultimo.points < ranked[ranked.length - 2].points
+      ) {
+        picantes.push(
+          pick(
+            [
+              `🧎 ${ultimo.nickname} abajo de todos, bancándose lo que le tiran. Y vuelve por más.`,
+              `🕳️ ${ultimo.nickname} último y cómodo: hay gente a la que esa posición le encanta.`,
+              `🛁 ${ultimo.nickname} mira a todos desde abajo. Dicen que desde ahí la vista es... interesante.`,
+            ],
+            6,
+          ),
+        );
+      }
+
+      for (const p of picantes.slice(0, 3)) L.push(p);
     }
   }
 
