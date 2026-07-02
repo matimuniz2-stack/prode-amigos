@@ -70,7 +70,7 @@ export function buildDiario(input: DiarioInput): string | null {
     // El líder en soledad (si hay empate en la punta, abajo va "igualados").
     if (ranked.length > 0 && ranked[1]?.rank !== 1) {
       L.push(
-        `😎 Bien tranquilo sentado en la puntita está *${ranked[0].nickname}*, gozando rico! fueguito fueguito 🔥🔥`,
+        `😎 Bien tranquilo sentado en la puntita está *${ranked[0].nickname}*, gozando rico! 🔥🔥`,
       );
     }
     if (ranked.length >= 2) {
