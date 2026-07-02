@@ -67,6 +67,12 @@ export function buildDiario(input: DiarioInput): string | null {
       const fuego = s.hot ? " 🔥" : s.cold ? " 🧊" : "";
       L.push(`${pos} ${s.nickname} — ${s.points} pts${fuego}`);
     }
+    // El líder en soledad (si hay empate en la punta, abajo va "igualados").
+    if (ranked.length > 0 && ranked[1]?.rank !== 1) {
+      L.push(
+        `😎 Bien tranquilo sentado en la puntita está *${ranked[0].nickname}*, gozando rico! fueguito fueguito 🔥🔥`,
+      );
+    }
     if (ranked.length >= 2) {
       const gap = ranked[0].points - ranked[1].points;
       const lider = ranked[0].nickname;
