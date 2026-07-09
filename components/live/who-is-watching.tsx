@@ -10,6 +10,19 @@ interface Watcher {
   avatarUrl: string | null;
 }
 
+const VARIANT_COPY = {
+  live: {
+    title: "Mirando en vivo",
+    solo: "Sos el único clavado al partido ahora mismo 👀",
+    tail: "mirando con vos 🔥",
+  },
+  online: {
+    title: "En línea ahora",
+    solo: "Sos el único conectado ahora mismo 👀",
+    tail: "en línea con vos 🟢",
+  },
+} as const;
+
 /**
  * Barra de "quién está mirando en vivo ahora" usando Supabase Realtime
  * Presence (sin tabla ni RLS: el estado vive en el canal). Si Realtime no está
@@ -18,9 +31,11 @@ interface Watcher {
 export function WhoIsWatching({
   me,
   channelKey = "sala-en-vivo",
+  variant = "live",
 }: {
   me: { id: string; nickname: string; avatarUrl: string | null };
   channelKey?: string;
+  variant?: "live" | "online";
 }) {
   const [watchers, setWatchers] = useState<Watcher[]>([]);
 
@@ -69,22 +84,23 @@ export function WhoIsWatching({
   const shown = sorted.slice(0, 7);
   const extra = sorted.length - shown.length;
   const others = sorted.filter((w) => w.id !== me.id);
+  const copy = VARIANT_COPY[variant];
   const caption =
     sorted.length === 1
-      ? "Sos el único clavado al partido ahora mismo 👀"
+      ? copy.solo
       : `${others
           .slice(0, 2)
           .map((w) => w.nickname)
           .join(", ")}${
           others.length > 2 ? ` y ${others.length - 2} más` : ""
-        } ${others.length === 1 ? "está" : "están"} mirando con vos 🔥`;
+        } ${others.length === 1 ? "está" : "están"} ${copy.tail}`;
 
   return (
     <div className="flex flex-col gap-2 rounded-2xl bg-cream p-3 text-ink shadow-card ring-1 ring-black/5">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ink/50">
           <span className="size-2 animate-pulse rounded-full bg-grass" />
-          Mirando en vivo
+          {copy.title}
         </span>
         <span className="rounded-full bg-grass/15 px-2 py-0.5 text-[11px] font-bold text-grass">
           {sorted.length} online

@@ -11,6 +11,8 @@ import { CareerChart } from "@/components/leaderboard/career-chart";
 import { Avatar } from "@/components/avatar";
 import { CrownedAvatar } from "@/components/crowned-avatar";
 import { ShareButton } from "@/components/share-button";
+import { WhoIsWatching } from "@/components/live/who-is-watching";
+import { VoiceRoom } from "@/components/live/voice-room";
 
 export const dynamic = "force-dynamic";
 
@@ -201,6 +203,14 @@ export default async function LeaderboardPage() {
   // Gráfico de la carrera: acumulado por fecha (solo si ya se jugó algo).
   const career = hasScores ? await getCareer(supabase) : null;
 
+  // Datos del jugador actual para la voz / presencia (sacados de los perfiles).
+  const myProfile = (tagRows ?? []).find((p) => p.id === myId);
+  const meVoice = {
+    id: myId,
+    nickname: myProfile?.nickname ?? "vos",
+    avatarUrl: myProfile?.avatar_url ?? null,
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <AutoRefresh seconds={60} />
@@ -224,6 +234,11 @@ export default async function LeaderboardPage() {
           )}
         </div>
       </div>
+
+      {/* Quién está conectado ahora + voz de la sala (mismo canal que En vivo) */}
+      <WhoIsWatching me={meVoice} channelKey="leaderboard" variant="online" />
+
+      <VoiceRoom me={meVoice} />
 
       {/* Pozo */}
       <div className="rounded-2xl bg-gradient-to-br from-gold to-amber-500 p-4 text-ink shadow-card ring-1 ring-black/10">

@@ -11,6 +11,7 @@ import {
 import { MatchGrieta } from "@/components/match-grieta";
 import { LivePitch } from "@/components/live/live-pitch";
 import { WhoIsWatching } from "@/components/live/who-is-watching";
+import { VoiceRoom } from "@/components/live/voice-room";
 import { MatchChat, type ChatMessage } from "@/components/match-chat";
 import { scorePrediction, type ScoringRule } from "@/lib/scoring";
 import {
@@ -236,6 +237,14 @@ export default async function SalaEnVivoPage() {
       </SectionHeading>
 
       <WhoIsWatching
+        me={{
+          id: myId,
+          nickname: nameById.get(myId) ?? "vos",
+          avatarUrl: avatarById.get(myId) ?? null,
+        }}
+      />
+
+      <VoiceRoom
         me={{
           id: myId,
           nickname: nameById.get(myId) ?? "vos",
