@@ -7,11 +7,25 @@ import { Avatar } from "@/components/avatar";
 import { cn } from "@/lib/utils";
 
 /**
- * Chat de voz de la sala en vivo, sin apps ni servidores externos: WebRTC
+ * Chat de voz de la sala, sin apps ni servidores externos: WebRTC
  * navegador-a-navegador en malla (mesh). La señalización (offer/answer/ICE)
  * viaja por un canal `broadcast` de Supabase Realtime, y presence nos dice
  * quién está en la voz. Micrófono abierto (con cancelación de eco/ruido) y
  * botón de mutear. STUN público de Google; sin TURN por ahora.
+ *
+ * El broadcast es best-effort (un mensaje puede perderse) y los celulares se
+ * suspenden en background, así que la malla se defiende sola:
+ * - Cada pestaña entra con un id de sesión propio (no el user id): la misma
+ *   cuenta en dos dispositivos son dos participantes y no se pisan señales.
+ * - Los candidatos ICE que llegan antes de que la oferta/respuesta termine de
+ *   aplicarse se encolan y se aplican después (antes se descartaban y esa
+ *   pata podía quedar muda aunque el resto de la malla anduviera).
+ * - El que ofrece reintenta con una oferta nueva si en unos segundos no
+ *   conectó; el que espera pide re-oferta ("kick") si no le llegó nada. Las
+ *   ofertas van numeradas para descartar respuestas/candidatos de intentos
+ *   viejos.
+ * - Al volver la pestaña a primer plano se reintenta todo lo no conectado
+ *   (típico: bloqueaste el teléfono justo durante el handshake).
  */
 
 const ICE_SERVERS: RTCIceServer[] = [
@@ -19,25 +33,49 @@ const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun1.l.google.com:19302" },
 ];
 
-type SignalKind = "offer" | "answer" | "ice";
+/** Ofertas por peer antes de marcarlo "sin señal". */
+const MAX_OFFER_ATTEMPTS = 4;
+/** Si la oferta no llegó a "connected" en este tiempo, va otra. */
+const CONNECT_TIMEOUT_MS = 8_000;
+/** El que espera oferta pide una re-oferta si pasó esto sin conectar. */
+const KICK_TIMEOUT_MS = 12_000;
+/** Pedidos de re-oferta antes de marcar "sin señal". */
+const MAX_KICKS = 3;
+
+type SignalKind = "offer" | "answer" | "ice" | "kick";
 
 interface SignalPayload {
-  from: string;
-  to: string;
+  from: string; // session id del emisor
+  to: string; // session id del destinatario
   kind: SignalKind;
-  data: RTCSessionDescriptionInit | RTCIceCandidateInit;
+  /** Número de oferta; respuestas y candidatos lo repiten para poder
+   *  descartar los que pertenecen a un intento ya reemplazado. */
+  attempt?: number;
+  data?: RTCSessionDescriptionInit | RTCIceCandidateInit;
 }
 
 interface PresenceMeta {
+  userId?: string;
   nickname?: string;
   avatarUrl?: string | null;
 }
 
+type PeerState = "connecting" | "connected" | "failed";
+
 interface Peer {
-  id: string;
+  id: string; // session id
   nickname: string;
   avatarUrl: string | null;
-  connected: boolean;
+  state: PeerState;
+}
+
+interface PeerConn {
+  pc: RTCPeerConnection;
+  attempt: number;
+  remoteSet: boolean;
+  /** Candidatos que llegaron antes de setRemoteDescription. */
+  pendingIce: RTCIceCandidateInit[];
+  timer: ReturnType<typeof setTimeout> | null;
 }
 
 type Status = "idle" | "connecting" | "joined";
@@ -69,16 +107,21 @@ export function VoiceRoom({
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
-  const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const connsRef = useRef<Map<string, PeerConn>>(new Map());
+  // Limpieza extra armada en join() (listeners, timers de kick).
+  const teardownRef = useRef<(() => void) | null>(null);
 
   const leave = useCallback(() => {
-    pcsRef.current.forEach((pc) => {
-      pc.onicecandidate = null;
-      pc.ontrack = null;
-      pc.onconnectionstatechange = null;
-      pc.close();
+    teardownRef.current?.();
+    teardownRef.current = null;
+    connsRef.current.forEach((c) => {
+      if (c.timer) clearTimeout(c.timer);
+      c.pc.onicecandidate = null;
+      c.pc.ontrack = null;
+      c.pc.onconnectionstatechange = null;
+      c.pc.close();
     });
-    pcsRef.current.clear();
+    connsRef.current.clear();
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
     const ch = channelRef.current;
@@ -93,7 +136,7 @@ export function VoiceRoom({
     setStatus("idle");
   }, []);
 
-  // Al desmontar (navegar fuera de la sala) cortamos todo.
+  // Al desmontar (navegar fuera de la página) cortamos todo.
   useEffect(() => leave, [leave]);
 
   const join = useCallback(async () => {
@@ -118,70 +161,60 @@ export function VoiceRoom({
     }
     localStreamRef.current = stream;
 
+    // Identidad en la malla: una por pestaña, no por usuario.
+    const sessionId = crypto.randomUUID();
+
     const supabase = createClient();
     const channel = supabase.channel(`voice:${channelKey}`, {
-      config: { broadcast: { self: false }, presence: { key: me.id } },
+      config: { broadcast: { self: false }, presence: { key: sessionId } },
     });
     channelRef.current = channel;
-    const pcs = pcsRef.current;
+    const conns = connsRef.current;
+    const offerCount = new Map<string, number>();
+    const kickCount = new Map<string, number>();
+    const kickTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
     const sendSignal = (
       to: string,
       kind: SignalKind,
-      data: SignalPayload["data"],
+      data?: SignalPayload["data"],
+      attempt?: number,
     ) => {
       channel.send({
         type: "broadcast",
         event: "signal",
-        payload: { from: me.id, to, kind, data } satisfies SignalPayload,
+        payload: { from: sessionId, to, kind, attempt, data } satisfies SignalPayload,
       });
     };
 
-    const createPeer = (peerId: string) => {
-      const existing = pcs.get(peerId);
-      if (existing) return existing;
-
-      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
-
-      pc.onicecandidate = (e) => {
-        if (e.candidate) sendSignal(peerId, "ice", e.candidate.toJSON());
-      };
-      pc.ontrack = (e) => {
-        const [remote] = e.streams;
-        if (remote) setRemoteStreams((prev) => ({ ...prev, [peerId]: remote }));
-      };
-      pc.onconnectionstatechange = () => {
-        const connected = pc.connectionState === "connected";
-        setPeers((prev) =>
-          prev.map((p) => (p.id === peerId ? { ...p, connected } : p)),
-        );
-      };
-
-      pcs.set(peerId, pc);
-      return pc;
+    const setPeerState = (peerId: string, state: PeerState) => {
+      setPeers((prev) =>
+        prev.map((p) => (p.id === peerId ? { ...p, state } : p)),
+      );
     };
 
-    // Regla determinística para evitar que ambos ofrezcan a la vez (glare):
-    // ofrece siempre el del id más chico; el otro espera y responde.
-    const connectToPeer = async (peerId: string) => {
-      const pc = createPeer(peerId);
-      if (me.id < peerId) {
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        sendSignal(peerId, "offer", offer);
+    const isPresent = (peerId: string) => peerId in channel.presenceState();
+
+    // Anti-glare determinístico: ofrece siempre el de session id más chico.
+    const iOffer = (peerId: string) => sessionId < peerId;
+
+    const clearKick = (peerId: string) => {
+      const t = kickTimers.get(peerId);
+      if (t) {
+        clearTimeout(t);
+        kickTimers.delete(peerId);
       }
     };
 
-    const closePeer = (peerId: string) => {
-      const pc = pcs.get(peerId);
-      if (pc) {
-        pc.onicecandidate = null;
-        pc.ontrack = null;
-        pc.onconnectionstatechange = null;
-        pc.close();
-        pcs.delete(peerId);
-      }
+    const dropConn = (peerId: string) => {
+      const c = conns.get(peerId);
+      if (!c) return;
+      if (c.timer) clearTimeout(c.timer);
+      c.pc.onicecandidate = null;
+      c.pc.ontrack = null;
+      c.pc.onconnectionstatechange = null;
+      c.pc.close();
+      conns.delete(peerId);
       setRemoteStreams((prev) => {
         const next = { ...prev };
         delete next[peerId];
@@ -189,68 +222,239 @@ export function VoiceRoom({
       });
     };
 
-    channel.on(
-      "broadcast",
-      { event: "signal" },
-      async (msg) => {
-        const payload = msg.payload as SignalPayload;
-        if (payload.to !== me.id) return;
-        const { from, kind, data } = payload;
+    const flushPendingIce = async (conn: PeerConn) => {
+      for (const cand of conn.pendingIce.splice(0)) {
+        try {
+          await conn.pc.addIceCandidate(new RTCIceCandidate(cand));
+        } catch {
+          // candidato duplicado/inválido: no importa, hay más caminos.
+        }
+      }
+    };
 
+    const newConn = (peerId: string, attempt: number): PeerConn => {
+      dropConn(peerId);
+      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      const conn: PeerConn = {
+        pc,
+        attempt,
+        remoteSet: false,
+        pendingIce: [],
+        timer: null,
+      };
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) sendSignal(peerId, "ice", e.candidate.toJSON(), attempt);
+      };
+      pc.ontrack = (e) => {
+        const [remote] = e.streams;
+        if (remote) setRemoteStreams((prev) => ({ ...prev, [peerId]: remote }));
+      };
+      pc.onconnectionstatechange = () => {
+        const s = pc.connectionState;
+        if (s === "connected") {
+          offerCount.set(peerId, 0);
+          kickCount.set(peerId, 0);
+          if (conn.timer) {
+            clearTimeout(conn.timer);
+            conn.timer = null;
+          }
+          setPeerState(peerId, "connected");
+        } else if (s === "failed") {
+          // Caída real (no un parpadeo): rearmamos esta pata desde cero.
+          retryPeer(peerId);
+        } else if (s === "disconnected") {
+          // Suele volver solo; si no, pasa a "failed" y ahí reintentamos.
+          setPeerState(peerId, "connecting");
+        }
+      };
+
+      conns.set(peerId, conn);
+      return conn;
+    };
+
+    const offerTo = async (peerId: string) => {
+      if (!isPresent(peerId)) return;
+      const n = (offerCount.get(peerId) ?? 0) + 1;
+      if (n > MAX_OFFER_ATTEMPTS) {
+        setPeerState(peerId, "failed");
+        return;
+      }
+      offerCount.set(peerId, n);
+      const conn = newConn(peerId, n);
+      setPeerState(peerId, "connecting");
+      try {
+        const offer = await conn.pc.createOffer();
+        await conn.pc.setLocalDescription(offer);
+        sendSignal(peerId, "offer", offer, n);
+      } catch {
+        // pc cerrada en el medio (peer se fue / retry): lo cubre el timer.
+      }
+      conn.timer = setTimeout(() => {
+        if (conns.get(peerId) !== conn) return;
+        if (conn.pc.connectionState !== "connected") void offerTo(peerId);
+      }, CONNECT_TIMEOUT_MS);
+    };
+
+    // Lado que espera la oferta: si en un rato no conectó, pide re-oferta.
+    const scheduleKick = (peerId: string) => {
+      if (kickTimers.has(peerId)) return;
+      const t = setTimeout(() => {
+        kickTimers.delete(peerId);
+        if (!isPresent(peerId)) return;
+        if (conns.get(peerId)?.pc.connectionState === "connected") return;
+        const k = (kickCount.get(peerId) ?? 0) + 1;
+        if (k > MAX_KICKS) {
+          setPeerState(peerId, "failed");
+          return;
+        }
+        kickCount.set(peerId, k);
+        sendSignal(peerId, "kick");
+        scheduleKick(peerId);
+      }, KICK_TIMEOUT_MS);
+      kickTimers.set(peerId, t);
+    };
+
+    const retryPeer = (peerId: string) => {
+      if (!isPresent(peerId)) return;
+      if (iOffer(peerId)) {
+        void offerTo(peerId);
+      } else {
+        dropConn(peerId);
+        setPeerState(peerId, "connecting");
+        sendSignal(peerId, "kick");
+        scheduleKick(peerId);
+      }
+    };
+
+    channel.on("broadcast", { event: "signal" }, async (msg) => {
+      const payload = msg.payload as SignalPayload;
+      if (payload.to !== sessionId) return;
+      const { from, kind, data, attempt = 0 } = payload;
+
+      try {
         if (kind === "offer") {
-          const pc = createPeer(from);
-          await pc.setRemoteDescription(
+          // Oferta nueva o re-oferta: esta pata arranca de cero, y el timer
+          // de kick vuelve a darle una ventana completa al intento.
+          const conn = newConn(from, attempt);
+          clearKick(from);
+          scheduleKick(from);
+          await conn.pc.setRemoteDescription(
             new RTCSessionDescription(data as RTCSessionDescriptionInit),
           );
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          sendSignal(from, "answer", answer);
+          conn.remoteSet = true;
+          await flushPendingIce(conn);
+          const answer = await conn.pc.createAnswer();
+          await conn.pc.setLocalDescription(answer);
+          sendSignal(from, "answer", answer, attempt);
         } else if (kind === "answer") {
-          const pc = pcs.get(from);
-          if (pc) {
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(data as RTCSessionDescriptionInit),
-            );
-          }
+          const conn = conns.get(from);
+          // Respuesta de una oferta que ya reemplazamos: se descarta.
+          if (!conn || conn.attempt !== attempt || conn.remoteSet) return;
+          await conn.pc.setRemoteDescription(
+            new RTCSessionDescription(data as RTCSessionDescriptionInit),
+          );
+          conn.remoteSet = true;
+          await flushPendingIce(conn);
         } else if (kind === "ice") {
-          const pc = pcs.get(from);
-          if (pc) {
-            try {
-              await pc.addIceCandidate(
-                new RTCIceCandidate(data as RTCIceCandidateInit),
-              );
-            } catch {
-              // candidato tardío/duplicado: lo ignoramos.
-            }
+          const conn = conns.get(from);
+          if (!conn || conn.attempt !== attempt) return;
+          if (!conn.remoteSet) {
+            // Llegó antes que la oferta/respuesta terminara de aplicarse:
+            // se encola en vez de perderse (esto dejaba pares mudos).
+            conn.pendingIce.push(data as RTCIceCandidateInit);
+            return;
+          }
+          try {
+            await conn.pc.addIceCandidate(
+              new RTCIceCandidate(data as RTCIceCandidateInit),
+            );
+          } catch {
+            // candidato duplicado/inválido: no importa.
+          }
+        } else if (kind === "kick") {
+          // Al otro no le llegó nuestra oferta (o quedó colgado): va otra.
+          if (iOffer(from) && conns.get(from)?.pc.connectionState !== "connected") {
+            void offerTo(from);
           }
         }
-      },
-    );
+      } catch {
+        // Señal vieja/duplicada que dejó la pc en un estado que no la acepta:
+        // se ignora, los reintentos numerados la reemplazan.
+      }
+    });
 
     channel.on("presence", { event: "sync" }, () => {
       const state = channel.presenceState<PresenceMeta>();
-      const ids = Object.keys(state).filter((id) => id !== me.id);
+      const ids = Object.keys(state).filter((id) => id !== sessionId);
 
-      setPeers(
+      setPeers((prev) =>
         ids.map((id) => {
           const meta = state[id]?.[0];
+          const existing = prev.find((p) => p.id === id);
           return {
             id,
             nickname: meta?.nickname ?? "Jugador",
             avatarUrl: meta?.avatarUrl ?? null,
-            connected: pcs.get(id)?.connectionState === "connected",
+            state:
+              existing?.state ??
+              (conns.get(id)?.pc.connectionState === "connected"
+                ? "connected"
+                : "connecting"),
           };
         }),
       );
 
-      for (const id of ids) if (!pcs.has(id)) void connectToPeer(id);
-      for (const id of [...pcs.keys()]) if (!ids.includes(id)) closePeer(id);
+      for (const id of ids) {
+        if (conns.has(id)) continue;
+        if (iOffer(id)) void offerTo(id);
+        else scheduleKick(id);
+      }
+      for (const id of [...conns.keys()]) {
+        if (!ids.includes(id)) {
+          dropConn(id);
+          offerCount.delete(id);
+          kickCount.delete(id);
+        }
+      }
+      for (const id of [...kickTimers.keys()]) {
+        if (!ids.includes(id)) clearKick(id);
+      }
     });
+
+    // Celular que vuelve del background: reintentamos todo lo no conectado
+    // con contadores en cero (el handshake pudo morir mientras dormía).
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      for (const id of Object.keys(channel.presenceState())) {
+        if (id === sessionId) continue;
+        if (conns.get(id)?.pc.connectionState === "connected") continue;
+        offerCount.set(id, 0);
+        kickCount.set(id, 0);
+        if (iOffer(id)) {
+          void offerTo(id);
+        } else {
+          sendSignal(id, "kick");
+          scheduleKick(id);
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    teardownRef.current = () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      kickTimers.forEach((t) => clearTimeout(t));
+      kickTimers.clear();
+    };
 
     channel.subscribe((subStatus) => {
       if (subStatus === "SUBSCRIBED") {
         channel
-          .track({ nickname: me.nickname, avatarUrl: me.avatarUrl })
+          .track({
+            userId: me.id,
+            nickname: me.nickname,
+            avatarUrl: me.avatarUrl,
+          } satisfies PresenceMeta)
           .then(() => setStatus("joined"))
           .catch(() => {});
       }
@@ -269,6 +473,18 @@ export function VoiceRoom({
 
   const inVoice = status === "joined";
   const total = peers.length + (inVoice ? 1 : 0);
+
+  const PEER_RING: Record<PeerState, string> = {
+    connected: "ring-grass",
+    connecting: "ring-ink/20",
+    failed: "ring-cardred/60",
+  };
+  const peerLabel = (p: Peer) =>
+    p.state === "connected"
+      ? p.nickname
+      : p.state === "failed"
+        ? "sin señal"
+        : "conectando…";
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-cream p-4 text-ink shadow-card ring-1 ring-black/5">
@@ -310,7 +526,8 @@ export function VoiceRoom({
                 <span
                   className={cn(
                     "inline-flex rounded-full ring-2",
-                    p.connected ? "ring-grass" : "ring-ink/20",
+                    PEER_RING[p.state],
+                    p.state === "failed" && "opacity-60",
                   )}
                 >
                   <Avatar
@@ -319,8 +536,13 @@ export function VoiceRoom({
                     className="size-10 text-sm"
                   />
                 </span>
-                <span className="max-w-[4.5rem] truncate text-[11px] font-semibold text-ink/70">
-                  {p.connected ? p.nickname : "conectando…"}
+                <span
+                  className={cn(
+                    "max-w-[4.5rem] truncate text-[11px] font-semibold",
+                    p.state === "failed" ? "text-cardred" : "text-ink/70",
+                  )}
+                >
+                  {peerLabel(p)}
                 </span>
               </div>
             ))}
