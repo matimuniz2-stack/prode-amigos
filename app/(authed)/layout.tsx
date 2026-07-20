@@ -46,6 +46,7 @@ export default async function AuthedLayout({
     { href: "/leaderboard", label: "Ranking" },
     { href: "/sala-en-vivo", label: "En vivo" },
     { href: "/globales", label: "Globales" },
+    { href: "/final", label: "El Gran Final", hint: "ceremonia y premios" },
     { href: "/reglas", label: "Reglas" },
     { href: "/mi-prode", label: "Mi prode" },
     ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),

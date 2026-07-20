@@ -105,6 +105,12 @@ export default async function DashboardPage() {
     (m) => displayStatus(m, now) === "live" && m.home_team && m.away_team,
   );
 
+  // Mundial terminado: hay partidos cargados y no queda ninguno por jugar.
+  const mundialTerminado =
+    (matchesRes.data ?? []).length > 0 &&
+    upcoming.length === 0 &&
+    liveMatches.length === 0;
+
   // Picks de los próximos + recap de la última fecha: independientes (ambos
   // sobre los partidos ya cargados) → en paralelo.
   type MiniPick = {
@@ -278,6 +284,23 @@ export default async function DashboardPage() {
         <PreCierreReminder missingCount={missingPicks} nextLock={nextLockAt} />
       )}
       <BadgeDrop badges={autoBadges.get(userId) ?? []} />
+      {mundialTerminado && (
+        <Link
+          href="/final"
+          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-gold to-amber-500 p-4 text-ink shadow-card ring-1 ring-black/10 transition active:scale-[0.99]"
+        >
+          <span className="text-3xl">🏆</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-black">
+              Se terminó el Mundial
+            </span>
+            <span className="block text-xs font-semibold text-ink/70">
+              La ceremonia, los premios del prode, la foto del campeón y la
+              película del torneo →
+            </span>
+          </span>
+        </Link>
+      )}
       {/* Header */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col items-center gap-1 text-center lg:items-start lg:text-left">
