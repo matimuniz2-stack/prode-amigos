@@ -33,6 +33,7 @@ import {
   ConferenciaPrensa,
   type Speaker,
 } from "@/components/home/conferencia-prensa";
+import { Ceremonia } from "@/components/final/ceremonia";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +77,9 @@ export default async function DashboardPage() {
       .returns<MatchWithRelations[]>(),
     supabase
       .from("leaderboard_projection")
-      .select("user_id, nickname, total_points, rank")
+      .select(
+        "user_id, nickname, total_points, rank, avatar_url, projected_prize, currency",
+      )
       .order("rank", { ascending: true }),
     supabase
       .from("profiles")
@@ -110,6 +113,17 @@ export default async function DashboardPage() {
     (matchesRes.data ?? []).length > 0 &&
     upcoming.length === 0 &&
     liveMatches.length === 0;
+
+  // Podio final para la ceremonia en el inicio (cada uno la dispara al tocar).
+  const finalPlayers = (rankingRes.data ?? []).map((r) => ({
+    userId: r.user_id ?? "",
+    nickname: r.nickname ?? "—",
+    avatarUrl: r.avatar_url ?? null,
+    points: r.total_points ?? 0,
+    rank: r.rank ?? 0,
+    prize: r.projected_prize ?? 0,
+  }));
+  const ceremoniaCurrency = rankingRes.data?.[0]?.currency ?? "ARS";
 
   // Picks de los próximos + recap de la última fecha: independientes (ambos
   // sobre los partidos ya cargados) → en paralelo.
@@ -284,22 +298,31 @@ export default async function DashboardPage() {
         <PreCierreReminder missingCount={missingPicks} nextLock={nextLockAt} />
       )}
       <BadgeDrop badges={autoBadges.get(userId) ?? []} />
-      {mundialTerminado && (
-        <Link
-          href="/final"
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-gold to-amber-500 p-4 text-ink shadow-card ring-1 ring-black/10 transition active:scale-[0.99]"
-        >
-          <span className="text-3xl">🏆</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-black">
-              Se terminó el Mundial
+      {mundialTerminado && finalPlayers.length > 0 && (
+        <>
+          <Ceremonia
+            podium={finalPlayers.slice(0, 3)}
+            last={
+              finalPlayers.length > 1
+                ? finalPlayers[finalPlayers.length - 1]
+                : null
+            }
+            currency={ceremoniaCurrency}
+          />
+          <Link
+            href="/final"
+            className="-mt-3 flex items-center gap-3 rounded-2xl bg-gradient-to-br from-gold to-amber-500 p-3.5 text-ink shadow-card ring-1 ring-black/10 transition active:scale-[0.99]"
+          >
+            <span className="text-2xl">🏆</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-black">El Gran Final</span>
+              <span className="block text-xs font-semibold text-ink/70">
+                Los premios del prode, la foto del campeón y la película del
+                torneo →
+              </span>
             </span>
-            <span className="block text-xs font-semibold text-ink/70">
-              La ceremonia, los premios del prode, la foto del campeón y la
-              película del torneo →
-            </span>
-          </span>
-        </Link>
+          </Link>
+        </>
       )}
       {/* Header */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
